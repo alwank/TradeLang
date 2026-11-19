@@ -1,0 +1,20 @@
+strategy "Previous High Breakout"
+market BTCUSDT
+timeframe 1h
+let boundary = HIGHEST(high, 20)[1]
+entry:
+  when close crosses above boundary
+  buy using (2 * 500) USDT
+exit:
+  when close < EMA(20)
+  sell all
+risk:
+  stop loss 2 * ATR(14)
+  take profit 4 * ATR(14)
+backtest:
+  from 2022-01-01 to 2025-12-31
+  capital 10000 USDT
+  fee 10 bps per side
+  slippage 5 bps per side
+  execute at next bar open
+  calendar 24x7

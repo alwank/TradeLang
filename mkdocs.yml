@@ -1,0 +1,54 @@
+site_name: TradeLang
+site_description: Write typed trading strategies and backtest them on historical candles.
+
+theme:
+  name: readthedocs
+  highlightjs: false
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Getting started:
+      - First backtest: quickstart.md
+      - Write a strategy: writing-strategies.md
+      - Example strategies: example-strategies.md
+  - Reference:
+      - DSL 1 specification: language-spec.md
+      - Indicators: indicators.md
+      - Execution semantics: execution-semantics.md
+      - Candle data: candle-data.md
+      - Command line: cli.md
+      - Results and artifacts: results.md
+      - Local HTTP API: local-api.md
+  - Build and publish the docs: publishing.md
+
+validation:
+  omitted_files: warn
+  absolute_links: warn
+  unrecognized_links: warn
+  anchors: warn
+
+# Exclude local planning notes when building from a development checkout.
+exclude_docs: |
+  /README.md
+  /api-contract.md
+  /architecture.md
+  /architecture-decisions/
+  /backlog-validation.md
+  /data-contracts.md
+  /implementation-backlog.md
+  /mvp1-plan-audit.md
+  /mvp1-release.md
+  /next-milestones/
+  /requirements.txt
+  /risk-register.md
+  /test-plan.md
+  /ux-flows.md
+  /verification-report.md

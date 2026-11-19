@@ -1,0 +1,40 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "tradelang"
+version = "0.1.0"
+description = "A typed strategy language and deterministic local backtester"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+requires-python = ">=3.12,<3.13"
+dependencies = ["lark>=1.3,<2", "numpy>=2,<3", "pyarrow>=20", "typer>=0.29.2,<1", "pydantic>=2,<3"]
+
+[project.optional-dependencies]
+api = ["fastapi>=0.115,<1", "uvicorn>=0.30,<1", "jsonschema>=4,<5", "sqlalchemy>=2,<3", "alembic>=1.14,<2", "python-multipart>=0.0.20,<1"]
+
+[project.scripts]
+tradelang = "tradelang.cli:main"
+tradelang-api = "tradelang.api:main"
+tradelang-local = "tradelang.supervisor:main"
+
+[dependency-groups]
+dev = ["pytest", "jsonschema", "ruff", "mypy", "interegular", "httpx>=0.27,<1", "openapi-spec-validator>=0.7,<1"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.mypy]
+ignore_missing_imports = true
+check_untyped_defs = true
+
+[tool.ruff.lint]
+select = ["E4","E7","E9","F","I"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/tradelang"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"uv.lock" = "tradelang/_build/uv.lock"
+"pyproject.toml" = "tradelang/_build/pyproject.toml"

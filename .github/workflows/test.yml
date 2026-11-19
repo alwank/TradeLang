@@ -1,0 +1,31 @@
+name: TradeLang
+on: [push, pull_request]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - name: Build documentation
+        run: uv run --no-project --python 3.12 --with-requirements docs/requirements.txt mkdocs build --strict
+      - run: uv sync --locked --extra api
+      - run: uv run --extra api ruff check src tests scripts
+      - run: uv run --extra api mypy src
+      - run: uv run --extra api pytest
+      - run: uv build
+      - name: Verify the installed wheel and record dependency evidence
+        run: |
+          UV_PROJECT_ENVIRONMENT="$RUNNER_TEMP/candidate" uv sync --locked --extra api --no-install-project
+          uv pip install --no-deps --python "$RUNNER_TEMP/candidate/bin/python" dist/*.whl
+          PATH="$RUNNER_TEMP/candidate/bin:$PATH" "$RUNNER_TEMP/candidate/bin/python" -m pytest
+          UV_PROJECT_ENVIRONMENT="$RUNNER_TEMP/production" uv sync --locked --no-dev --extra api --no-install-project
+          uv pip install --no-deps --python "$RUNNER_TEMP/production/bin/python" dist/*.whl
+          "$RUNNER_TEMP/production/bin/tradelang" validate docs/fixtures/core.trade
+          "$RUNNER_TEMP/production/bin/python" scripts/release_inventory.py release-evidence
+          uvx --from pip-audit==2.10.0 pip-audit --version | tee release-evidence/scanner.txt
+          uvx --from pip-audit==2.10.0 pip-audit --strict --no-deps --disable-pip -r release-evidence/requirements.txt -f json -o release-evidence/vulnerabilities.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: release-dependency-evidence
+          path: release-evidence/

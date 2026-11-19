@@ -1,0 +1,16 @@
+strategy "EMA Crossover"
+market BTCUSDT
+timeframe 1h
+entry:
+  when EMA(20) crosses above EMA(50)
+  buy using (10% + 10%) of equity
+exit:
+  when EMA(20) crosses below EMA(50)
+  sell all
+backtest:
+  from 2022-01-01 to 2025-12-31
+  capital 10000 USDT
+  fee 10 bps per side
+  slippage 5 bps per side
+  execute at next bar open
+  calendar 24x7

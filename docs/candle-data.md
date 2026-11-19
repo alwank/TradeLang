@@ -1,0 +1,59 @@
+# Candle data
+
+Supply one historical OHLCV dataset as CSV or Parquet. Use raw spot prices on a continuous UTC grid with one fixed candle duration. Each row describes a completed candle, timestamped at its open. Dataset metadata declares the market, units, and gap policy.
+
+## File formats
+
+Both formats require exactly `timestamp,open,high,low,close,volume`. Column order is flexible.
+
+```csv
+timestamp,open,high,low,close,volume
+2024-01-01T00:00:00Z,100,102,98,100,10
+2024-01-02T00:00:00Z,110,115,108,112,20
+2024-01-03T00:00:00Z,120,125,115,120,30
+```
+
+- **CSV** uses UTF-8, comma delimiters, and finite decimal values. Timestamps must include seconds and an explicit offset such as `Z` or `+07:00`. They may carry up to six fractional digits before grid validation. Convert epoch numbers and naive timestamps before importing.
+- **Parquet** requires a timezone-aware Arrow timestamp column that can be converted exactly to UTC microseconds. Price and volume columns must be integers or floats safely convertible to binary64.
+
+Rows must be ordered by strictly increasing, unique UTC timestamps aligned to the Unix epoch grid for the declared duration. All prices must be positive and satisfy `low <= min(open, close) <= max(open, close) <= high`. Volume is finite and nonnegative. Drop incomplete candles before export. The importer rejects malformed data and preserves the submitted order. Limits are 100 MiB and 1,000,000 rows, with an additional 512 MiB limit on decoded Parquet row groups.
+
+## Declare metadata
+
+Save metadata in a JSON file. This is the metadata used by the [daily fixture](fixtures/metadata.json).
+
+```json
+{
+  "schema_version": 1,
+  "symbol": "TESTUSDT",
+  "quote_currency": "USDT",
+  "timeframe": "1d",
+  "calendar": "24x7",
+  "timestamp_convention": "bar_open",
+  "volume_unit": "base_quantity",
+  "price_basis": "raw_spot",
+  "gap_policy": "reject"
+}
+```
+
+| Field | Accepted values |
+| --- | --- |
+| `schema_version` | Defaults to `1`. |
+| `symbol` | Exact strategy market. Uppercase letters, digits, dots, underscores, and hyphens, up to 32 characters, starting with a letter or digit. |
+| `quote_currency` | Exact strategy capital currency. Two to 12 uppercase letters or digits, starting with a letter. |
+| `timeframe` | Positive integer and `m`, `h`, or `d`, up to seven days. Equal durations match, for example `24h` and `1d`. |
+| `calendar`, `timestamp_convention` | `24x7` and `bar_open`, respectively. |
+| `volume_unit`, `price_basis` | `base_quantity` and `raw_spot`, respectively. |
+| `gap_policy` | Defaults to `reject`. Set `allow` to admit missing interior candles. |
+
+Use `--data candles.csv --metadata metadata.json` with any CLI subcommand. The CLI also accepts [explicit metadata flags](cli.md#data-options).
+
+## Cover the dates and supply warmup
+
+`from 2024-01-01 to 2024-01-03` includes every complete candle in the half-open interval from January 1 at 00:00 UTC through January 4 at 00:00 UTC. Supply the first and last complete grid candles in the interval. If a multi-day grid straddles a date boundary, the partial candle is outside the execution window.
+
+Candles before the first in-window open can initialize indicators. If history runs short, TradeLang delays the first eligible signal until structural warmup completes. It needs an eligible in-window close plus a subsequent in-window open. Use [`explain`](cli.md#explain) with the dataset to check coverage and the resolved window before backtesting.
+
+## Choose a gap policy
+
+The default `reject` policy requires every interval between the first and last submitted row to have exactly one candle. With `allow`, a pending order fills at the next observed open, including across a gap. Rolling windows, lookbacks, and crossings count observed rows. Protection can observe the next available open and range. The engine leaves missing prices unknown and requires window-edge coverage under either policy. Sharpe is unavailable when gaps fall inside the execution window.

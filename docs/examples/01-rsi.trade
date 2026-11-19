@@ -1,0 +1,21 @@
+dsl 1
+strategy "RSI Trend Recovery"
+market BTCUSDT
+timeframe 1h
+entry:
+  when RSI(14) crosses above 30 and close is above SMA(200)
+  buy using 20% of equity
+exit:
+  when RSI(14) crosses above 70
+  sell all
+risk:
+  stop loss 3%
+  take profit 6%
+  max open positions 1
+backtest:
+  from 2022-01-01 to 2025-12-31
+  capital 10000 USDT
+  fee 10 bps per side
+  slippage 5 bps per side
+  execute at next bar open
+  calendar 24x7

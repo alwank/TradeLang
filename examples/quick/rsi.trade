@@ -1,0 +1,17 @@
+strategy "rsi recovery"
+market TESTUSDT
+timeframe 1d
+entry:
+  when RSI(2) crosses above 30
+  buy using 100% of equity
+exit:
+  when close >= 13 price
+  sell all
+
+backtest:
+  from 2024-01-01 to 2024-01-06
+  capital 1000 USDT
+  fee 0 bps per side
+  slippage 0 bps per side
+  execute at next bar open
+  calendar 24x7

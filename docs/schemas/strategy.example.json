@@ -1,0 +1,183 @@
+{
+  "schema_version": 1,
+  "dsl_version": 1,
+  "name": "Golden next-open ledger",
+  "symbol": "TESTUSDT",
+  "timeframe_seconds": 86400,
+  "bindings": [],
+  "entry": {
+    "condition": {
+      "kind": "Literal",
+      "node_id": "entry.condition",
+      "span": {
+        "start_line": 5,
+        "start_column": 8,
+        "end_line": 5,
+        "end_column": 12,
+        "start_byte": 78,
+        "end_byte": 82
+      },
+      "inferred_type": {
+        "kind": "boolean",
+        "shape": "scalar"
+      },
+      "value": true,
+      "dimension": null
+    },
+    "sizing": {
+      "kind": "equity_fraction",
+      "expression": {
+        "kind": "Literal",
+        "node_id": "entry.sizing.expression",
+        "span": {
+          "start_line": 6,
+          "start_column": 13,
+          "end_line": 6,
+          "end_column": 17,
+          "start_byte": 95,
+          "end_byte": 99
+        },
+        "inferred_type": {
+          "kind": "numeric",
+          "shape": "scalar",
+          "dimension": {
+            "kind": "powers",
+            "quote": 0,
+            "base": 0
+          }
+        },
+        "value": 1,
+        "dimension": {
+          "kind": "powers",
+          "quote": 0,
+          "base": 0
+        }
+      },
+      "span": {
+        "start_line": 6,
+        "start_column": 13,
+        "end_line": 6,
+        "end_column": 27,
+        "start_byte": 95,
+        "end_byte": 109
+      }
+    },
+    "span": {
+      "start_line": 4,
+      "start_column": 1,
+      "end_line": 6,
+      "end_column": 27,
+      "start_byte": 64,
+      "end_byte": 109
+    }
+  },
+  "exit": {
+    "condition": {
+      "kind": "Compare",
+      "node_id": "exit.condition",
+      "span": {
+        "start_line": 8,
+        "start_column": 8,
+        "end_line": 8,
+        "end_column": 26,
+        "start_byte": 123,
+        "end_byte": 141
+      },
+      "inferred_type": {
+        "kind": "boolean",
+        "shape": "series"
+      },
+      "operator": ">=",
+      "left": {
+        "kind": "Reference",
+        "node_id": "exit.condition.left",
+        "span": {
+          "start_line": 8,
+          "start_column": 8,
+          "end_line": 8,
+          "end_column": 13,
+          "start_byte": 123,
+          "end_byte": 128
+        },
+        "inferred_type": {
+          "kind": "numeric",
+          "shape": "series",
+          "dimension": {
+            "kind": "powers",
+            "quote": 1,
+            "base": -1
+          }
+        },
+        "name": "close",
+        "binding_kind": "builtin"
+      },
+      "right": {
+        "kind": "Literal",
+        "node_id": "exit.condition.right",
+        "span": {
+          "start_line": 8,
+          "start_column": 17,
+          "end_line": 8,
+          "end_column": 26,
+          "start_byte": 132,
+          "end_byte": 141
+        },
+        "inferred_type": {
+          "kind": "numeric",
+          "shape": "scalar",
+          "dimension": {
+            "kind": "powers",
+            "quote": 1,
+            "base": -1
+          }
+        },
+        "value": 112,
+        "dimension": {
+          "kind": "powers",
+          "quote": 1,
+          "base": -1
+        }
+      }
+    },
+    "action": "sell_all",
+    "span": {
+      "start_line": 7,
+      "start_column": 1,
+      "end_line": 9,
+      "end_column": 11,
+      "start_byte": 110,
+      "end_byte": 152
+    }
+  },
+  "risk": {
+    "stop": null,
+    "target": null,
+    "max_open_positions": 1
+  },
+  "backtest": {
+    "from_date": "2024-01-01",
+    "to_date": "2024-01-03",
+    "capital": 1000,
+    "currency": "USDT",
+    "fee_rate": 0,
+    "slippage_rate": 0,
+    "execution": "next_bar_open",
+    "calendar": "24x7",
+    "span": {
+      "start_line": 10,
+      "start_column": 1,
+      "end_line": 16,
+      "end_column": 16,
+      "start_byte": 153,
+      "end_byte": 304
+    }
+  },
+  "span": {
+    "start_line": 1,
+    "start_column": 1,
+    "end_line": 17,
+    "end_column": 1,
+    "start_byte": 0,
+    "end_byte": 305
+  }
+}
