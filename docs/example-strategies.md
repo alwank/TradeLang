@@ -1,6 +1,34 @@
 # Example strategies
 
-The repository includes synthetic data for two ways to try the language.
+Start with six synthetic candles to see how an indicator produces a signal. Once you can trace that trade, use the larger examples to explore moving averages, breakouts, and named conditions.
+
+## Inspect six candles by hand
+
+Run these commands from the checkout root after [installing TradeLang](quickstart.md#install). Open the [bundled RSI strategy](https://github.com/alwank/TradeLang/blob/main/examples/quick/rsi.trade) in an editor. Its entry rule uses `RSI(2) crosses above 30`. The relative strength index (RSI) measures recent price momentum on a 0–100 scale. The crossing requires a previous RSI at or below 30 and a current RSI above 30. The exit rule queues a sale when the completed close is at least `13 price`.
+
+```sh
+uv run --no-sync tradelang explain examples/quick/rsi.trade --data examples/quick/recovery.csv --metadata docs/fixtures/metadata.json
+uv run --no-sync tradelang backtest examples/quick/rsi.trade --data examples/quick/recovery.csv --metadata docs/fixtures/metadata.json --out runs/quick-rsi
+```
+
+`explain` shows that `RSI(2)` uses the closing price by default and that the crossing can first be evaluated on the fourth candle, at warmup index 3. Trace the two signals and fills in `runs/quick-rsi/events.jsonl`.
+
+| Signal (by UTC candle opening date) | Fill at next open |
+| --- | --- |
+| Jan 4 · RSI reaches 73.33, triggering a buy | Jan 5 · **13 USDT** |
+| Jan 5 · Close reaches 13 USDT, triggering a sell | Jan 6 · **14 USDT** |
+
+The run starts with 1,000 USDT and ends with **1,076.92 USDT**. Check `trades.csv` for the prices and `summary.json` for final equity.
+
+To isolate the effect of sizing on this strategy, save a copy as `rsi-quarter.trade` in the checkout root and change `buy using 100% of equity` to `buy using 25% of equity`. Run it into a fresh folder.
+
+```sh
+uv run --no-sync tradelang backtest rsi-quarter.trade --data examples/quick/recovery.csv --metadata docs/fixtures/metadata.json --out runs/quick-rsi-quarter
+```
+
+The fill prices stay the same and final equity is **1,019.23 USDT**. Compare the quantities in the two trade files. Both runs use synthetic candles with zero fees and slippage.
+
+For a different entry signal on the same candles, use `examples/quick/ema.trade` or `examples/quick/breakout.trade` in the backtest command with a fresh output path. Both variants buy and sell on the same dates and at the same prices as the RSI strategy. Compare the entry rationale in each `trades.csv` to see what triggered the buy.
 
 ## Run the full examples
 
@@ -34,14 +62,4 @@ To run a single example on any shell, including PowerShell, pass the file explic
 uv run --no-sync tradelang backtest docs/examples/02-ema.trade --data runs/example-data/example.csv --metadata runs/example-data/metadata.json --out runs/ema-example
 ```
 
-Check `summary.json` for the outcome and `trades.csv` for the completed trades. The full RSI example has no entry signals on this synthetic series. Use the six-candle RSI example below to see a recovery signal and its fill. Each output path must be new or empty.
-
-## Inspect six candles by hand
-
-The three strategies in `examples/quick/` share `recovery.csv`. Try the EMA example, then substitute `rsi.trade` or `breakout.trade` and a fresh output directory.
-
-```sh
-uv run --no-sync tradelang backtest examples/quick/ema.trade --data examples/quick/recovery.csv --metadata docs/fixtures/metadata.json --out runs/quick-ema
-```
-
-All three variants signal entry on the January 4 candle's close, buy at the January 5 open for 13, and sell at the January 6 open for 14. Compare the entry rationale in each `trades.csv` to see how the same price sequence produced different signals.
+Check `summary.json` for the outcome and `trades.csv` for the completed trades. On this synthetic series, the full RSI strategy generates no entry signals. The [six-candle RSI exercise](#inspect-six-candles-by-hand) shows a recovery signal and its fill. Each output path must be new or empty.
