@@ -12,5 +12,5 @@ The simulator models one long spot position at a time on a continuous UTC calend
 | Version | Scope |
 | --- | --- |
 | Package `0.1.0` | Installed Python distribution and CLI |
-| DSL `1` | Source syntax and types |
+| TradeLang strategy language v1 | Source syntax and types |
 | Execution semantics `1.1.0` | Simulation rules recorded in run manifests |

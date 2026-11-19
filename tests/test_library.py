@@ -61,6 +61,7 @@ def library(tmp_path):
 
 
 def test_strategy_revisions_soft_delete_and_reopen(library):
+    legacy_source = "dsl 1\r\n" + SOURCE.replace("\n", "\r\n")
     with client(library) as c:
         rejected = c.post(STRATEGIES, json={"name": "Research", "source": "draft"})
         assert rejected.status_code == 403
@@ -87,7 +88,7 @@ def test_strategy_revisions_soft_delete_and_reopen(library):
         assert (
             c.put(
                 path,
-                json={**body, "source": SOURCE},
+                json={**body, "source": legacy_source},
                 headers={**ORIGIN, "If-Match": tag},
             ).status_code
             == 409
@@ -102,15 +103,14 @@ def test_strategy_revisions_soft_delete_and_reopen(library):
         )
         revised = c.put(
             path,
-            json={**body, "source": SOURCE},
+            json={**body, "source": legacy_source},
             headers={**ORIGIN, "If-Match": renamed_tag},
         )
         assert revised.status_code == 200 and revised.json()["current_revision"] == 2
         tag = revised.headers["ETag"]
         current_revision = c.get(path + "/revisions/2").json()
-        assert current_revision["source"] == SOURCE and current_revision[
-            "source_hash"
-        ] == digest(SOURCE.encode())
+        assert current_revision["source"] == legacy_source
+        assert current_revision["source_hash"] == digest(legacy_source.encode())
         revs = c.get(path + "/revisions", params={"limit": 1}).json()
         assert revs["items"] == [current_revision]
         older = c.get(
@@ -132,7 +132,17 @@ def test_strategy_revisions_soft_delete_and_reopen(library):
     reopened = Library(library.root)
     with client(reopened) as c:
         assert c.get(path).status_code == 404
-        assert c.get(path + "/revisions/2").json() == current_revision
+        stored_revision = c.get(path + "/revisions/2").json()
+        assert stored_revision == current_revision
+        response = c.post(
+            STRATEGIES + "/validate",
+            json={"source": stored_revision["source"]},
+            headers=ORIGIN,
+        )
+        assert response.status_code == 200
+        validation = response.json()
+        assert validation["valid"]
+        assert validation["source_hash"] == stored_revision["source_hash"]
         assert c.get(STRATEGIES).json()["items"] == []
     with reopened.db.connect() as conn:
         assert conn.exec_driver_sql("PRAGMA foreign_keys").scalar_one() == 1

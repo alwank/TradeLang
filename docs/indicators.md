@@ -1,6 +1,6 @@
 # Indicator reference
 
-DSL 1 has ten built-in indicators. Names are uppercase. A period is an unsigned decimal integer literal between 1 and 10,000. For example, `EMA(20)` is valid, while `EMA(10 + 10)` and `EMA(20.0)` are rejected. An explicit source `x` must be a numeric series with price, volume, or ratio units. It can be a candle field or a typed expression such as `close / SMA(20)`.
+TradeLang strategy language v1 has ten built-in indicators. Names are uppercase. A period is an unsigned decimal integer literal between 1 and 10,000. For example, `EMA(20)` is valid, while `EMA(10 + 10)` and `EMA(20.0)` are rejected. An explicit source `x` must be a numeric series with price, volume, or ratio units. It can be a candle field or a typed expression such as `close / SMA(20)`.
 
 The table gives the first structurally ready **zero-based** row for an input available from row 0. Add any input warmup to this index. Every indicator uses completed candles, including the current candle at signal time. Periods count observed rows, including when [gaps are allowed](candle-data.md#choose-a-gap-policy).
 

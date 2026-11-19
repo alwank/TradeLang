@@ -1,6 +1,8 @@
-# Language specification: DSL 1
+<a id="language-specification-dsl-1"></a>
 
-This reference describes DSL 1 as accepted by the TradeLang compiler. See the [Lark grammar](grammar-v1.lark), [typed strategy JSON Schema](schemas/strategy.schema.json), and [execution semantics](execution-semantics.md). The [typed strategy example](schemas/strategy.example.json) illustrates the structure for the [quickstart fixture](fixtures/core.trade). Semantic validation applies additional constraints beyond JSON Schema.
+# TradeLang strategy language v1
+
+This reference describes the syntax and types accepted by the TradeLang compiler. See the [Lark grammar](grammar-v1.lark), [typed strategy JSON Schema](schemas/strategy.schema.json), and [execution semantics](execution-semantics.md). The [typed strategy example](schemas/strategy.example.json) illustrates the structure for the [quickstart fixture](fixtures/core.trade). Semantic validation applies additional constraints beyond JSON Schema.
 
 ## Source and lexical contract
 
@@ -8,7 +10,11 @@ Source is UTF-8 and can begin with a byte-order mark. Both LF and CRLF are accep
 
 Let names start with a lowercase letter or underscore and may continue with lowercase letters, digits, or underscores. Choose names that do not collide with language keywords, candle fields, indicator output fields, the `equity` builtin, or unit suffixes. Market symbols are opaque uppercase identifiers. Quote currency comes from `capital` and must match the dataset and any fixed-money sizing.
 
-Whitespace, including indentation and newlines, separates tokens. A `#` outside a quoted string starts a comment through the end of the line. Expressions may span lines. Sections and directives follow the order in [Write a strategy](writing-strategies.md#file-structure). The optional `dsl 1` directive defaults to version 1. Entry and exit each require one Boolean condition and one order. An omitted risk block leaves the position without protective levels. The maximum is always one position.
+Whitespace, including indentation and newlines, separates tokens. A `#` outside a quoted string starts a comment through the end of the line. Expressions may span lines.
+
+Use the optional `tradelang 1` directive before the `strategy` header to declare version 1. This is also the default when the directive is omitted. The legacy spelling `dsl 1` is accepted as an alias. Typed strategy JSON and run manifests record the language version as `dsl_version: 1`.
+
+Sections and directives follow the order in [Write a strategy](writing-strategies.md#file-structure). Entry and exit each require one Boolean condition and one order. An omitted risk block leaves the position without protective levels. The maximum is always one position.
 
 ## Expression grammar and precedence
 

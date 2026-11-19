@@ -93,6 +93,31 @@ def test_api_cli_parity(tmp_path, command, example_data):
                 assert "Exit all at the next open after exit_ready." in lines
 
 
+@pytest.mark.parametrize("command", ["validate", "explain"])
+@pytest.mark.parametrize(
+    "prefix,expected_code",
+    [("", 0), ("dsl 1\n", 0), ("tradelang 1\n", 0), ("tradelang 2\n", 2)],
+)
+def test_version_directive_api_cli_parity(tmp_path, command, prefix, expected_code):
+    source = prefix + CORE
+    path = tmp_path / "version.trade"
+    path.write_text(source)
+    code, response = cli(command, path)
+    http = request(create_app(), command, headers=ORIGIN, json={"source": source})
+    assert code == expected_code and http.status_code == 200
+    body = http.json()
+    assert body["valid"] == response["ok"] == (expected_code == 0)
+    assert body["diagnostics"] == response["diagnostics"]
+    if expected_code == 0:
+        assert body["diagnostics"] == []
+        assert response["result"] == {key: body[key] for key in response["result"]}
+        if command == "validate":
+            assert body["spec"]["dsl_version"] == 1
+    else:
+        assert body["diagnostics"][0]["code"] == "E101_SYNTAX"
+        assert body["spec_hash"] is None and response["result"] is None
+
+
 @pytest.mark.parametrize("command", ["explain", "validate"])
 def test_import_resolver_and_invalid_source(tmp_path, command):
     good, bad = uuid4(), uuid4()
