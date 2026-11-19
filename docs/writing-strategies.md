@@ -3,7 +3,7 @@
 A strategy describes decisions for one market, one candle duration, and one quote currency. This example enters when a fast moving average crosses above a slow one and the close is above the slow average. It exits after the reverse crossover or when the position touches a protective level.
 
 ```text
-dsl 1
+tradelang 1
 strategy "EMA confirmation"
 market BTCUSDT
 timeframe 1h
@@ -45,7 +45,7 @@ uv run --no-sync tradelang backtest strategy.trade --data runs/example-data/exam
 
 | In order | Purpose |
 | --- | --- |
-| `dsl 1` | Optional version directive. Omitting it selects DSL 1. |
+| `tradelang 1` | Optional version directive. Version 1 is the default. Existing strategies can still use `dsl 1`. |
 | `strategy "…"` | Required display name in double quotes. |
 | `market` and `timeframe` | Required symbol and fixed duration such as `15m`, `1h`, or `1d`. |
 | `let` | Optional immutable declarations. A declaration can reference earlier declarations. |

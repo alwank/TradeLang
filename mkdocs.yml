@@ -20,7 +20,7 @@ nav:
       - Write a strategy: writing-strategies.md
       - Example strategies: example-strategies.md
   - Reference:
-      - DSL 1 specification: language-spec.md
+      - TradeLang strategy language v1: language-spec.md
       - Indicators: indicators.md
       - Execution semantics: execution-semantics.md
       - Candle data: candle-data.md

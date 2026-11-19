@@ -1,4 +1,4 @@
-dsl 1
+tradelang 1
 strategy "RSI Trend Recovery"
 market BTCUSDT
 timeframe 1h

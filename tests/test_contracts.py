@@ -75,6 +75,38 @@ def test_cli_roundtrip(tmp_path):
     assert code == 3 and not r["ok"]
 
 
+def test_backtest_version_directives_preserve_results_and_source(tmp_path):
+    core = (FIX / "core.trade").read_bytes()
+    bundles = []
+    for index, directive in enumerate((b"", b"dsl 1\n", b"tradelang 1\n")):
+        raw = directive + core
+        source = tmp_path / f"strategy-{index}.trade"
+        source.write_bytes(raw)
+        out = tmp_path / f"run-{index}"
+        code, response = cli(
+            "backtest",
+            source,
+            "--metadata",
+            FIX / "metadata.json",
+            "--data",
+            FIX / "core.csv",
+            "--out",
+            out,
+        )
+        assert code == 0, response
+        assert (out / "source.trade").read_bytes() == raw
+        manifest = json.loads((out / "manifest.json").read_text())
+        assert manifest["dsl_version"] == 1
+        assert manifest["source_hash"] == digest(raw)
+        bundles.append((out, manifest))
+
+    assert len({manifest["source_hash"] for _, manifest in bundles}) == 3
+    for key in ("spec_hash", "run_fingerprint", "result_digest"):
+        assert len({manifest[key] for _, manifest in bundles}) == 1
+    for name in ("trades.csv", "equity.csv"):
+        assert len({(out / name).read_bytes() for out, _ in bundles}) == 1
+
+
 def test_schemas():
     schema = json.loads(Path("docs/schemas/strategy.schema.json").read_text())
     for path in Path("docs").rglob("*.trade"):
@@ -218,6 +250,7 @@ def test_window_prefix_and_metrics():
         ("let x = y\nlet y = close", "E104_FORWARD_REFERENCE"),
         ("let y = close\nlet y = volume", "E103_DUPLICATE_BINDING"),
         ("let open = close", "E103_DUPLICATE_BINDING"),
+        ("let dsl = close", "E103_DUPLICATE_BINDING"),
         ("let y = close + volume", "E201_UNIT"),
         ("let z = 0 ** 0", "E206_CONSTANT_INVALID"),
         ("let v = MACD(12,26,9).typo", "E204_SELECTOR"),
@@ -386,6 +419,73 @@ def test_unicode_byte_spans_and_postfix_depth():
     assert src[entry.span.start_byte : entry.span.end_byte] == b"true"
     with pytest.raises(Problem, match="chain exceeds"):
         scenario(lets="let a = close" + "[0]" * 70)
+
+
+def test_version_directives_preserve_typed_strategy_and_binding_spans():
+    core = (FIX / "core.trade").read_bytes()
+    with_binding = core.replace(b"entry:", b"let tradelang = true\nentry:").replace(
+        b"when true", b"when tradelang"
+    )
+
+    def remove_span(fields):
+        fields.pop("span", None)
+        return fields
+
+    expected = compile_source(with_binding)
+    expected_spec = json.loads(json.dumps(expected.public()), object_hook=remove_span)
+    expected_spec_hash = identity(expected)["spec_hash"]
+    crlf_body = with_binding.replace(b"\n", b"\r\n")
+    source_hashes = set()
+    for directive in (
+        b"",
+        b"dsl\t# version\r\n1\r\n",
+        b"tradelang\t# version\r\n1\r\n",
+    ):
+        raw = b"\xef\xbb\xbf# \xf0\x9f\x98\x80\r\n" + directive + crlf_body
+        strategy = compile_source(raw)
+        assert strategy.source == raw and not strategy.warnings
+        assert strategy.bindings[0][0] == "tradelang"
+        spec = json.loads(json.dumps(strategy.public()), object_hook=remove_span)
+        assert spec == expected_spec
+        hashes = identity(strategy)
+        assert hashes["spec_hash"] == expected_spec_hash
+        assert hashes["source_hash"] == digest(raw)
+        source_hashes.add(hashes["source_hash"])
+
+        span = strategy.entry.span
+        start = raw.index(b"when tradelang") + len(b"when ")
+        assert (span.start_byte, span.end_byte) == (start, start + len(b"tradelang"))
+        line = raw[:start].count(b"\n") + 1
+        assert (span.start_line, span.end_line) == (line, line)
+        assert (span.start_column, span.end_column) == (8, 17)
+    assert len(source_hashes) == 3
+
+
+@pytest.mark.parametrize("keyword", ["tradelang", "dsl"])
+@pytest.mark.parametrize("version", ["", "2", "01", "1.0"])
+def test_invalid_version_directive(keyword, version):
+    source = (FIX / "core.trade").read_text()
+    with pytest.raises(Problem) as exc:
+        compile_source(f"{keyword} {version}\n{source}")
+    assert exc.value.diagnostic["code"] == "E101_SYNTAX"
+
+
+@pytest.mark.parametrize(
+    "prefix,after_header",
+    [
+        ("tradelang 1\ntradelang 1\n", ""),
+        ("dsl 1\ndsl 1\n", ""),
+        ("tradelang 1\ndsl 1\n", ""),
+        ("dsl 1\ntradelang 1\n", ""),
+        ("", "tradelang 1\n"),
+        ("", "dsl 1\n"),
+    ],
+)
+def test_version_directive_position_and_uniqueness(prefix, after_header):
+    header, body = (FIX / "core.trade").read_text().split("\n", 1)
+    with pytest.raises(Problem) as exc:
+        compile_source(f"{prefix}{header}\n{after_header}{body}")
+    assert exc.value.diagnostic["code"] == "E101_SYNTAX"
 
 
 def test_grammar_copy_and_complete_reference_sources():

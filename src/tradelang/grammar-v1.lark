@@ -1,6 +1,6 @@
 // Normative planning artifact. Whitespace/indentation/newlines are insignificant.
 start: version? header market timeframe let_decl* entry exit risk? backtest
-version: _K_DSL _K_ONE
+version: (_TRADELANG_VERSION_PREFIX | _K_DSL) _K_ONE
 header: _K_STRATEGY STRING
 market: _K_MARKET SYMBOL
 timeframe: _K_TIMEFRAME TIMEFRAME
@@ -63,6 +63,8 @@ suffix: "[" UINT "]" -> offset
      | "(" expr ")" -> grouped
 function: FUNCTION "(" arguments? ")"
 arguments: expr ("," expr)*
+// Keep this terminal outside the _K_ prefix used to collect reserved identifiers.
+_TRADELANG_VERSION_PREFIX.2: /\btradelang\b/
 _K_DSL.2: /\bdsl\b/
 _K_ONE.2: /\b1\b/
 _K_STRATEGY.2: /\bstrategy\b/
