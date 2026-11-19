@@ -1,45 +1,68 @@
 # Write a strategy
 
-A strategy describes decisions for one market, one candle duration, and one quote currency. This example enters when a fast moving average crosses above a slow one and the close is above the slow average. It exits after the reverse crossover or when the position touches a protective level.
+In this lesson, you’ll write the strategy from the [first backtest](quickstart.md), fix a compiler error, and change the position size. Use the same checkout and three candles so you can compare the two runs.
+
+## Build the strategy
+
+1. **Identify the market.** Start with the optional `tradelang 1` directive and give the strategy a name. `market TESTUSDT` and `timeframe 1d` match the example dataset.
+2. **Set entry and exit rules.** In `entry:`, `when true` permits a buy whenever the strategy is flat and its exit rule is false. `buy using 100% of equity` commits the available equity. In `exit:`, `when close >= 112 price` queues a sale of the whole position when the completed close reaches 112 USDT.
+3. **Set the backtest assumptions.** Choose the dates covered by the three candles and start with 1,000 USDT. Set fees and slippage to zero so you can check the result by hand. The last two lines select the next-open execution rule and the 24/7 calendar.
+
+Save the complete file as `strategy.trade` in the checkout root.
 
 ```text
 tradelang 1
-strategy "EMA confirmation"
-market BTCUSDT
-timeframe 1h
-
-let fast = EMA(4)
-let slow = EMA(12)
-let trend_up = fast crosses above slow
-let trend_down = fast crosses below slow
+strategy "Golden next-open ledger"
+market TESTUSDT
+timeframe 1d
 
 entry:
-  when trend_up and close > slow
-  buy using 25% of equity
+  when true
+  buy using 100% of equity
 
 exit:
-  when trend_down
+  when close >= 112 price
   sell all
 
-risk:
-  stop loss 2 * ATR(8)
-  take profit 8%
-  max open positions 1
-
 backtest:
-  from 2022-01-01 to 2022-01-07
+  from 2024-01-01 to 2024-01-03
   capital 1000 USDT
-  fee 10 bps per side
-  slippage 5 bps per side
+  fee 0 bps per side
+  slippage 0 bps per side
   execute at next bar open
   calendar 24x7
 ```
 
-Save it as `strategy.trade` and run `uv run --no-sync tradelang explain strategy.trade` after completing the [installation](quickstart.md#install). Explanation expands defaults such as `EMA(4)` to `EMA(close, 4)` and shows the structural warmup index. The [example generator](example-strategies.md#run-the-full-examples) produces hourly synthetic `BTCUSDT` data covering the requested dates. After generating it, run the backtest.
+## Diagnose a unit error
+
+Change `when close >= 112 price` to `when close >= 112`, save the file, and validate it.
 
 ```sh
-uv run --no-sync tradelang backtest strategy.trade --data runs/example-data/example.csv --metadata runs/example-data/metadata.json --out runs/ema-confirmation
+uv run --no-sync tradelang validate strategy.trade
 ```
+
+Look for `E201_UNIT` on the exit condition. A bare `112` is a ratio, while `close` is a price. Restore `112 price` and run the validation command again. Then explain the strategy with the example candles to check the normalized rules and first executable open.
+
+```sh
+uv run --no-sync tradelang explain strategy.trade --data docs/fixtures/core.csv --metadata docs/fixtures/metadata.json
+```
+
+## Change the size and rerun
+
+Predict which values will change if the strategy commits one quarter of its equity. Change `buy using 100% of equity` to `buy using 25% of equity`, then run the same candles into a fresh folder.
+
+```sh
+uv run --no-sync tradelang backtest strategy.trade --data docs/fixtures/core.csv --metadata docs/fixtures/metadata.json --out runs/quarter-size
+```
+
+| Equity used | Entry price | Exit price | Final equity |
+| ---: | ---: | ---: | ---: |
+| 100% | 110 USDT | 120 USDT | 1,090.91 USDT |
+| 25% | 110 USDT | 120 USDT | 1,022.73 USDT |
+
+Check the new `trades.csv` and `summary.json` in `runs/quarter-size`. Both runs have the same entry and exit rules, so the fill prices match. The second run buys one quarter as many units and keeps 750 USDT in cash at entry.
+
+Next, [try RSI on six candles](example-strategies.md#inspect-six-candles-by-hand) or use the sections below as a reference while writing your own strategy.
 
 ## File structure
 
@@ -87,6 +110,49 @@ The `equity` expression can also appear inside sizing arithmetic. For example, `
 
 ## Check readiness before running
 
-In the example, `EMA(12)` first becomes structurally ready at zero-based row 11. The crossings need one prior sample, so the full strategy has warmup index 12. Every `let` counts toward readiness, including unused declarations. Supply pre-window history if you want indicators to be ready on the first in-window candle.
+### EMA confirmation example
+
+This example enters when a fast moving average crosses above a slow one and the close is above the slow average. It exits after the reverse crossover or when the position touches a protective level.
+
+```text
+tradelang 1
+strategy "EMA confirmation"
+market BTCUSDT
+timeframe 1h
+
+let fast = EMA(4)
+let slow = EMA(12)
+let trend_up = fast crosses above slow
+let trend_down = fast crosses below slow
+
+entry:
+  when trend_up and close > slow
+  buy using 25% of equity
+
+exit:
+  when trend_down
+  sell all
+
+risk:
+  stop loss 2 * ATR(8)
+  take profit 8%
+  max open positions 1
+
+backtest:
+  from 2022-01-01 to 2022-01-07
+  capital 1000 USDT
+  fee 10 bps per side
+  slippage 5 bps per side
+  execute at next bar open
+  calendar 24x7
+```
+
+Save it as `ema-confirmation.trade` and run `uv run --no-sync tradelang explain ema-confirmation.trade` after completing the [installation](quickstart.md#install). Explanation expands defaults such as `EMA(4)` to `EMA(close, 4)` and shows the structural warmup index. The [example generator](example-strategies.md#run-the-full-examples) produces hourly synthetic `BTCUSDT` data covering the requested dates. After generating it, run the backtest.
+
+```sh
+uv run --no-sync tradelang backtest ema-confirmation.trade --data runs/example-data/example.csv --metadata runs/example-data/metadata.json --out runs/ema-confirmation
+```
+
+In the EMA example, `EMA(12)` first becomes structurally ready at zero-based row 11. The crossings need one prior sample, so the full strategy has warmup index 12. Every `let` counts toward readiness, including unused declarations. Supply pre-window history if you want indicators to be ready on the first in-window candle.
 
 Runtime arithmetic can still make a structurally ready value unavailable. Unavailable inputs propagate through comparisons and Boolean operators, including `not`. Only a valid true condition can queue an order. Use [`explain` with the dataset](cli.md#explain) to check resolved timestamps, then inspect run [diagnostics and events](results.md#artifact-files) to investigate rejected or missing orders.

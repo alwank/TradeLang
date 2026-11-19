@@ -15,7 +15,8 @@ markdown_extensions:
 
 nav:
   - Home: index.md
-  - Getting started:
+  - Learn:
+      - Backtesting basics: backtesting-basics.md
       - First backtest: quickstart.md
       - Write a strategy: writing-strategies.md
       - Example strategies: example-strategies.md
