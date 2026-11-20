@@ -1,15 +1,44 @@
 site_name: TradeLang
 site_description: Write typed trading strategies and backtest them on historical candles.
+repo_name: alwank/TradeLang
+repo_url: https://github.com/alwank/TradeLang
 
 theme:
-  name: readthedocs
-  highlightjs: false
+  name: material
+  font: false
+  icon:
+    logo: material/chart-line
+    repo: fontawesome/brands/github
+  palette:
+    # The first palette is used until the reader chooses a mode.
+    - scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to dark mode
+    - scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-night
+        name: Switch to light mode
+  features:
+    - content.code.copy
+    - navigation.footer
+    - navigation.top
+    - toc.follow
+
+extra_css:
+  - stylesheets/tradelang.css
 
 plugins:
   - search
 
 markdown_extensions:
   - admonition
+  - pymdownx.highlight
+  - pymdownx.superfences
   - toc:
       permalink: true
 
