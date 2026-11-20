@@ -1,0 +1,85 @@
+[data-md-color-scheme="default"] {
+  --md-primary-fg-color: #14544f;
+  --md-accent-fg-color: #087269;
+  --md-typeset-a-color: #0b665e;
+  --md-code-bg-color: #eff5f4;
+  --tradelang-heading-color: #172d39;
+  --tradelang-header-surface: #fff;
+  --tradelang-muted-surface: #f3f7f6;
+}
+
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color: #96ded2;
+  --md-primary-bg-color: #19232c;
+  --md-accent-fg-color: #96ded2;
+  --md-accent-bg-color: #19232c;
+  --md-typeset-a-color: #96ded2;
+  --tradelang-heading-color: #eaf2f4;
+  --tradelang-header-surface: #19232c;
+  --tradelang-muted-surface: #26313b;
+}
+
+.md-header {
+  --md-primary-fg-color: var(--tradelang-header-surface);
+  --md-primary-bg-color: var(--tradelang-heading-color);
+  --md-primary-bg-color--light: var(--md-default-fg-color--light);
+  border-bottom: 1px solid var(--md-default-fg-color--lightest);
+  box-shadow: none;
+}
+
+.md-header .md-logo {
+  color: var(--md-typeset-a-color);
+}
+
+@media screen and (min-width: 60em) {
+  .md-search__form {
+    background-color: var(--tradelang-muted-surface);
+  }
+}
+
+.md-search__input::placeholder {
+  color: var(--md-default-fg-color--light);
+  opacity: 1;
+}
+
+.md-typeset h1,
+.md-typeset h2 {
+  color: var(--tradelang-heading-color);
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+.md-nav__item .md-nav__link--active {
+  font-weight: 600;
+}
+
+.md-sidebar--primary .md-nav__link--active {
+  border-inline-start: 3px solid var(--md-typeset-a-color);
+  padding-inline-start: 0.4rem;
+}
+
+.md-typeset .highlight pre {
+  background-color: var(--md-code-bg-color);
+}
+
+.md-code__nav {
+  --md-default-fg-color--lightest: var(--md-default-fg-color--light);
+}
+
+.md-typeset .md-code__nav + code {
+  margin-inline-end: 2.25em;
+}
+
+.md-typeset table:not([class]) th {
+  background-color: var(--tradelang-muted-surface);
+}
+
+.md-footer {
+  --md-footer-bg-color: var(--tradelang-header-surface);
+  --md-footer-bg-color--dark: var(--tradelang-muted-surface);
+  --md-footer-fg-color: var(--tradelang-heading-color);
+  --md-footer-fg-color--light: var(--md-default-fg-color--light);
+  --md-footer-fg-color--lighter: var(--md-default-fg-color--light);
+  border-top: 1px solid var(--md-default-fg-color--lightest);
+}
