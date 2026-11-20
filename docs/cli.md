@@ -59,8 +59,8 @@ The object above illustrates the shape. A failure carries diagnostic entries. Ea
 | Exit status | Meaning |
 | --- | --- |
 | `0` | Success. Warnings may be present. |
-| `2` | Invalid source, data, or configuration. |
-| `3` | I/O, metadata JSON parsing, or command usage error, such as an occupied output directory. |
+| `2` | Invalid strategy source, data, or configuration. |
+| `3` | Command usage error (`E_USAGE`) or I/O failure (`E_IO`). I/O failures include malformed metadata JSON and an occupied output directory. |
 | `4` | Numerical or resource failure during execution. |
 | `130` | Interrupted. |
 

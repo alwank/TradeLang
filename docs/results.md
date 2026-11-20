@@ -87,6 +87,8 @@ The run fingerprint hashes the canonical object with `dsl_version`, `semantics_v
 | Metadata, summary, and inspection envelopes 1 | Independently versioned JSON payloads |
 | Package version and code revision | Executing source and reproducibility evidence |
 
-A code-only migration can preserve the source, normalized spec, dataset, configuration, and result digest while changing the environment hash and run fingerprint. Two runs in the same recorded environment have distinct run IDs.
+A code-only migration can preserve the source, normalized spec, dataset, configuration, and result digest while changing the environment hash and run fingerprint. This happened in the v1 indicator registry migration. Two runs in the same recorded environment have distinct run IDs.
+
+Open `manifest.json` in each bundle and compare `result_digest` for the logical results and `run_fingerprint` for the run configuration and recorded environment. To verify a specific file, compute its SHA-256 and compare it with the `sha256` of the matching `name` in that bundle's `artifact_files` list.
 
 To reproduce a bundle, use its source, dataset copy, and metadata with the recorded package and dependencies. Write to a fresh directory, then compare the fingerprints and result digests. Generated run bundles contain the original submitted data and strategy, so review both before sharing one.

@@ -11,6 +11,8 @@ uv run --locked --extra api ruff check src tests scripts
 uv run --locked --extra api mypy src
 ```
 
+The [GitHub Actions workflow](.github/workflows/test.yml) runs the standard suite against both the source checkout and the installed wheel. Its `language-deep` job runs deeper conformance, property, and fuzz checks on a weekly schedule and when the workflow is triggered manually.
+
 Use the [three-candle quickstart](docs/quickstart.md) to inspect signal order, fills, and final equity by hand. Put local experiments and run bundles under `runs/`.
 
 ## Change the language or simulator

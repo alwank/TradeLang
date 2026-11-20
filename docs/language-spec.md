@@ -141,7 +141,7 @@ CLI and HTTP JSON responses include diagnostics with `code`, `severity`, `messag
 | V1-ERR03 | Expression evaluation | A runtime arithmetic fault makes the affected value unavailable. Run summaries record the evaluator's reason totals. |
 | V1-ERR04 | Order proposal | Invalid market sizing, protection, or fill-time budget can consume and reject an entry before mutating the ledger. |
 | V1-ERR05 | Execution and publication | Invalid exit accounting and other fatal numeric errors raise `E_NUMERIC_EXECUTION`. A failed run has no successful bundle. |
-| V1-ERR06 | CLI and HTTP | CLI exits 2 for domain/input errors, 3 for `E_IO`, 4 for fatal numeric execution, and 130 for `E_INTERRUPT`. `E_USAGE` exits 2. The inspection API can return HTTP 200 with `valid=false` and source diagnostics. |
+| V1-ERR06 | CLI and HTTP | CLI exits 2 for domain/input errors, 3 for `E_USAGE` or `E_IO`, 4 for fatal numeric execution, and 130 for `E_INTERRUPT`. The inspection API can return HTTP 200 with `valid=false` and source diagnostics. |
 
 Use [`explain`](cli.md#explain) to see normalized expressions, expanded indicator defaults, and structural warmup. Explanation writes percentage literals as their normalized ratios and periods as integers. Include a dataset to resolve the execution window.
 
