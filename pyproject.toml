@@ -24,7 +24,16 @@ tradelang-api = "tradelang.api:main"
 tradelang-local = "tradelang.supervisor:main"
 
 [dependency-groups]
-dev = ["pytest", "jsonschema", "ruff", "mypy", "interegular", "httpx>=0.27,<1", "openapi-spec-validator>=0.7,<1"]
+dev = [
+    "pytest",
+    "jsonschema",
+    "ruff",
+    "mypy",
+    "interegular",
+    "httpx>=0.27,<1",
+    "openapi-spec-validator>=0.7,<1",
+    "hypothesis>=6.170.16",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
