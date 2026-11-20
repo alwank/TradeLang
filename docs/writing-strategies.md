@@ -38,13 +38,13 @@ backtest:
 Change `when close >= 112 price` to `when close >= 112`, save the file, and validate it.
 
 ```sh
-uv run --no-sync tradelang validate strategy.trade
+tradelang validate strategy.trade
 ```
 
 Look for `E201_UNIT` on the exit condition. A bare `112` is a ratio, while `close` is a price. Restore `112 price` and run the validation command again. Then explain the strategy with the example candles to check the normalized rules and first executable open.
 
 ```sh
-uv run --no-sync tradelang explain strategy.trade --data docs/fixtures/core.csv --metadata docs/fixtures/metadata.json
+tradelang explain strategy.trade --data docs/fixtures/core.csv --metadata docs/fixtures/metadata.json
 ```
 
 ## Change the size and rerun
@@ -52,7 +52,7 @@ uv run --no-sync tradelang explain strategy.trade --data docs/fixtures/core.csv 
 Predict which values will change if the strategy commits one quarter of its equity. Change `buy using 100% of equity` to `buy using 25% of equity`, then run the same candles into a fresh folder.
 
 ```sh
-uv run --no-sync tradelang backtest strategy.trade --data docs/fixtures/core.csv --metadata docs/fixtures/metadata.json --out runs/quarter-size
+tradelang backtest strategy.trade --data docs/fixtures/core.csv --metadata docs/fixtures/metadata.json --out runs/quarter-size
 ```
 
 | Equity used | Entry price | Exit price | Final equity |
@@ -147,10 +147,10 @@ backtest:
   calendar 24x7
 ```
 
-Save it as `ema-confirmation.trade` and run `uv run --no-sync tradelang explain ema-confirmation.trade` after completing the [installation](quickstart.md#install). Explanation expands defaults such as `EMA(4)` to `EMA(close, 4)` and shows the structural warmup index. The [example generator](example-strategies.md#run-the-full-examples) produces hourly synthetic `BTCUSDT` data covering the requested dates. After generating it, run the backtest.
+Save it as `ema-confirmation.trade` and run `tradelang explain ema-confirmation.trade` after completing the [installation](quickstart.md#install). Explanation expands defaults such as `EMA(4)` to `EMA(close, 4)` and shows the structural warmup index. The [example generator](example-strategies.md#run-the-full-examples) produces hourly synthetic `BTCUSDT` data covering the requested dates. After generating it, run the backtest.
 
 ```sh
-uv run --no-sync tradelang backtest ema-confirmation.trade --data runs/example-data/example.csv --metadata runs/example-data/metadata.json --out runs/ema-confirmation
+tradelang backtest ema-confirmation.trade --data runs/example-data/example.csv --metadata runs/example-data/metadata.json --out runs/ema-confirmation
 ```
 
 In the EMA example, `EMA(12)` first becomes structurally ready at zero-based row 11. The crossings need one prior sample, so the full strategy has warmup index 12. Every `let` counts toward readiness, including unused declarations. Supply pre-window history if you want indicators to be ready on the first in-window candle.

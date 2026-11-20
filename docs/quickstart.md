@@ -4,20 +4,20 @@ Install TradeLang, run an included strategy on three synthetic candles, and trac
 
 ## Install
 
-Install [Git](https://git-scm.com/install/) and [uv](https://docs.astral.sh/uv/getting-started/installation/), then open a terminal. TradeLang uses Python 3.12 and the repository’s dependency lock. `uv` can install Python when needed.
+Install [Git](https://git-scm.com/install/) and [uv](https://docs.astral.sh/uv/getting-started/installation/), then open a terminal. TradeLang uses Python 3.12, which `uv` can install when needed.
 
-Clone the repository and enter its root directory. If you already have a checkout, open a terminal there and start with `uv sync`.
+Clone the repository and enter its root directory. If you already have a checkout, run the install command from there.
 
 ```sh
 git clone https://github.com/alwank/TradeLang.git
 cd TradeLang
-uv sync --locked --no-dev --no-editable
-uv run --no-sync tradelang --version
+uv tool install --python 3.12 .
+tradelang --version
 ```
 
-`tradelang --version` prints the installed version. `uv run --no-sync` uses the environment created by `uv sync`. The commands also work in PowerShell.
+`uv tool install` makes `tradelang` available in new terminals and from any directory. If your shell cannot find `tradelang`, run `uv tool update-shell` and reopen the terminal. The commands also work in PowerShell.
 
-If the terminal cannot find `uv` after installation, reopen it and run `uv --version`. If a command cannot find `pyproject.toml` or a path under `docs/fixtures/`, return to the repository root before retrying.
+After pulling updates, repeat your install command with `--reinstall` to refresh the CLI. Run the examples below from the repository root so their relative paths resolve.
 
 ## Validate and explain
 
@@ -26,8 +26,8 @@ The [strategy file](fixtures/core.trade) sets the rules and starts with 1,000 US
 The strategy buys with all available equity when flat and the exit condition is false. It signals an exit when the completed close is at least `112 price`. The fee and slippage are both zero.
 
 ```sh
-uv run --no-sync tradelang validate docs/fixtures/core.trade
-uv run --no-sync tradelang explain docs/fixtures/core.trade --data docs/fixtures/core.csv --metadata docs/fixtures/metadata.json
+tradelang validate docs/fixtures/core.trade
+tradelang explain docs/fixtures/core.trade --data docs/fixtures/core.csv --metadata docs/fixtures/metadata.json
 ```
 
 `validate` checks the strategy and reports `Warmup index 0`, which means it needs no earlier candles before evaluating its rules. `explain` shows how TradeLang reads the rules and uses the data to report the first eligible signal close and execution open. For this fixture, both occur at `2024-01-02T00:00:00Z`. The simulator processes the January 1 close before the January 2 open.
@@ -35,7 +35,7 @@ uv run --no-sync tradelang explain docs/fixtures/core.trade --data docs/fixtures
 ## Simulate and check the fills
 
 ```sh
-uv run --no-sync tradelang backtest docs/fixtures/core.trade --data docs/fixtures/core.csv --metadata docs/fixtures/metadata.json --out runs/first
+tradelang backtest docs/fixtures/core.trade --data docs/fixtures/core.csv --metadata docs/fixtures/metadata.json --out runs/first
 ```
 
 | UTC candle (by opening date) | Open | Close | Strategy action |

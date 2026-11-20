@@ -1,6 +1,6 @@
 # Command-line reference
 
-The examples use `tradelang` as the executable. After the [uv installation](quickstart.md#install), prefix it with `uv run --no-sync` to use the checked-out environment. Run `tradelang --version` for the installed package version or `tradelang COMMAND --help` for options.
+After [installing TradeLang](quickstart.md#install), run `tradelang --version` for the installed package version or `tradelang COMMAND --help` for options.
 
 ## Validate
 

@@ -11,8 +11,8 @@ Install [Git](https://git-scm.com/install/) and [uv](https://docs.astral.sh/uv/g
 ```sh
 git clone https://github.com/alwank/TradeLang.git
 cd TradeLang
-uv sync --locked --no-dev --no-editable
-uv run --no-sync tradelang backtest docs/fixtures/core.trade --data docs/fixtures/core.csv --metadata docs/fixtures/metadata.json --out runs/first
+uv tool install --python 3.12 .
+tradelang backtest docs/fixtures/core.trade --data docs/fixtures/core.csv --metadata docs/fixtures/metadata.json --out runs/first
 ```
 
 The backtest buys at **110 USDT**, sells at **120 USDT**, and ends with **1,090.91 USDT** from a starting balance of 1,000 USDT. Check `runs/first/trades.csv` for both fills and `runs/first/summary.json` for final equity. Use a new or empty output directory for each run.
