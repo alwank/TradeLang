@@ -3,6 +3,8 @@
 import numpy as np
 
 from .compiler import BINARY, COMPARE
+from .functions.contracts import KernelContext
+from .functions.registry import FUNCTIONS
 
 
 def lag(a, n):
@@ -193,9 +195,17 @@ class Evaluator:
                     tuple(id(x) if isinstance(x, np.ndarray) else x for x in args),
                 )
                 if key not in self.call_cache:
-                    self.call_cache[key] = indicator(
-                        e.value, args, self.columns, self.invalid
-                    )
+                    if e.value in {"SMA", "STDDEV", "HIGHEST", "LOWEST", "BBANDS"}:
+                        function = FUNCTIONS[e.value]
+                        context = KernelContext(
+                            {name: self.columns[name] for name in function.required_columns},
+                            self.invalid,
+                        )
+                        self.call_cache[key] = function.kernel(args, context)
+                    else:
+                        self.call_cache[key] = indicator(
+                            e.value, args, self.columns, self.invalid
+                        )
                 return self.call_cache[key]
             case "unary":
                 return args[0] if e.value == "+" else -args[0]
