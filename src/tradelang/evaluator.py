@@ -4,115 +4,8 @@ import numpy as np
 
 from .compiler import BINARY, COMPARE
 from .functions.contracts import KernelContext
+from .functions.kernels import lag
 from .functions.registry import FUNCTIONS
-
-
-def lag(a, n):
-    if n == 0:
-        return a
-    out = np.full(len(a), np.nan)
-    if n < len(a):
-        out[n:] = a[:-n]
-    return out
-
-
-def rolling(x, n, fn):
-    out = np.full(len(x), np.nan)
-    if n <= len(x):
-        windows = np.lib.stride_tricks.sliding_window_view(x, n)
-        # Bound work buffers for two-pass standard deviation.
-        step = max(1, 1000000 // n)
-        for i in range(0, len(windows), step):
-            block = windows[i : i + step]
-            if fn in (np.mean, np.std):
-                # accumulate follows the time axis in order for each reference window.
-                mean = np.add.accumulate(block, axis=1)[:, -1] / n
-                result = (
-                    mean
-                    if fn is np.mean
-                    else np.sqrt(
-                        np.add.accumulate((block - mean[:, None]) ** 2, axis=1)[:, -1]
-                        / n
-                    )
-                )
-            else:
-                result = fn(block, axis=1)
-            out[n - 1 + i : n - 1 + i + len(block)] = result
-    return out
-
-
-def smooth(x, n, wilder=False):
-    out = np.full(len(x), np.nan)
-    seen = 0
-    total = 0.0
-    prev = 0.0
-    alpha = 2 / (n + 1)
-    for i, v in enumerate(x):
-        if not np.isfinite(v):
-            seen = 0
-            total = 0.0
-            continue
-        if seen < n:
-            total += v
-            seen += 1
-            if seen < n:
-                continue
-            prev = total / n
-        elif wilder:
-            prev = (prev * (n - 1) + v) / n
-        else:
-            prev = alpha * v + (1 - alpha) * prev
-        out[i] = prev
-    return out
-
-
-def indicator(name, args, columns, invalid_counts):
-    if name == "ATR":
-        h, low, c = (columns[k] for k in ("high", "low", "close"))
-        tr = h - low
-        tr[1:] = np.maximum(
-            tr[1:], np.maximum(abs(h[1:] - c[:-1]), abs(low[1:] - c[:-1]))
-        )
-        return smooth(tr, int(args[0]), True)
-    x = args[0]
-    n = int(args[1])
-    if name == "EMA":
-        return smooth(x, n)
-    if name == "RSI":
-        delta = x - lag(x, 1)
-        g = smooth(np.maximum(0, delta), n, True)
-        loss = smooth(np.maximum(0, -delta), n, True)
-        return np.where(
-            loss == 0, np.where(g == 0, 50.0, 100.0), 100 - 100 / (1 + g / loss)
-        )
-    if name == "MACD":
-        line = smooth(x, n) - smooth(x, int(args[2]))
-        signal = smooth(line, int(args[3]))
-        return dict(line=line, signal=signal, histogram=line - signal)
-    if name == "ROC":
-        prior = lag(x, n)
-        missing = np.cumsum(~np.isfinite(x))
-        invalid = missing - np.pad(missing, (n + 1, 0))[: len(x)]
-        complete = (np.arange(len(x)) >= n) & (invalid == 0)
-        zeros = complete & (prior == 0)
-        usable = complete & ~zeros
-        values = np.divide(x, prior, out=np.full(len(x), np.nan), where=usable) - 1
-        overflow = usable & ~np.isfinite(values)
-        for reason, mask in (("zero_denominator", zeros), ("overflow", overflow)):
-            count = int(np.count_nonzero(mask))
-            if count:
-                invalid_counts[reason] = invalid_counts.get(reason, 0) + count
-        values[overflow] = np.nan
-        return values
-    if name == "BBANDS":
-        mid = rolling(x, n, np.mean)
-        width = rolling(x, n, np.std) * args[2]
-        return dict(middle=mid, upper=mid + width, lower=mid - width)
-    return rolling(
-        x,
-        n,
-        {"SMA": np.mean, "STDDEV": np.std, "HIGHEST": np.max, "LOWEST": np.min}[name],
-    )
 
 
 class Evaluator:
@@ -195,17 +88,12 @@ class Evaluator:
                     tuple(id(x) if isinstance(x, np.ndarray) else x for x in args),
                 )
                 if key not in self.call_cache:
-                    if e.value not in {"MACD", "ROC"}:
-                        function = FUNCTIONS[e.value]
-                        context = KernelContext(
-                            {name: self.columns[name] for name in function.required_columns},
-                            self.invalid,
-                        )
-                        self.call_cache[key] = function.kernel(args, context)
-                    else:
-                        self.call_cache[key] = indicator(
-                            e.value, args, self.columns, self.invalid
-                        )
+                    function = FUNCTIONS[e.value]
+                    context = KernelContext(
+                        {name: self.columns[name] for name in function.required_columns},
+                        self.invalid,
+                    )
+                    self.call_cache[key] = function.kernel(args, context)
                 return self.call_cache[key]
             case "unary":
                 return args[0] if e.value == "+" else -args[0]
