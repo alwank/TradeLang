@@ -31,7 +31,7 @@ SMA and EMA default to `close` when called with one argument. RSI and MACD alway
 - **ROC** is `x[i] / x[i - n] - 1`. It requires all `n + 1` inputs in the interval. A zero denominator in a complete valid window makes the result unavailable.
 - **STDDEV** computes population standard deviation using the sum of squared deviations from the mean divided by `n`, then taking the square root. A valid one-sample window has standard deviation zero.
 
-Unavailable source values break a rolling window. Recursive smoothing resets after an unavailable input and reseeds once it has sufficient consecutive inputs again. The strategy's [structural warmup](language-spec.md#unavailable-and-bounded-computation) is based on dependencies and stays fixed if later arithmetic makes a value unavailable.
+**V1-MISS02.** Unavailable source values break a rolling window. Recursive smoothing resets after an unavailable input and reseeds once it has sufficient consecutive inputs again. Each record field has its own availability mask. The strategy's [structural warmup](language-spec.md#unavailable-and-bounded-computation) is based on dependencies and stays fixed if later arithmetic makes a value unavailable.
 
 ## Common usage
 

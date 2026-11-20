@@ -4,15 +4,17 @@ TradeLang models a single long spot position and one cash balance in the quote c
 
 ## Clock, window and readiness
 
-A candle with opening time `t` and duration `Δ` covers `[t, t + Δ)`. The close decision observes its completed OHLCV at `t + Δ`. For contiguous candles, the decision and next open share a timestamp. The simulator processes them in that order and models zero decision latency.
+**V1-TIME02.** A candle with opening time `t` and duration `Δ` covers `[t, t + Δ)`. The close decision observes its completed OHLCV at `t + Δ`. For contiguous candles, the decision and next open share a timestamp. The simulator processes them in that order and models zero decision latency.
 
 `from A to B` includes both UTC dates. Only complete candles inside the interval from `A 00:00Z` to the midnight after `B` can execute. The [dataset](candle-data.md#cover-the-dates-and-supply-warmup) must cover the first and last complete grid candles.
 
 The structural warmup index is the latest first-ready row across all declarations, conditions, sizing, and risk expressions. It includes history required by indicator windows, lookbacks, and crosses. Earlier rows can warm expressions before the execution window. Let `j` be the first in-window observed row at or beyond structural warmup. The first eligible decision is at its close and the earliest signal fill is at the next in-window observed open. Without that next row, preparation fails with `E_NO_EXECUTION_WINDOW`. Runtime unavailability suppresses affected decisions and keeps the structural anchor fixed.
 
-With `gap_policy=allow`, a pending order fills at the next observed in-window open, and lookbacks count observed rows. Protection can observe that open and the subsequent recorded high and low. The simulator creates zero synthetic candles.
+With `gap_policy=allow`, a pending order fills at the next observed in-window open, and lookbacks count observed rows. Protection can observe that open and the subsequent recorded high and low. The simulator creates zero synthetic candles. Evaluating a fixed window uses rows only through its last candle. Earlier rows can supply history.
 
 ## Event order within a candle
+
+**V1-TIME01.** Each candle runs through these phases in order.
 
 | Phase | Rule |
 | ---: | --- |

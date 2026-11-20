@@ -1,0 +1,5494 @@
+{
+  "provenance": {
+    "case_id": "I-CATALOG-01",
+    "baseline_sha": "f7f9b47f310ce825e900f3753c59e62a53625927",
+    "system": "Darwin",
+    "machine": "arm64",
+    "python": "3.12.16",
+    "numpy": "2.5.5",
+    "command": "uv run --locked --extra api python tests/test_registry_parity.py",
+    "oracle_kind": "baseline snapshot",
+    "as_of_utc": "2024-02-01T00:00:00+00:00",
+    "derivation": "Compare the pre-registry implementation with the same source and candles. Independent mathematics and ledger assertions live in the indicator and execution suites.",
+    "exclusions": [
+      "environment_hash",
+      "run_fingerprint",
+      "run_id",
+      "wall-clock timestamps"
+    ]
+  },
+  "expected": {
+    "validate": {
+      "schema_version": 1,
+      "valid": true,
+      "source_hash": "ffef8bb2260b1a3f5104c3901a99382083225a1a02cce9673a0d530436205ebb",
+      "spec_hash": "801304a787058ccb6f38c1df94b318adf658550d820af787cc08436779d2aebe",
+      "warmup_index": 3,
+      "resolved_window": {
+        "first_open": "2024-01-01T00:00:00Z",
+        "last_close_at": "2024-01-09T00:00:00Z",
+        "readiness_index": 3,
+        "first_signal_at": "2024-01-05T00:00:00Z",
+        "first_execution_at": "2024-01-05T00:00:00Z"
+      },
+      "diagnostics": [
+        {
+          "code": "W_RSI_SCALE",
+          "message": "RSI uses a 0 to 100 scale. A percentage threshold is a fraction.",
+          "severity": "warning",
+          "span": {
+            "start_line": 26,
+            "start_column": 17,
+            "end_line": 26,
+            "end_column": 29,
+            "start_byte": 737,
+            "end_byte": 749
+          },
+          "suggestion": null,
+          "data_row": null,
+          "node_id": null,
+          "details": {}
+        },
+        {
+          "code": "W_UNUSED_LET",
+          "message": "Unused let explicit counts toward warmup",
+          "severity": "warning",
+          "span": {
+            "start_line": 7,
+            "start_column": 1,
+            "end_line": 7,
+            "end_column": 28,
+            "start_byte": 130,
+            "end_byte": 157
+          },
+          "suggestion": null,
+          "data_row": null,
+          "node_id": null,
+          "details": {}
+        },
+        {
+          "code": "W_UNUSED_LET",
+          "message": "Unused let nested counts toward warmup",
+          "severity": "warning",
+          "span": {
+            "start_line": 8,
+            "start_column": 1,
+            "end_line": 8,
+            "end_column": 36,
+            "start_byte": 158,
+            "end_byte": 193
+          },
+          "suggestion": null,
+          "data_row": null,
+          "node_id": null,
+          "details": {}
+        },
+        {
+          "code": "W_UNUSED_LET",
+          "message": "Unused let exp counts toward warmup",
+          "severity": "warning",
+          "span": {
+            "start_line": 9,
+            "start_column": 1,
+            "end_line": 9,
+            "end_column": 17,
+            "start_byte": 194,
+            "end_byte": 210
+          },
+          "suggestion": null,
+          "data_row": null,
+          "node_id": null,
+          "details": {}
+        },
+        {
+          "code": "W_UNUSED_LET",
+          "message": "Unused let recovered counts toward warmup",
+          "severity": "warning",
+          "span": {
+            "start_line": 10,
+            "start_column": 1,
+            "end_line": 10,
+            "end_column": 30,
+            "start_byte": 211,
+            "end_byte": 240
+          },
+          "suggestion": null,
+          "data_row": null,
+          "node_id": null,
+          "details": {}
+        },
+        {
+          "code": "W_UNUSED_LET",
+          "message": "Unused let points counts toward warmup",
+          "severity": "warning",
+          "span": {
+            "start_line": 11,
+            "start_column": 1,
+            "end_line": 11,
+            "end_column": 20,
+            "start_byte": 241,
+            "end_byte": 260
+          },
+          "suggestion": null,
+          "data_row": null,
+          "node_id": null,
+          "details": {}
+        },
+        {
+          "code": "W_UNUSED_LET",
+          "message": "Unused let linedelay counts toward warmup",
+          "severity": "warning",
+          "span": {
+            "start_line": 13,
+            "start_column": 1,
+            "end_line": 13,
+            "end_column": 36,
+            "start_byte": 294,
+            "end_byte": 329
+          },
+          "suggestion": null,
+          "data_row": null,
+          "node_id": null,
+          "details": {}
+        },
+        {
+          "code": "W_UNUSED_LET",
+          "message": "Unused let signalvalue counts toward warmup",
+          "severity": "warning",
+          "span": {
+            "start_line": 14,
+            "start_column": 1,
+            "end_line": 14,
+            "end_column": 37,
+            "start_byte": 330,
+            "end_byte": 366
+          },
+          "suggestion": null,
+          "data_row": null,
+          "node_id": null,
+          "details": {}
+        },
+        {
+          "code": "W_UNUSED_LET",
+          "message": "Unused let hist counts toward warmup",
+          "severity": "warning",
+          "span": {
+            "start_line": 15,
+            "start_column": 1,
+            "end_line": 15,
+            "end_column": 33,
+            "start_byte": 367,
+            "end_byte": 399
+          },
+          "suggestion": null,
+          "data_row": null,
+          "node_id": null,
+          "details": {}
+        },
+        {
+          "code": "W_UNUSED_LET",
+          "message": "Unused let upperband counts toward warmup",
+          "severity": "warning",
+          "span": {
+            "start_line": 17,
+            "start_column": 1,
+            "end_line": 17,
+            "end_column": 41,
+            "start_byte": 422,
+            "end_byte": 462
+          },
+          "suggestion": null,
+          "data_row": null,
+          "node_id": null,
+          "details": {}
+        },
+        {
+          "code": "W_UNUSED_LET",
+          "message": "Unused let middleband counts toward warmup",
+          "severity": "warning",
+          "span": {
+            "start_line": 18,
+            "start_column": 1,
+            "end_line": 18,
+            "end_column": 43,
+            "start_byte": 463,
+            "end_byte": 505
+          },
+          "suggestion": null,
+          "data_row": null,
+          "node_id": null,
+          "details": {}
+        },
+        {
+          "code": "W_UNUSED_LET",
+          "message": "Unused let lowerband counts toward warmup",
+          "severity": "warning",
+          "span": {
+            "start_line": 19,
+            "start_column": 1,
+            "end_line": 19,
+            "end_column": 41,
+            "start_byte": 506,
+            "end_byte": 546
+          },
+          "suggestion": null,
+          "data_row": null,
+          "node_id": null,
+          "details": {}
+        },
+        {
+          "code": "W_UNUSED_LET",
+          "message": "Unused let highest counts toward warmup",
+          "severity": "warning",
+          "span": {
+            "start_line": 20,
+            "start_column": 1,
+            "end_line": 20,
+            "end_column": 32,
+            "start_byte": 547,
+            "end_byte": 578
+          },
+          "suggestion": null,
+          "data_row": null,
+          "node_id": null,
+          "details": {}
+        },
+        {
+          "code": "W_UNUSED_LET",
+          "message": "Unused let lowest counts toward warmup",
+          "severity": "warning",
+          "span": {
+            "start_line": 21,
+            "start_column": 1,
+            "end_line": 21,
+            "end_column": 30,
+            "start_byte": 579,
+            "end_byte": 608
+          },
+          "suggestion": null,
+          "data_row": null,
+          "node_id": null,
+          "details": {}
+        },
+        {
+          "code": "W_UNUSED_LET",
+          "message": "Unused let again counts toward warmup",
+          "severity": "warning",
+          "span": {
+            "start_line": 23,
+            "start_column": 1,
+            "end_line": 23,
+            "end_column": 26,
+            "start_byte": 637,
+            "end_byte": 662
+          },
+          "suggestion": null,
+          "data_row": null,
+          "node_id": null,
+          "details": {}
+        },
+        {
+          "code": "W_UNUSED_LET",
+          "message": "Unused let hole counts toward warmup",
+          "severity": "warning",
+          "span": {
+            "start_line": 24,
+            "start_column": 1,
+            "end_line": 24,
+            "end_column": 25,
+            "start_byte": 663,
+            "end_byte": 687
+          },
+          "suggestion": null,
+          "data_row": null,
+          "node_id": null,
+          "details": {}
+        },
+        {
+          "code": "W_UNUSED_LET",
+          "message": "Unused let deviation counts toward warmup",
+          "severity": "warning",
+          "span": {
+            "start_line": 25,
+            "start_column": 1,
+            "end_line": 25,
+            "end_column": 33,
+            "start_byte": 688,
+            "end_byte": 720
+          },
+          "suggestion": null,
+          "data_row": null,
+          "node_id": null,
+          "details": {}
+        }
+      ],
+      "spec": {
+        "schema_version": 1,
+        "dsl_version": 1,
+        "name": "Indicator compatibility",
+        "symbol": "TESTUSDT",
+        "timeframe_seconds": 86400,
+        "bindings": [
+          {
+            "name": "source",
+            "expression": {
+              "kind": "Binary",
+              "node_id": "bindings.0.expression",
+              "span": {
+                "start_line": 5,
+                "start_column": 14,
+                "end_line": 5,
+                "end_column": 34,
+                "start_byte": 89,
+                "end_byte": 109
+              },
+              "inferred_type": {
+                "kind": "numeric",
+                "shape": "series",
+                "dimension": {
+                  "kind": "powers",
+                  "quote": 0,
+                  "base": 0
+                }
+              },
+              "operator": "/",
+              "left": {
+                "kind": "Reference",
+                "node_id": "bindings.0.expression.left",
+                "span": {
+                  "start_line": 5,
+                  "start_column": 14,
+                  "end_line": 5,
+                  "end_column": 19,
+                  "start_byte": 89,
+                  "end_byte": 94
+                },
+                "inferred_type": {
+                  "kind": "numeric",
+                  "shape": "series",
+                  "dimension": {
+                    "kind": "powers",
+                    "quote": 1,
+                    "base": -1
+                  }
+                },
+                "name": "close",
+                "binding_kind": "builtin"
+              },
+              "right": {
+                "kind": "Binary",
+                "node_id": "bindings.0.expression.right",
+                "span": {
+                  "start_line": 5,
+                  "start_column": 23,
+                  "end_line": 5,
+                  "end_column": 33,
+                  "start_byte": 98,
+                  "end_byte": 108
+                },
+                "inferred_type": {
+                  "kind": "numeric",
+                  "shape": "series",
+                  "dimension": {
+                    "kind": "powers",
+                    "quote": 1,
+                    "base": -1
+                  }
+                },
+                "operator": "-",
+                "left": {
+                  "kind": "Reference",
+                  "node_id": "bindings.0.expression.right.left",
+                  "span": {
+                    "start_line": 5,
+                    "start_column": 23,
+                    "end_line": 5,
+                    "end_column": 27,
+                    "start_byte": 98,
+                    "end_byte": 102
+                  },
+                  "inferred_type": {
+                    "kind": "numeric",
+                    "shape": "series",
+                    "dimension": {
+                      "kind": "powers",
+                      "quote": 1,
+                      "base": -1
+                    }
+                  },
+                  "name": "high",
+                  "binding_kind": "builtin"
+                },
+                "right": {
+                  "kind": "Reference",
+                  "node_id": "bindings.0.expression.right.right",
+                  "span": {
+                    "start_line": 5,
+                    "start_column": 30,
+                    "end_line": 5,
+                    "end_column": 33,
+                    "start_byte": 105,
+                    "end_byte": 108
+                  },
+                  "inferred_type": {
+                    "kind": "numeric",
+                    "shape": "series",
+                    "dimension": {
+                      "kind": "powers",
+                      "quote": 1,
+                      "base": -1
+                    }
+                  },
+                  "name": "low",
+                  "binding_kind": "builtin"
+                }
+              }
+            },
+            "span": {
+              "start_line": 5,
+              "start_column": 1,
+              "end_line": 5,
+              "end_column": 34,
+              "start_byte": 76,
+              "end_byte": 109
+            }
+          },
+          {
+            "name": "simple",
+            "expression": {
+              "kind": "Call",
+              "node_id": "bindings.1.expression",
+              "span": {
+                "start_line": 6,
+                "start_column": 14,
+                "end_line": 6,
+                "end_column": 20,
+                "start_byte": 123,
+                "end_byte": 129
+              },
+              "inferred_type": {
+                "kind": "numeric",
+                "shape": "series",
+                "dimension": {
+                  "kind": "powers",
+                  "quote": 1,
+                  "base": -1
+                }
+              },
+              "function": "SMA",
+              "arguments": [
+                {
+                  "kind": "Reference",
+                  "node_id": "bindings.1.expression.arguments.0",
+                  "span": {
+                    "start_line": 6,
+                    "start_column": 14,
+                    "end_line": 6,
+                    "end_column": 20,
+                    "start_byte": 123,
+                    "end_byte": 129
+                  },
+                  "inferred_type": {
+                    "kind": "numeric",
+                    "shape": "series",
+                    "dimension": {
+                      "kind": "powers",
+                      "quote": 1,
+                      "base": -1
+                    }
+                  },
+                  "name": "close",
+                  "binding_kind": "builtin"
+                },
+                {
+                  "kind": "Literal",
+                  "node_id": "bindings.1.expression.arguments.1",
+                  "span": {
+                    "start_line": 6,
+                    "start_column": 18,
+                    "end_line": 6,
+                    "end_column": 19,
+                    "start_byte": 127,
+                    "end_byte": 128
+                  },
+                  "inferred_type": {
+                    "kind": "numeric",
+                    "shape": "scalar",
+                    "dimension": {
+                      "kind": "count"
+                    }
+                  },
+                  "value": 2.0,
+                  "dimension": {
+                    "kind": "count"
+                  }
+                }
+              ]
+            },
+            "span": {
+              "start_line": 6,
+              "start_column": 1,
+              "end_line": 6,
+              "end_column": 20,
+              "start_byte": 110,
+              "end_byte": 129
+            }
+          },
+          {
+            "name": "explicit",
+            "expression": {
+              "kind": "Call",
+              "node_id": "bindings.2.expression",
+              "span": {
+                "start_line": 7,
+                "start_column": 16,
+                "end_line": 7,
+                "end_column": 28,
+                "start_byte": 145,
+                "end_byte": 157
+              },
+              "inferred_type": {
+                "kind": "numeric",
+                "shape": "series",
+                "dimension": {
+                  "kind": "powers",
+                  "quote": 1,
+                  "base": -1
+                }
+              },
+              "function": "SMA",
+              "arguments": [
+                {
+                  "kind": "Reference",
+                  "node_id": "bindings.2.expression.arguments.0",
+                  "span": {
+                    "start_line": 7,
+                    "start_column": 20,
+                    "end_line": 7,
+                    "end_column": 25,
+                    "start_byte": 149,
+                    "end_byte": 154
+                  },
+                  "inferred_type": {
+                    "kind": "numeric",
+                    "shape": "series",
+                    "dimension": {
+                      "kind": "powers",
+                      "quote": 1,
+                      "base": -1
+                    }
+                  },
+                  "name": "close",
+                  "binding_kind": "builtin"
+                },
+                {
+                  "kind": "Literal",
+                  "node_id": "bindings.2.expression.arguments.1",
+                  "span": {
+                    "start_line": 7,
+                    "start_column": 26,
+                    "end_line": 7,
+                    "end_column": 27,
+                    "start_byte": 155,
+                    "end_byte": 156
+                  },
+                  "inferred_type": {
+                    "kind": "numeric",
+                    "shape": "scalar",
+                    "dimension": {
+                      "kind": "count"
+                    }
+                  },
+                  "value": 2.0,
+                  "dimension": {
+                    "kind": "count"
+                  }
+                }
+              ]
+            },
+            "span": {
+              "start_line": 7,
+              "start_column": 1,
+              "end_line": 7,
+              "end_column": 28,
+              "start_byte": 130,
+              "end_byte": 157
+            }
+          },
+          {
+            "name": "nested",
+            "expression": {
+              "kind": "Lookback",
+              "node_id": "bindings.3.expression",
+              "span": {
+                "start_line": 8,
+                "start_column": 14,
+                "end_line": 8,
+                "end_column": 36,
+                "start_byte": 171,
+                "end_byte": 193
+              },
+              "inferred_type": {
+                "kind": "numeric",
+                "shape": "series",
+                "dimension": {
+                  "kind": "powers",
+                  "quote": 1,
+                  "base": -1
+                }
+              },
+              "base": {
+                "kind": "Call",
+                "node_id": "bindings.3.expression.base",
+                "span": {
+                  "start_line": 8,
+                  "start_column": 14,
+                  "end_line": 8,
+                  "end_column": 33,
+                  "start_byte": 171,
+                  "end_byte": 190
+                },
+                "inferred_type": {
+                  "kind": "numeric",
+                  "shape": "series",
+                  "dimension": {
+                    "kind": "powers",
+                    "quote": 1,
+                    "base": -1
+                  }
+                },
+                "function": "SMA",
+                "arguments": [
+                  {
+                    "kind": "Call",
+                    "node_id": "bindings.3.expression.base.arguments.0",
+                    "span": {
+                      "start_line": 8,
+                      "start_column": 18,
+                      "end_line": 8,
+                      "end_column": 30,
+                      "start_byte": 175,
+                      "end_byte": 187
+                    },
+                    "inferred_type": {
+                      "kind": "numeric",
+                      "shape": "series",
+                      "dimension": {
+                        "kind": "powers",
+                        "quote": 1,
+                        "base": -1
+                      }
+                    },
+                    "function": "EMA",
+                    "arguments": [
+                      {
+                        "kind": "Reference",
+                        "node_id": "bindings.3.expression.base.arguments.0.arguments.0",
+                        "span": {
+                          "start_line": 8,
+                          "start_column": 22,
+                          "end_line": 8,
+                          "end_column": 27,
+                          "start_byte": 179,
+                          "end_byte": 184
+                        },
+                        "inferred_type": {
+                          "kind": "numeric",
+                          "shape": "series",
+                          "dimension": {
+                            "kind": "powers",
+                            "quote": 1,
+                            "base": -1
+                          }
+                        },
+                        "name": "close",
+                        "binding_kind": "builtin"
+                      },
+                      {
+                        "kind": "Literal",
+                        "node_id": "bindings.3.expression.base.arguments.0.arguments.1",
+                        "span": {
+                          "start_line": 8,
+                          "start_column": 28,
+                          "end_line": 8,
+                          "end_column": 29,
+                          "start_byte": 185,
+                          "end_byte": 186
+                        },
+                        "inferred_type": {
+                          "kind": "numeric",
+                          "shape": "scalar",
+                          "dimension": {
+                            "kind": "count"
+                          }
+                        },
+                        "value": 2.0,
+                        "dimension": {
+                          "kind": "count"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "kind": "Literal",
+                    "node_id": "bindings.3.expression.base.arguments.1",
+                    "span": {
+                      "start_line": 8,
+                      "start_column": 31,
+                      "end_line": 8,
+                      "end_column": 32,
+                      "start_byte": 188,
+                      "end_byte": 189
+                    },
+                    "inferred_type": {
+                      "kind": "numeric",
+                      "shape": "scalar",
+                      "dimension": {
+                        "kind": "count"
+                      }
+                    },
+                    "value": 2.0,
+                    "dimension": {
+                      "kind": "count"
+                    }
+                  }
+                ]
+              },
+              "bars": 1
+            },
+            "span": {
+              "start_line": 8,
+              "start_column": 1,
+              "end_line": 8,
+              "end_column": 36,
+              "start_byte": 158,
+              "end_byte": 193
+            }
+          },
+          {
+            "name": "exp",
+            "expression": {
+              "kind": "Call",
+              "node_id": "bindings.4.expression",
+              "span": {
+                "start_line": 9,
+                "start_column": 11,
+                "end_line": 9,
+                "end_column": 17,
+                "start_byte": 204,
+                "end_byte": 210
+              },
+              "inferred_type": {
+                "kind": "numeric",
+                "shape": "series",
+                "dimension": {
+                  "kind": "powers",
+                  "quote": 1,
+                  "base": -1
+                }
+              },
+              "function": "EMA",
+              "arguments": [
+                {
+                  "kind": "Reference",
+                  "node_id": "bindings.4.expression.arguments.0",
+                  "span": {
+                    "start_line": 9,
+                    "start_column": 11,
+                    "end_line": 9,
+                    "end_column": 17,
+                    "start_byte": 204,
+                    "end_byte": 210
+                  },
+                  "inferred_type": {
+                    "kind": "numeric",
+                    "shape": "series",
+                    "dimension": {
+                      "kind": "powers",
+                      "quote": 1,
+                      "base": -1
+                    }
+                  },
+                  "name": "close",
+                  "binding_kind": "builtin"
+                },
+                {
+                  "kind": "Literal",
+                  "node_id": "bindings.4.expression.arguments.1",
+                  "span": {
+                    "start_line": 9,
+                    "start_column": 15,
+                    "end_line": 9,
+                    "end_column": 16,
+                    "start_byte": 208,
+                    "end_byte": 209
+                  },
+                  "inferred_type": {
+                    "kind": "numeric",
+                    "shape": "scalar",
+                    "dimension": {
+                      "kind": "count"
+                    }
+                  },
+                  "value": 2.0,
+                  "dimension": {
+                    "kind": "count"
+                  }
+                }
+              ]
+            },
+            "span": {
+              "start_line": 9,
+              "start_column": 1,
+              "end_line": 9,
+              "end_column": 17,
+              "start_byte": 194,
+              "end_byte": 210
+            }
+          },
+          {
+            "name": "recovered",
+            "expression": {
+              "kind": "Call",
+              "node_id": "bindings.5.expression",
+              "span": {
+                "start_line": 10,
+                "start_column": 17,
+                "end_line": 10,
+                "end_column": 30,
+                "start_byte": 227,
+                "end_byte": 240
+              },
+              "inferred_type": {
+                "kind": "numeric",
+                "shape": "series",
+                "dimension": {
+                  "kind": "powers",
+                  "quote": 0,
+                  "base": 0
+                }
+              },
+              "function": "EMA",
+              "arguments": [
+                {
+                  "kind": "Reference",
+                  "node_id": "bindings.5.expression.arguments.0",
+                  "span": {
+                    "start_line": 10,
+                    "start_column": 21,
+                    "end_line": 10,
+                    "end_column": 27,
+                    "start_byte": 231,
+                    "end_byte": 237
+                  },
+                  "inferred_type": {
+                    "kind": "numeric",
+                    "shape": "series",
+                    "dimension": {
+                      "kind": "powers",
+                      "quote": 0,
+                      "base": 0
+                    }
+                  },
+                  "name": "source",
+                  "binding_kind": "let"
+                },
+                {
+                  "kind": "Literal",
+                  "node_id": "bindings.5.expression.arguments.1",
+                  "span": {
+                    "start_line": 10,
+                    "start_column": 28,
+                    "end_line": 10,
+                    "end_column": 29,
+                    "start_byte": 238,
+                    "end_byte": 239
+                  },
+                  "inferred_type": {
+                    "kind": "numeric",
+                    "shape": "scalar",
+                    "dimension": {
+                      "kind": "count"
+                    }
+                  },
+                  "value": 2.0,
+                  "dimension": {
+                    "kind": "count"
+                  }
+                }
+              ]
+            },
+            "span": {
+              "start_line": 10,
+              "start_column": 1,
+              "end_line": 10,
+              "end_column": 30,
+              "start_byte": 211,
+              "end_byte": 240
+            }
+          },
+          {
+            "name": "points",
+            "expression": {
+              "kind": "Call",
+              "node_id": "bindings.6.expression",
+              "span": {
+                "start_line": 11,
+                "start_column": 14,
+                "end_line": 11,
+                "end_column": 20,
+                "start_byte": 254,
+                "end_byte": 260
+              },
+              "inferred_type": {
+                "kind": "numeric",
+                "shape": "series",
+                "dimension": {
+                  "kind": "powers",
+                  "quote": 0,
+                  "base": 0
+                }
+              },
+              "function": "RSI",
+              "arguments": [
+                {
+                  "kind": "Reference",
+                  "node_id": "bindings.6.expression.arguments.0",
+                  "span": {
+                    "start_line": 11,
+                    "start_column": 14,
+                    "end_line": 11,
+                    "end_column": 20,
+                    "start_byte": 254,
+                    "end_byte": 260
+                  },
+                  "inferred_type": {
+                    "kind": "numeric",
+                    "shape": "series",
+                    "dimension": {
+                      "kind": "powers",
+                      "quote": 1,
+                      "base": -1
+                    }
+                  },
+                  "name": "close",
+                  "binding_kind": "builtin"
+                },
+                {
+                  "kind": "Literal",
+                  "node_id": "bindings.6.expression.arguments.1",
+                  "span": {
+                    "start_line": 11,
+                    "start_column": 18,
+                    "end_line": 11,
+                    "end_column": 19,
+                    "start_byte": 258,
+                    "end_byte": 259
+                  },
+                  "inferred_type": {
+                    "kind": "numeric",
+                    "shape": "scalar",
+                    "dimension": {
+                      "kind": "count"
+                    }
+                  },
+                  "value": 2.0,
+                  "dimension": {
+                    "kind": "count"
+                  }
+                }
+              ]
+            },
+            "span": {
+              "start_line": 11,
+              "start_column": 1,
+              "end_line": 11,
+              "end_column": 20,
+              "start_byte": 241,
+              "end_byte": 260
+            }
+          },
+          {
+            "name": "linevalue",
+            "expression": {
+              "kind": "Field",
+              "node_id": "bindings.7.expression",
+              "span": {
+                "start_line": 12,
+                "start_column": 17,
+                "end_line": 12,
+                "end_column": 33,
+                "start_byte": 277,
+                "end_byte": 293
+              },
+              "inferred_type": {
+                "kind": "numeric",
+                "shape": "series",
+                "dimension": {
+                  "kind": "powers",
+                  "quote": 1,
+                  "base": -1
+                }
+              },
+              "base": {
+                "kind": "Call",
+                "node_id": "bindings.7.expression.base",
+                "span": {
+                  "start_line": 12,
+                  "start_column": 17,
+                  "end_line": 12,
+                  "end_column": 28,
+                  "start_byte": 277,
+                  "end_byte": 288
+                },
+                "inferred_type": {
+                  "kind": "record",
+                  "shape": "series",
+                  "fields": {
+                    "line": {
+                      "kind": "numeric",
+                      "shape": "series",
+                      "dimension": {
+                        "kind": "powers",
+                        "quote": 1,
+                        "base": -1
+                      }
+                    },
+                    "signal": {
+                      "kind": "numeric",
+                      "shape": "series",
+                      "dimension": {
+                        "kind": "powers",
+                        "quote": 1,
+                        "base": -1
+                      }
+                    },
+                    "histogram": {
+                      "kind": "numeric",
+                      "shape": "series",
+                      "dimension": {
+                        "kind": "powers",
+                        "quote": 1,
+                        "base": -1
+                      }
+                    }
+                  }
+                },
+                "function": "MACD",
+                "arguments": [
+                  {
+                    "kind": "Reference",
+                    "node_id": "bindings.7.expression.base.arguments.0",
+                    "span": {
+                      "start_line": 12,
+                      "start_column": 17,
+                      "end_line": 12,
+                      "end_column": 28,
+                      "start_byte": 277,
+                      "end_byte": 288
+                    },
+                    "inferred_type": {
+                      "kind": "numeric",
+                      "shape": "series",
+                      "dimension": {
+                        "kind": "powers",
+                        "quote": 1,
+                        "base": -1
+                      }
+                    },
+                    "name": "close",
+                    "binding_kind": "builtin"
+                  },
+                  {
+                    "kind": "Literal",
+                    "node_id": "bindings.7.expression.base.arguments.1",
+                    "span": {
+                      "start_line": 12,
+                      "start_column": 22,
+                      "end_line": 12,
+                      "end_column": 23,
+                      "start_byte": 282,
+                      "end_byte": 283
+                    },
+                    "inferred_type": {
+                      "kind": "numeric",
+                      "shape": "scalar",
+                      "dimension": {
+                        "kind": "count"
+                      }
+                    },
+                    "value": 2.0,
+                    "dimension": {
+                      "kind": "count"
+                    }
+                  },
+                  {
+                    "kind": "Literal",
+                    "node_id": "bindings.7.expression.base.arguments.2",
+                    "span": {
+                      "start_line": 12,
+                      "start_column": 24,
+                      "end_line": 12,
+                      "end_column": 25,
+                      "start_byte": 284,
+                      "end_byte": 285
+                    },
+                    "inferred_type": {
+                      "kind": "numeric",
+                      "shape": "scalar",
+                      "dimension": {
+                        "kind": "count"
+                      }
+                    },
+                    "value": 3.0,
+                    "dimension": {
+                      "kind": "count"
+                    }
+                  },
+                  {
+                    "kind": "Literal",
+                    "node_id": "bindings.7.expression.base.arguments.3",
+                    "span": {
+                      "start_line": 12,
+                      "start_column": 26,
+                      "end_line": 12,
+                      "end_column": 27,
+                      "start_byte": 286,
+                      "end_byte": 287
+                    },
+                    "inferred_type": {
+                      "kind": "numeric",
+                      "shape": "scalar",
+                      "dimension": {
+                        "kind": "count"
+                      }
+                    },
+                    "value": 2.0,
+                    "dimension": {
+                      "kind": "count"
+                    }
+                  }
+                ]
+              },
+              "field": "line"
+            },
+            "span": {
+              "start_line": 12,
+              "start_column": 1,
+              "end_line": 12,
+              "end_column": 33,
+              "start_byte": 261,
+              "end_byte": 293
+            }
+          },
+          {
+            "name": "linedelay",
+            "expression": {
+              "kind": "Lookback",
+              "node_id": "bindings.8.expression",
+              "span": {
+                "start_line": 13,
+                "start_column": 17,
+                "end_line": 13,
+                "end_column": 36,
+                "start_byte": 310,
+                "end_byte": 329
+              },
+              "inferred_type": {
+                "kind": "numeric",
+                "shape": "series",
+                "dimension": {
+                  "kind": "powers",
+                  "quote": 1,
+                  "base": -1
+                }
+              },
+              "base": {
+                "kind": "Field",
+                "node_id": "bindings.8.expression.base",
+                "span": {
+                  "start_line": 13,
+                  "start_column": 17,
+                  "end_line": 13,
+                  "end_column": 36,
+                  "start_byte": 310,
+                  "end_byte": 329
+                },
+                "inferred_type": {
+                  "kind": "numeric",
+                  "shape": "series",
+                  "dimension": {
+                    "kind": "powers",
+                    "quote": 1,
+                    "base": -1
+                  }
+                },
+                "base": {
+                  "kind": "Call",
+                  "node_id": "bindings.8.expression.base.base",
+                  "span": {
+                    "start_line": 13,
+                    "start_column": 17,
+                    "end_line": 13,
+                    "end_column": 28,
+                    "start_byte": 310,
+                    "end_byte": 321
+                  },
+                  "inferred_type": {
+                    "kind": "record",
+                    "shape": "series",
+                    "fields": {
+                      "line": {
+                        "kind": "numeric",
+                        "shape": "series",
+                        "dimension": {
+                          "kind": "powers",
+                          "quote": 1,
+                          "base": -1
+                        }
+                      },
+                      "signal": {
+                        "kind": "numeric",
+                        "shape": "series",
+                        "dimension": {
+                          "kind": "powers",
+                          "quote": 1,
+                          "base": -1
+                        }
+                      },
+                      "histogram": {
+                        "kind": "numeric",
+                        "shape": "series",
+                        "dimension": {
+                          "kind": "powers",
+                          "quote": 1,
+                          "base": -1
+                        }
+                      }
+                    }
+                  },
+                  "function": "MACD",
+                  "arguments": [
+                    {
+                      "kind": "Reference",
+                      "node_id": "bindings.8.expression.base.base.arguments.0",
+                      "span": {
+                        "start_line": 13,
+                        "start_column": 17,
+                        "end_line": 13,
+                        "end_column": 28,
+                        "start_byte": 310,
+                        "end_byte": 321
+                      },
+                      "inferred_type": {
+                        "kind": "numeric",
+                        "shape": "series",
+                        "dimension": {
+                          "kind": "powers",
+                          "quote": 1,
+                          "base": -1
+                        }
+                      },
+                      "name": "close",
+                      "binding_kind": "builtin"
+                    },
+                    {
+                      "kind": "Literal",
+                      "node_id": "bindings.8.expression.base.base.arguments.1",
+                      "span": {
+                        "start_line": 13,
+                        "start_column": 22,
+                        "end_line": 13,
+                        "end_column": 23,
+                        "start_byte": 315,
+                        "end_byte": 316
+                      },
+                      "inferred_type": {
+                        "kind": "numeric",
+                        "shape": "scalar",
+                        "dimension": {
+                          "kind": "count"
+                        }
+                      },
+                      "value": 2.0,
+                      "dimension": {
+                        "kind": "count"
+                      }
+                    },
+                    {
+                      "kind": "Literal",
+                      "node_id": "bindings.8.expression.base.base.arguments.2",
+                      "span": {
+                        "start_line": 13,
+                        "start_column": 24,
+                        "end_line": 13,
+                        "end_column": 25,
+                        "start_byte": 317,
+                        "end_byte": 318
+                      },
+                      "inferred_type": {
+                        "kind": "numeric",
+                        "shape": "scalar",
+                        "dimension": {
+                          "kind": "count"
+                        }
+                      },
+                      "value": 3.0,
+                      "dimension": {
+                        "kind": "count"
+                      }
+                    },
+                    {
+                      "kind": "Literal",
+                      "node_id": "bindings.8.expression.base.base.arguments.3",
+                      "span": {
+                        "start_line": 13,
+                        "start_column": 26,
+                        "end_line": 13,
+                        "end_column": 27,
+                        "start_byte": 319,
+                        "end_byte": 320
+                      },
+                      "inferred_type": {
+                        "kind": "numeric",
+                        "shape": "scalar",
+                        "dimension": {
+                          "kind": "count"
+                        }
+                      },
+                      "value": 2.0,
+                      "dimension": {
+                        "kind": "count"
+                      }
+                    }
+                  ]
+                },
+                "field": "line"
+              },
+              "bars": 1
+            },
+            "span": {
+              "start_line": 13,
+              "start_column": 1,
+              "end_line": 13,
+              "end_column": 36,
+              "start_byte": 294,
+              "end_byte": 329
+            }
+          },
+          {
+            "name": "signalvalue",
+            "expression": {
+              "kind": "Field",
+              "node_id": "bindings.9.expression",
+              "span": {
+                "start_line": 14,
+                "start_column": 19,
+                "end_line": 14,
+                "end_column": 37,
+                "start_byte": 348,
+                "end_byte": 366
+              },
+              "inferred_type": {
+                "kind": "numeric",
+                "shape": "series",
+                "dimension": {
+                  "kind": "powers",
+                  "quote": 1,
+                  "base": -1
+                }
+              },
+              "base": {
+                "kind": "Call",
+                "node_id": "bindings.9.expression.base",
+                "span": {
+                  "start_line": 14,
+                  "start_column": 19,
+                  "end_line": 14,
+                  "end_column": 30,
+                  "start_byte": 348,
+                  "end_byte": 359
+                },
+                "inferred_type": {
+                  "kind": "record",
+                  "shape": "series",
+                  "fields": {
+                    "line": {
+                      "kind": "numeric",
+                      "shape": "series",
+                      "dimension": {
+                        "kind": "powers",
+                        "quote": 1,
+                        "base": -1
+                      }
+                    },
+                    "signal": {
+                      "kind": "numeric",
+                      "shape": "series",
+                      "dimension": {
+                        "kind": "powers",
+                        "quote": 1,
+                        "base": -1
+                      }
+                    },
+                    "histogram": {
+                      "kind": "numeric",
+                      "shape": "series",
+                      "dimension": {
+                        "kind": "powers",
+                        "quote": 1,
+                        "base": -1
+                      }
+                    }
+                  }
+                },
+                "function": "MACD",
+                "arguments": [
+                  {
+                    "kind": "Reference",
+                    "node_id": "bindings.9.expression.base.arguments.0",
+                    "span": {
+                      "start_line": 14,
+                      "start_column": 19,
+                      "end_line": 14,
+                      "end_column": 30,
+                      "start_byte": 348,
+                      "end_byte": 359
+                    },
+                    "inferred_type": {
+                      "kind": "numeric",
+                      "shape": "series",
+                      "dimension": {
+                        "kind": "powers",
+                        "quote": 1,
+                        "base": -1
+                      }
+                    },
+                    "name": "close",
+                    "binding_kind": "builtin"
+                  },
+                  {
+                    "kind": "Literal",
+                    "node_id": "bindings.9.expression.base.arguments.1",
+                    "span": {
+                      "start_line": 14,
+                      "start_column": 24,
+                      "end_line": 14,
+                      "end_column": 25,
+                      "start_byte": 353,
+                      "end_byte": 354
+                    },
+                    "inferred_type": {
+                      "kind": "numeric",
+                      "shape": "scalar",
+                      "dimension": {
+                        "kind": "count"
+                      }
+                    },
+                    "value": 2.0,
+                    "dimension": {
+                      "kind": "count"
+                    }
+                  },
+                  {
+                    "kind": "Literal",
+                    "node_id": "bindings.9.expression.base.arguments.2",
+                    "span": {
+                      "start_line": 14,
+                      "start_column": 26,
+                      "end_line": 14,
+                      "end_column": 27,
+                      "start_byte": 355,
+                      "end_byte": 356
+                    },
+                    "inferred_type": {
+                      "kind": "numeric",
+                      "shape": "scalar",
+                      "dimension": {
+                        "kind": "count"
+                      }
+                    },
+                    "value": 3.0,
+                    "dimension": {
+                      "kind": "count"
+                    }
+                  },
+                  {
+                    "kind": "Literal",
+                    "node_id": "bindings.9.expression.base.arguments.3",
+                    "span": {
+                      "start_line": 14,
+                      "start_column": 28,
+                      "end_line": 14,
+                      "end_column": 29,
+                      "start_byte": 357,
+                      "end_byte": 358
+                    },
+                    "inferred_type": {
+                      "kind": "numeric",
+                      "shape": "scalar",
+                      "dimension": {
+                        "kind": "count"
+                      }
+                    },
+                    "value": 2.0,
+                    "dimension": {
+                      "kind": "count"
+                    }
+                  }
+                ]
+              },
+              "field": "signal"
+            },
+            "span": {
+              "start_line": 14,
+              "start_column": 1,
+              "end_line": 14,
+              "end_column": 37,
+              "start_byte": 330,
+              "end_byte": 366
+            }
+          },
+          {
+            "name": "hist",
+            "expression": {
+              "kind": "Field",
+              "node_id": "bindings.10.expression",
+              "span": {
+                "start_line": 15,
+                "start_column": 12,
+                "end_line": 15,
+                "end_column": 33,
+                "start_byte": 378,
+                "end_byte": 399
+              },
+              "inferred_type": {
+                "kind": "numeric",
+                "shape": "series",
+                "dimension": {
+                  "kind": "powers",
+                  "quote": 1,
+                  "base": -1
+                }
+              },
+              "base": {
+                "kind": "Call",
+                "node_id": "bindings.10.expression.base",
+                "span": {
+                  "start_line": 15,
+                  "start_column": 12,
+                  "end_line": 15,
+                  "end_column": 23,
+                  "start_byte": 378,
+                  "end_byte": 389
+                },
+                "inferred_type": {
+                  "kind": "record",
+                  "shape": "series",
+                  "fields": {
+                    "line": {
+                      "kind": "numeric",
+                      "shape": "series",
+                      "dimension": {
+                        "kind": "powers",
+                        "quote": 1,
+                        "base": -1
+                      }
+                    },
+                    "signal": {
+                      "kind": "numeric",
+                      "shape": "series",
+                      "dimension": {
+                        "kind": "powers",
+                        "quote": 1,
+                        "base": -1
+                      }
+                    },
+                    "histogram": {
+                      "kind": "numeric",
+                      "shape": "series",
+                      "dimension": {
+                        "kind": "powers",
+                        "quote": 1,
+                        "base": -1
+                      }
+                    }
+                  }
+                },
+                "function": "MACD",
+                "arguments": [
+                  {
+                    "kind": "Reference",
+                    "node_id": "bindings.10.expression.base.arguments.0",
+                    "span": {
+                      "start_line": 15,
+                      "start_column": 12,
+                      "end_line": 15,
+                      "end_column": 23,
+                      "start_byte": 378,
+                      "end_byte": 389
+                    },
+                    "inferred_type": {
+                      "kind": "numeric",
+                      "shape": "series",
+                      "dimension": {
+                        "kind": "powers",
+                        "quote": 1,
+                        "base": -1
+                      }
+                    },
+                    "name": "close",
+                    "binding_kind": "builtin"
+                  },
+                  {
+                    "kind": "Literal",
+                    "node_id": "bindings.10.expression.base.arguments.1",
+                    "span": {
+                      "start_line": 15,
+                      "start_column": 17,
+                      "end_line": 15,
+                      "end_column": 18,
+                      "start_byte": 383,
+                      "end_byte": 384
+                    },
+                    "inferred_type": {
+                      "kind": "numeric",
+                      "shape": "scalar",
+                      "dimension": {
+                        "kind": "count"
+                      }
+                    },
+                    "value": 2.0,
+                    "dimension": {
+                      "kind": "count"
+                    }
+                  },
+                  {
+                    "kind": "Literal",
+                    "node_id": "bindings.10.expression.base.arguments.2",
+                    "span": {
+                      "start_line": 15,
+                      "start_column": 19,
+                      "end_line": 15,
+                      "end_column": 20,
+                      "start_byte": 385,
+                      "end_byte": 386
+                    },
+                    "inferred_type": {
+                      "kind": "numeric",
+                      "shape": "scalar",
+                      "dimension": {
+                        "kind": "count"
+                      }
+                    },
+                    "value": 3.0,
+                    "dimension": {
+                      "kind": "count"
+                    }
+                  },
+                  {
+                    "kind": "Literal",
+                    "node_id": "bindings.10.expression.base.arguments.3",
+                    "span": {
+                      "start_line": 15,
+                      "start_column": 21,
+                      "end_line": 15,
+                      "end_column": 22,
+                      "start_byte": 387,
+                      "end_byte": 388
+                    },
+                    "inferred_type": {
+                      "kind": "numeric",
+                      "shape": "scalar",
+                      "dimension": {
+                        "kind": "count"
+                      }
+                    },
+                    "value": 2.0,
+                    "dimension": {
+                      "kind": "count"
+                    }
+                  }
+                ]
+              },
+              "field": "histogram"
+            },
+            "span": {
+              "start_line": 15,
+              "start_column": 1,
+              "end_line": 15,
+              "end_column": 33,
+              "start_byte": 367,
+              "end_byte": 399
+            }
+          },
+          {
+            "name": "distance",
+            "expression": {
+              "kind": "Call",
+              "node_id": "bindings.11.expression",
+              "span": {
+                "start_line": 16,
+                "start_column": 16,
+                "end_line": 16,
+                "end_column": 22,
+                "start_byte": 415,
+                "end_byte": 421
+              },
+              "inferred_type": {
+                "kind": "numeric",
+                "shape": "series",
+                "dimension": {
+                  "kind": "powers",
+                  "quote": 1,
+                  "base": -1
+                }
+              },
+              "function": "ATR",
+              "arguments": [
+                {
+                  "kind": "Literal",
+                  "node_id": "bindings.11.expression.arguments.0",
+                  "span": {
+                    "start_line": 16,
+                    "start_column": 20,
+                    "end_line": 16,
+                    "end_column": 21,
+                    "start_byte": 419,
+                    "end_byte": 420
+                  },
+                  "inferred_type": {
+                    "kind": "numeric",
+                    "shape": "scalar",
+                    "dimension": {
+                      "kind": "count"
+                    }
+                  },
+                  "value": 2.0,
+                  "dimension": {
+                    "kind": "count"
+                  }
+                }
+              ]
+            },
+            "span": {
+              "start_line": 16,
+              "start_column": 1,
+              "end_line": 16,
+              "end_column": 22,
+              "start_byte": 400,
+              "end_byte": 421
+            }
+          },
+          {
+            "name": "upperband",
+            "expression": {
+              "kind": "Field",
+              "node_id": "bindings.12.expression",
+              "span": {
+                "start_line": 17,
+                "start_column": 17,
+                "end_line": 17,
+                "end_column": 41,
+                "start_byte": 438,
+                "end_byte": 462
+              },
+              "inferred_type": {
+                "kind": "numeric",
+                "shape": "series",
+                "dimension": {
+                  "kind": "powers",
+                  "quote": 0,
+                  "base": 0
+                }
+              },
+              "base": {
+                "kind": "Call",
+                "node_id": "bindings.12.expression.base",
+                "span": {
+                  "start_line": 17,
+                  "start_column": 17,
+                  "end_line": 17,
+                  "end_column": 35,
+                  "start_byte": 438,
+                  "end_byte": 456
+                },
+                "inferred_type": {
+                  "kind": "record",
+                  "shape": "series",
+                  "fields": {
+                    "upper": {
+                      "kind": "numeric",
+                      "shape": "series",
+                      "dimension": {
+                        "kind": "powers",
+                        "quote": 0,
+                        "base": 0
+                      }
+                    },
+                    "middle": {
+                      "kind": "numeric",
+                      "shape": "series",
+                      "dimension": {
+                        "kind": "powers",
+                        "quote": 0,
+                        "base": 0
+                      }
+                    },
+                    "lower": {
+                      "kind": "numeric",
+                      "shape": "series",
+                      "dimension": {
+                        "kind": "powers",
+                        "quote": 0,
+                        "base": 0
+                      }
+                    }
+                  }
+                },
+                "function": "BBANDS",
+                "arguments": [
+                  {
+                    "kind": "Reference",
+                    "node_id": "bindings.12.expression.base.arguments.0",
+                    "span": {
+                      "start_line": 17,
+                      "start_column": 24,
+                      "end_line": 17,
+                      "end_column": 30,
+                      "start_byte": 445,
+                      "end_byte": 451
+                    },
+                    "inferred_type": {
+                      "kind": "numeric",
+                      "shape": "series",
+                      "dimension": {
+                        "kind": "powers",
+                        "quote": 0,
+                        "base": 0
+                      }
+                    },
+                    "name": "source",
+                    "binding_kind": "let"
+                  },
+                  {
+                    "kind": "Literal",
+                    "node_id": "bindings.12.expression.base.arguments.1",
+                    "span": {
+                      "start_line": 17,
+                      "start_column": 31,
+                      "end_line": 17,
+                      "end_column": 32,
+                      "start_byte": 452,
+                      "end_byte": 453
+                    },
+                    "inferred_type": {
+                      "kind": "numeric",
+                      "shape": "scalar",
+                      "dimension": {
+                        "kind": "count"
+                      }
+                    },
+                    "value": 2.0,
+                    "dimension": {
+                      "kind": "count"
+                    }
+                  },
+                  {
+                    "kind": "Literal",
+                    "node_id": "bindings.12.expression.base.arguments.2",
+                    "span": {
+                      "start_line": 17,
+                      "start_column": 33,
+                      "end_line": 17,
+                      "end_column": 34,
+                      "start_byte": 454,
+                      "end_byte": 455
+                    },
+                    "inferred_type": {
+                      "kind": "numeric",
+                      "shape": "scalar",
+                      "dimension": {
+                        "kind": "powers",
+                        "quote": 0,
+                        "base": 0
+                      }
+                    },
+                    "value": 2.0,
+                    "dimension": {
+                      "kind": "powers",
+                      "quote": 0,
+                      "base": 0
+                    }
+                  }
+                ]
+              },
+              "field": "upper"
+            },
+            "span": {
+              "start_line": 17,
+              "start_column": 1,
+              "end_line": 17,
+              "end_column": 41,
+              "start_byte": 422,
+              "end_byte": 462
+            }
+          },
+          {
+            "name": "middleband",
+            "expression": {
+              "kind": "Field",
+              "node_id": "bindings.13.expression",
+              "span": {
+                "start_line": 18,
+                "start_column": 18,
+                "end_line": 18,
+                "end_column": 43,
+                "start_byte": 480,
+                "end_byte": 505
+              },
+              "inferred_type": {
+                "kind": "numeric",
+                "shape": "series",
+                "dimension": {
+                  "kind": "powers",
+                  "quote": 0,
+                  "base": 0
+                }
+              },
+              "base": {
+                "kind": "Call",
+                "node_id": "bindings.13.expression.base",
+                "span": {
+                  "start_line": 18,
+                  "start_column": 18,
+                  "end_line": 18,
+                  "end_column": 36,
+                  "start_byte": 480,
+                  "end_byte": 498
+                },
+                "inferred_type": {
+                  "kind": "record",
+                  "shape": "series",
+                  "fields": {
+                    "upper": {
+                      "kind": "numeric",
+                      "shape": "series",
+                      "dimension": {
+                        "kind": "powers",
+                        "quote": 0,
+                        "base": 0
+                      }
+                    },
+                    "middle": {
+                      "kind": "numeric",
+                      "shape": "series",
+                      "dimension": {
+                        "kind": "powers",
+                        "quote": 0,
+                        "base": 0
+                      }
+                    },
+                    "lower": {
+                      "kind": "numeric",
+                      "shape": "series",
+                      "dimension": {
+                        "kind": "powers",
+                        "quote": 0,
+                        "base": 0
+                      }
+                    }
+                  }
+                },
+                "function": "BBANDS",
+                "arguments": [
+                  {
+                    "kind": "Reference",
+                    "node_id": "bindings.13.expression.base.arguments.0",
+                    "span": {
+                      "start_line": 18,
+                      "start_column": 25,
+                      "end_line": 18,
+                      "end_column": 31,
+                      "start_byte": 487,
+                      "end_byte": 493
+                    },
+                    "inferred_type": {
+                      "kind": "numeric",
+                      "shape": "series",
+                      "dimension": {
+                        "kind": "powers",
+                        "quote": 0,
+                        "base": 0
+                      }
+                    },
+                    "name": "source",
+                    "binding_kind": "let"
+                  },
+                  {
+                    "kind": "Literal",
+                    "node_id": "bindings.13.expression.base.arguments.1",
+                    "span": {
+                      "start_line": 18,
+                      "start_column": 32,
+                      "end_line": 18,
+                      "end_column": 33,
+                      "start_byte": 494,
+                      "end_byte": 495
+                    },
+                    "inferred_type": {
+                      "kind": "numeric",
+                      "shape": "scalar",
+                      "dimension": {
+                        "kind": "count"
+                      }
+                    },
+                    "value": 2.0,
+                    "dimension": {
+                      "kind": "count"
+                    }
+                  },
+                  {
+                    "kind": "Literal",
+                    "node_id": "bindings.13.expression.base.arguments.2",
+                    "span": {
+                      "start_line": 18,
+                      "start_column": 34,
+                      "end_line": 18,
+                      "end_column": 35,
+                      "start_byte": 496,
+                      "end_byte": 497
+                    },
+                    "inferred_type": {
+                      "kind": "numeric",
+                      "shape": "scalar",
+                      "dimension": {
+                        "kind": "powers",
+                        "quote": 0,
+                        "base": 0
+                      }
+                    },
+                    "value": 2.0,
+                    "dimension": {
+                      "kind": "powers",
+                      "quote": 0,
+                      "base": 0
+                    }
+                  }
+                ]
+              },
+              "field": "middle"
+            },
+            "span": {
+              "start_line": 18,
+              "start_column": 1,
+              "end_line": 18,
+              "end_column": 43,
+              "start_byte": 463,
+              "end_byte": 505
+            }
+          },
+          {
+            "name": "lowerband",
+            "expression": {
+              "kind": "Field",
+              "node_id": "bindings.14.expression",
+              "span": {
+                "start_line": 19,
+                "start_column": 17,
+                "end_line": 19,
+                "end_column": 41,
+                "start_byte": 522,
+                "end_byte": 546
+              },
+              "inferred_type": {
+                "kind": "numeric",
+                "shape": "series",
+                "dimension": {
+                  "kind": "powers",
+                  "quote": 0,
+                  "base": 0
+                }
+              },
+              "base": {
+                "kind": "Call",
+                "node_id": "bindings.14.expression.base",
+                "span": {
+                  "start_line": 19,
+                  "start_column": 17,
+                  "end_line": 19,
+                  "end_column": 35,
+                  "start_byte": 522,
+                  "end_byte": 540
+                },
+                "inferred_type": {
+                  "kind": "record",
+                  "shape": "series",
+                  "fields": {
+                    "upper": {
+                      "kind": "numeric",
+                      "shape": "series",
+                      "dimension": {
+                        "kind": "powers",
+                        "quote": 0,
+                        "base": 0
+                      }
+                    },
+                    "middle": {
+                      "kind": "numeric",
+                      "shape": "series",
+                      "dimension": {
+                        "kind": "powers",
+                        "quote": 0,
+                        "base": 0
+                      }
+                    },
+                    "lower": {
+                      "kind": "numeric",
+                      "shape": "series",
+                      "dimension": {
+                        "kind": "powers",
+                        "quote": 0,
+                        "base": 0
+                      }
+                    }
+                  }
+                },
+                "function": "BBANDS",
+                "arguments": [
+                  {
+                    "kind": "Reference",
+                    "node_id": "bindings.14.expression.base.arguments.0",
+                    "span": {
+                      "start_line": 19,
+                      "start_column": 24,
+                      "end_line": 19,
+                      "end_column": 30,
+                      "start_byte": 529,
+                      "end_byte": 535
+                    },
+                    "inferred_type": {
+                      "kind": "numeric",
+                      "shape": "series",
+                      "dimension": {
+                        "kind": "powers",
+                        "quote": 0,
+                        "base": 0
+                      }
+                    },
+                    "name": "source",
+                    "binding_kind": "let"
+                  },
+                  {
+                    "kind": "Literal",
+                    "node_id": "bindings.14.expression.base.arguments.1",
+                    "span": {
+                      "start_line": 19,
+                      "start_column": 31,
+                      "end_line": 19,
+                      "end_column": 32,
+                      "start_byte": 536,
+                      "end_byte": 537
+                    },
+                    "inferred_type": {
+                      "kind": "numeric",
+                      "shape": "scalar",
+                      "dimension": {
+                        "kind": "count"
+                      }
+                    },
+                    "value": 2.0,
+                    "dimension": {
+                      "kind": "count"
+                    }
+                  },
+                  {
+                    "kind": "Literal",
+                    "node_id": "bindings.14.expression.base.arguments.2",
+                    "span": {
+                      "start_line": 19,
+                      "start_column": 33,
+                      "end_line": 19,
+                      "end_column": 34,
+                      "start_byte": 538,
+                      "end_byte": 539
+                    },
+                    "inferred_type": {
+                      "kind": "numeric",
+                      "shape": "scalar",
+                      "dimension": {
+                        "kind": "powers",
+                        "quote": 0,
+                        "base": 0
+                      }
+                    },
+                    "value": 2.0,
+                    "dimension": {
+                      "kind": "powers",
+                      "quote": 0,
+                      "base": 0
+                    }
+                  }
+                ]
+              },
+              "field": "lower"
+            },
+            "span": {
+              "start_line": 19,
+              "start_column": 1,
+              "end_line": 19,
+              "end_column": 41,
+              "start_byte": 506,
+              "end_byte": 546
+            }
+          },
+          {
+            "name": "highest",
+            "expression": {
+              "kind": "Call",
+              "node_id": "bindings.15.expression",
+              "span": {
+                "start_line": 20,
+                "start_column": 15,
+                "end_line": 20,
+                "end_column": 32,
+                "start_byte": 561,
+                "end_byte": 578
+              },
+              "inferred_type": {
+                "kind": "numeric",
+                "shape": "series",
+                "dimension": {
+                  "kind": "powers",
+                  "quote": 0,
+                  "base": 1
+                }
+              },
+              "function": "HIGHEST",
+              "arguments": [
+                {
+                  "kind": "Reference",
+                  "node_id": "bindings.15.expression.arguments.0",
+                  "span": {
+                    "start_line": 20,
+                    "start_column": 23,
+                    "end_line": 20,
+                    "end_column": 29,
+                    "start_byte": 569,
+                    "end_byte": 575
+                  },
+                  "inferred_type": {
+                    "kind": "numeric",
+                    "shape": "series",
+                    "dimension": {
+                      "kind": "powers",
+                      "quote": 0,
+                      "base": 1
+                    }
+                  },
+                  "name": "volume",
+                  "binding_kind": "builtin"
+                },
+                {
+                  "kind": "Literal",
+                  "node_id": "bindings.15.expression.arguments.1",
+                  "span": {
+                    "start_line": 20,
+                    "start_column": 30,
+                    "end_line": 20,
+                    "end_column": 31,
+                    "start_byte": 576,
+                    "end_byte": 577
+                  },
+                  "inferred_type": {
+                    "kind": "numeric",
+                    "shape": "scalar",
+                    "dimension": {
+                      "kind": "count"
+                    }
+                  },
+                  "value": 2.0,
+                  "dimension": {
+                    "kind": "count"
+                  }
+                }
+              ]
+            },
+            "span": {
+              "start_line": 20,
+              "start_column": 1,
+              "end_line": 20,
+              "end_column": 32,
+              "start_byte": 547,
+              "end_byte": 578
+            }
+          },
+          {
+            "name": "lowest",
+            "expression": {
+              "kind": "Call",
+              "node_id": "bindings.16.expression",
+              "span": {
+                "start_line": 21,
+                "start_column": 14,
+                "end_line": 21,
+                "end_column": 30,
+                "start_byte": 592,
+                "end_byte": 608
+              },
+              "inferred_type": {
+                "kind": "numeric",
+                "shape": "series",
+                "dimension": {
+                  "kind": "powers",
+                  "quote": 0,
+                  "base": 0
+                }
+              },
+              "function": "LOWEST",
+              "arguments": [
+                {
+                  "kind": "Reference",
+                  "node_id": "bindings.16.expression.arguments.0",
+                  "span": {
+                    "start_line": 21,
+                    "start_column": 21,
+                    "end_line": 21,
+                    "end_column": 27,
+                    "start_byte": 599,
+                    "end_byte": 605
+                  },
+                  "inferred_type": {
+                    "kind": "numeric",
+                    "shape": "series",
+                    "dimension": {
+                      "kind": "powers",
+                      "quote": 0,
+                      "base": 0
+                    }
+                  },
+                  "name": "source",
+                  "binding_kind": "let"
+                },
+                {
+                  "kind": "Literal",
+                  "node_id": "bindings.16.expression.arguments.1",
+                  "span": {
+                    "start_line": 21,
+                    "start_column": 28,
+                    "end_line": 21,
+                    "end_column": 29,
+                    "start_byte": 606,
+                    "end_byte": 607
+                  },
+                  "inferred_type": {
+                    "kind": "numeric",
+                    "shape": "scalar",
+                    "dimension": {
+                      "kind": "count"
+                    }
+                  },
+                  "value": 2.0,
+                  "dimension": {
+                    "kind": "count"
+                  }
+                }
+              ]
+            },
+            "span": {
+              "start_line": 21,
+              "start_column": 1,
+              "end_line": 21,
+              "end_column": 30,
+              "start_byte": 579,
+              "end_byte": 608
+            }
+          },
+          {
+            "name": "returns",
+            "expression": {
+              "kind": "Call",
+              "node_id": "bindings.17.expression",
+              "span": {
+                "start_line": 22,
+                "start_column": 15,
+                "end_line": 22,
+                "end_column": 28,
+                "start_byte": 623,
+                "end_byte": 636
+              },
+              "inferred_type": {
+                "kind": "numeric",
+                "shape": "series",
+                "dimension": {
+                  "kind": "powers",
+                  "quote": 0,
+                  "base": 0
+                }
+              },
+              "function": "ROC",
+              "arguments": [
+                {
+                  "kind": "Reference",
+                  "node_id": "bindings.17.expression.arguments.0",
+                  "span": {
+                    "start_line": 22,
+                    "start_column": 19,
+                    "end_line": 22,
+                    "end_column": 25,
+                    "start_byte": 627,
+                    "end_byte": 633
+                  },
+                  "inferred_type": {
+                    "kind": "numeric",
+                    "shape": "series",
+                    "dimension": {
+                      "kind": "powers",
+                      "quote": 0,
+                      "base": 1
+                    }
+                  },
+                  "name": "volume",
+                  "binding_kind": "builtin"
+                },
+                {
+                  "kind": "Literal",
+                  "node_id": "bindings.17.expression.arguments.1",
+                  "span": {
+                    "start_line": 22,
+                    "start_column": 26,
+                    "end_line": 22,
+                    "end_column": 27,
+                    "start_byte": 634,
+                    "end_byte": 635
+                  },
+                  "inferred_type": {
+                    "kind": "numeric",
+                    "shape": "scalar",
+                    "dimension": {
+                      "kind": "count"
+                    }
+                  },
+                  "value": 2.0,
+                  "dimension": {
+                    "kind": "count"
+                  }
+                }
+              ]
+            },
+            "span": {
+              "start_line": 22,
+              "start_column": 1,
+              "end_line": 22,
+              "end_column": 28,
+              "start_byte": 609,
+              "end_byte": 636
+            }
+          },
+          {
+            "name": "again",
+            "expression": {
+              "kind": "Call",
+              "node_id": "bindings.18.expression",
+              "span": {
+                "start_line": 23,
+                "start_column": 13,
+                "end_line": 23,
+                "end_column": 26,
+                "start_byte": 649,
+                "end_byte": 662
+              },
+              "inferred_type": {
+                "kind": "numeric",
+                "shape": "series",
+                "dimension": {
+                  "kind": "powers",
+                  "quote": 0,
+                  "base": 0
+                }
+              },
+              "function": "ROC",
+              "arguments": [
+                {
+                  "kind": "Reference",
+                  "node_id": "bindings.18.expression.arguments.0",
+                  "span": {
+                    "start_line": 23,
+                    "start_column": 17,
+                    "end_line": 23,
+                    "end_column": 23,
+                    "start_byte": 653,
+                    "end_byte": 659
+                  },
+                  "inferred_type": {
+                    "kind": "numeric",
+                    "shape": "series",
+                    "dimension": {
+                      "kind": "powers",
+                      "quote": 0,
+                      "base": 1
+                    }
+                  },
+                  "name": "volume",
+                  "binding_kind": "builtin"
+                },
+                {
+                  "kind": "Literal",
+                  "node_id": "bindings.18.expression.arguments.1",
+                  "span": {
+                    "start_line": 23,
+                    "start_column": 24,
+                    "end_line": 23,
+                    "end_column": 25,
+                    "start_byte": 660,
+                    "end_byte": 661
+                  },
+                  "inferred_type": {
+                    "kind": "numeric",
+                    "shape": "scalar",
+                    "dimension": {
+                      "kind": "count"
+                    }
+                  },
+                  "value": 2.0,
+                  "dimension": {
+                    "kind": "count"
+                  }
+                }
+              ]
+            },
+            "span": {
+              "start_line": 23,
+              "start_column": 1,
+              "end_line": 23,
+              "end_column": 26,
+              "start_byte": 637,
+              "end_byte": 662
+            }
+          },
+          {
+            "name": "hole",
+            "expression": {
+              "kind": "Call",
+              "node_id": "bindings.19.expression",
+              "span": {
+                "start_line": 24,
+                "start_column": 12,
+                "end_line": 24,
+                "end_column": 25,
+                "start_byte": 674,
+                "end_byte": 687
+              },
+              "inferred_type": {
+                "kind": "numeric",
+                "shape": "series",
+                "dimension": {
+                  "kind": "powers",
+                  "quote": 0,
+                  "base": 0
+                }
+              },
+              "function": "ROC",
+              "arguments": [
+                {
+                  "kind": "Reference",
+                  "node_id": "bindings.19.expression.arguments.0",
+                  "span": {
+                    "start_line": 24,
+                    "start_column": 16,
+                    "end_line": 24,
+                    "end_column": 22,
+                    "start_byte": 678,
+                    "end_byte": 684
+                  },
+                  "inferred_type": {
+                    "kind": "numeric",
+                    "shape": "series",
+                    "dimension": {
+                      "kind": "powers",
+                      "quote": 0,
+                      "base": 0
+                    }
+                  },
+                  "name": "source",
+                  "binding_kind": "let"
+                },
+                {
+                  "kind": "Literal",
+                  "node_id": "bindings.19.expression.arguments.1",
+                  "span": {
+                    "start_line": 24,
+                    "start_column": 23,
+                    "end_line": 24,
+                    "end_column": 24,
+                    "start_byte": 685,
+                    "end_byte": 686
+                  },
+                  "inferred_type": {
+                    "kind": "numeric",
+                    "shape": "scalar",
+                    "dimension": {
+                      "kind": "count"
+                    }
+                  },
+                  "value": 2.0,
+                  "dimension": {
+                    "kind": "count"
+                  }
+                }
+              ]
+            },
+            "span": {
+              "start_line": 24,
+              "start_column": 1,
+              "end_line": 24,
+              "end_column": 25,
+              "start_byte": 663,
+              "end_byte": 687
+            }
+          },
+          {
+            "name": "deviation",
+            "expression": {
+              "kind": "Call",
+              "node_id": "bindings.20.expression",
+              "span": {
+                "start_line": 25,
+                "start_column": 17,
+                "end_line": 25,
+                "end_column": 33,
+                "start_byte": 704,
+                "end_byte": 720
+              },
+              "inferred_type": {
+                "kind": "numeric",
+                "shape": "series",
+                "dimension": {
+                  "kind": "powers",
+                  "quote": 0,
+                  "base": 0
+                }
+              },
+              "function": "STDDEV",
+              "arguments": [
+                {
+                  "kind": "Reference",
+                  "node_id": "bindings.20.expression.arguments.0",
+                  "span": {
+                    "start_line": 25,
+                    "start_column": 24,
+                    "end_line": 25,
+                    "end_column": 30,
+                    "start_byte": 711,
+                    "end_byte": 717
+                  },
+                  "inferred_type": {
+                    "kind": "numeric",
+                    "shape": "series",
+                    "dimension": {
+                      "kind": "powers",
+                      "quote": 0,
+                      "base": 0
+                    }
+                  },
+                  "name": "source",
+                  "binding_kind": "let"
+                },
+                {
+                  "kind": "Literal",
+                  "node_id": "bindings.20.expression.arguments.1",
+                  "span": {
+                    "start_line": 25,
+                    "start_column": 31,
+                    "end_line": 25,
+                    "end_column": 32,
+                    "start_byte": 718,
+                    "end_byte": 719
+                  },
+                  "inferred_type": {
+                    "kind": "numeric",
+                    "shape": "scalar",
+                    "dimension": {
+                      "kind": "count"
+                    }
+                  },
+                  "value": 2.0,
+                  "dimension": {
+                    "kind": "count"
+                  }
+                }
+              ]
+            },
+            "span": {
+              "start_line": 25,
+              "start_column": 1,
+              "end_line": 25,
+              "end_column": 33,
+              "start_byte": 688,
+              "end_byte": 720
+            }
+          },
+          {
+            "name": "threshold",
+            "expression": {
+              "kind": "Compare",
+              "node_id": "bindings.21.expression",
+              "span": {
+                "start_line": 26,
+                "start_column": 17,
+                "end_line": 26,
+                "end_column": 29,
+                "start_byte": 737,
+                "end_byte": 749
+              },
+              "inferred_type": {
+                "kind": "boolean",
+                "shape": "series"
+              },
+              "operator": ">",
+              "left": {
+                "kind": "Call",
+                "node_id": "bindings.21.expression.left",
+                "span": {
+                  "start_line": 26,
+                  "start_column": 17,
+                  "end_line": 26,
+                  "end_column": 23,
+                  "start_byte": 737,
+                  "end_byte": 743
+                },
+                "inferred_type": {
+                  "kind": "numeric",
+                  "shape": "series",
+                  "dimension": {
+                    "kind": "powers",
+                    "quote": 0,
+                    "base": 0
+                  }
+                },
+                "function": "RSI",
+                "arguments": [
+                  {
+                    "kind": "Reference",
+                    "node_id": "bindings.21.expression.left.arguments.0",
+                    "span": {
+                      "start_line": 26,
+                      "start_column": 17,
+                      "end_line": 26,
+                      "end_column": 23,
+                      "start_byte": 737,
+                      "end_byte": 743
+                    },
+                    "inferred_type": {
+                      "kind": "numeric",
+                      "shape": "series",
+                      "dimension": {
+                        "kind": "powers",
+                        "quote": 1,
+                        "base": -1
+                      }
+                    },
+                    "name": "close",
+                    "binding_kind": "builtin"
+                  },
+                  {
+                    "kind": "Literal",
+                    "node_id": "bindings.21.expression.left.arguments.1",
+                    "span": {
+                      "start_line": 26,
+                      "start_column": 21,
+                      "end_line": 26,
+                      "end_column": 22,
+                      "start_byte": 741,
+                      "end_byte": 742
+                    },
+                    "inferred_type": {
+                      "kind": "numeric",
+                      "shape": "scalar",
+                      "dimension": {
+                        "kind": "count"
+                      }
+                    },
+                    "value": 1.0,
+                    "dimension": {
+                      "kind": "count"
+                    }
+                  }
+                ]
+              },
+              "right": {
+                "kind": "Literal",
+                "node_id": "bindings.21.expression.right",
+                "span": {
+                  "start_line": 26,
+                  "start_column": 26,
+                  "end_line": 26,
+                  "end_column": 29,
+                  "start_byte": 746,
+                  "end_byte": 749
+                },
+                "inferred_type": {
+                  "kind": "numeric",
+                  "shape": "scalar",
+                  "dimension": {
+                    "kind": "powers",
+                    "quote": 0,
+                    "base": 0
+                  }
+                },
+                "value": 0.3,
+                "dimension": {
+                  "kind": "powers",
+                  "quote": 0,
+                  "base": 0
+                }
+              }
+            },
+            "span": {
+              "start_line": 26,
+              "start_column": 1,
+              "end_line": 26,
+              "end_column": 29,
+              "start_byte": 721,
+              "end_byte": 749
+            }
+          }
+        ],
+        "entry": {
+          "condition": {
+            "kind": "Boolean",
+            "node_id": "entry.condition",
+            "span": {
+              "start_line": 28,
+              "start_column": 8,
+              "end_line": 28,
+              "end_column": 32,
+              "start_byte": 764,
+              "end_byte": 788
+            },
+            "inferred_type": {
+              "kind": "boolean",
+              "shape": "series"
+            },
+            "operator": "and",
+            "operands": [
+              {
+                "kind": "Reference",
+                "node_id": "entry.condition.operands.0",
+                "span": {
+                  "start_line": 28,
+                  "start_column": 8,
+                  "end_line": 28,
+                  "end_column": 17,
+                  "start_byte": 764,
+                  "end_byte": 773
+                },
+                "inferred_type": {
+                  "kind": "boolean",
+                  "shape": "series"
+                },
+                "name": "threshold",
+                "binding_kind": "let"
+              },
+              {
+                "kind": "Compare",
+                "node_id": "entry.condition.operands.1",
+                "span": {
+                  "start_line": 28,
+                  "start_column": 22,
+                  "end_line": 28,
+                  "end_column": 32,
+                  "start_byte": 778,
+                  "end_byte": 788
+                },
+                "inferred_type": {
+                  "kind": "boolean",
+                  "shape": "series"
+                },
+                "operator": ">",
+                "left": {
+                  "kind": "Reference",
+                  "node_id": "entry.condition.operands.1.left",
+                  "span": {
+                    "start_line": 28,
+                    "start_column": 22,
+                    "end_line": 28,
+                    "end_column": 28,
+                    "start_byte": 778,
+                    "end_byte": 784
+                  },
+                  "inferred_type": {
+                    "kind": "numeric",
+                    "shape": "series",
+                    "dimension": {
+                      "kind": "powers",
+                      "quote": 1,
+                      "base": -1
+                    }
+                  },
+                  "name": "simple",
+                  "binding_kind": "let"
+                },
+                "right": {
+                  "kind": "Literal",
+                  "node_id": "entry.condition.operands.1.right",
+                  "span": {
+                    "start_line": 28,
+                    "start_column": 31,
+                    "end_line": 28,
+                    "end_column": 32,
+                    "start_byte": 787,
+                    "end_byte": 788
+                  },
+                  "inferred_type": {
+                    "kind": "numeric",
+                    "shape": "scalar",
+                    "dimension": {
+                      "kind": "powers",
+                      "quote": 0,
+                      "base": 0
+                    }
+                  },
+                  "value": 0.0,
+                  "dimension": {
+                    "kind": "powers",
+                    "quote": 0,
+                    "base": 0
+                  }
+                }
+              }
+            ]
+          },
+          "sizing": {
+            "kind": "equity_fraction",
+            "expression": {
+              "kind": "Binary",
+              "node_id": "entry.sizing.expression",
+              "span": {
+                "start_line": 29,
+                "start_column": 13,
+                "end_line": 29,
+                "end_column": 32,
+                "start_byte": 801,
+                "end_byte": 820
+              },
+              "inferred_type": {
+                "kind": "numeric",
+                "shape": "series",
+                "dimension": {
+                  "kind": "powers",
+                  "quote": 0,
+                  "base": 0
+                }
+              },
+              "operator": "*",
+              "left": {
+                "kind": "Binary",
+                "node_id": "entry.sizing.expression.left",
+                "span": {
+                  "start_line": 29,
+                  "start_column": 14,
+                  "end_line": 29,
+                  "end_column": 25,
+                  "start_byte": 802,
+                  "end_byte": 813
+                },
+                "inferred_type": {
+                  "kind": "numeric",
+                  "shape": "series",
+                  "dimension": {
+                    "kind": "powers",
+                    "quote": 0,
+                    "base": 0
+                  }
+                },
+                "operator": "+",
+                "left": {
+                  "kind": "Literal",
+                  "node_id": "entry.sizing.expression.left.left",
+                  "span": {
+                    "start_line": 29,
+                    "start_column": 14,
+                    "end_line": 29,
+                    "end_column": 15,
+                    "start_byte": 802,
+                    "end_byte": 803
+                  },
+                  "inferred_type": {
+                    "kind": "numeric",
+                    "shape": "scalar",
+                    "dimension": {
+                      "kind": "powers",
+                      "quote": 0,
+                      "base": 0
+                    }
+                  },
+                  "value": 1.0,
+                  "dimension": {
+                    "kind": "powers",
+                    "quote": 0,
+                    "base": 0
+                  }
+                },
+                "right": {
+                  "kind": "Reference",
+                  "node_id": "entry.sizing.expression.left.right",
+                  "span": {
+                    "start_line": 29,
+                    "start_column": 18,
+                    "end_line": 29,
+                    "end_column": 25,
+                    "start_byte": 806,
+                    "end_byte": 813
+                  },
+                  "inferred_type": {
+                    "kind": "numeric",
+                    "shape": "series",
+                    "dimension": {
+                      "kind": "powers",
+                      "quote": 0,
+                      "base": 0
+                    }
+                  },
+                  "name": "returns",
+                  "binding_kind": "let"
+                }
+              },
+              "right": {
+                "kind": "Literal",
+                "node_id": "entry.sizing.expression.right",
+                "span": {
+                  "start_line": 29,
+                  "start_column": 29,
+                  "end_line": 29,
+                  "end_column": 32,
+                  "start_byte": 817,
+                  "end_byte": 820
+                },
+                "inferred_type": {
+                  "kind": "numeric",
+                  "shape": "scalar",
+                  "dimension": {
+                    "kind": "powers",
+                    "quote": 0,
+                    "base": 0
+                  }
+                },
+                "value": 0.5,
+                "dimension": {
+                  "kind": "powers",
+                  "quote": 0,
+                  "base": 0
+                }
+              }
+            },
+            "span": {
+              "start_line": 29,
+              "start_column": 13,
+              "end_line": 29,
+              "end_column": 42,
+              "start_byte": 801,
+              "end_byte": 830
+            }
+          },
+          "span": {
+            "start_line": 27,
+            "start_column": 1,
+            "end_line": 29,
+            "end_column": 42,
+            "start_byte": 750,
+            "end_byte": 830
+          }
+        },
+        "exit": {
+          "condition": {
+            "kind": "Cross",
+            "node_id": "exit.condition",
+            "span": {
+              "start_line": 31,
+              "start_column": 8,
+              "end_line": 31,
+              "end_column": 33,
+              "start_byte": 844,
+              "end_byte": 869
+            },
+            "inferred_type": {
+              "kind": "boolean",
+              "shape": "series"
+            },
+            "direction": "below",
+            "left": {
+              "kind": "Reference",
+              "node_id": "exit.condition.left",
+              "span": {
+                "start_line": 31,
+                "start_column": 8,
+                "end_line": 31,
+                "end_column": 17,
+                "start_byte": 844,
+                "end_byte": 853
+              },
+              "inferred_type": {
+                "kind": "numeric",
+                "shape": "series",
+                "dimension": {
+                  "kind": "powers",
+                  "quote": 1,
+                  "base": -1
+                }
+              },
+              "name": "linevalue",
+              "binding_kind": "let"
+            },
+            "right": {
+              "kind": "Literal",
+              "node_id": "exit.condition.right",
+              "span": {
+                "start_line": 31,
+                "start_column": 32,
+                "end_line": 31,
+                "end_column": 33,
+                "start_byte": 868,
+                "end_byte": 869
+              },
+              "inferred_type": {
+                "kind": "numeric",
+                "shape": "scalar",
+                "dimension": {
+                  "kind": "powers",
+                  "quote": 0,
+                  "base": 0
+                }
+              },
+              "value": 0.0,
+              "dimension": {
+                "kind": "powers",
+                "quote": 0,
+                "base": 0
+              }
+            }
+          },
+          "action": "sell_all",
+          "span": {
+            "start_line": 30,
+            "start_column": 1,
+            "end_line": 32,
+            "end_column": 11,
+            "start_byte": 831,
+            "end_byte": 880
+          }
+        },
+        "risk": {
+          "stop": {
+            "expression": {
+              "kind": "Reference",
+              "node_id": "risk.stop.expression",
+              "span": {
+                "start_line": 34,
+                "start_column": 13,
+                "end_line": 34,
+                "end_column": 21,
+                "start_byte": 899,
+                "end_byte": 907
+              },
+              "inferred_type": {
+                "kind": "numeric",
+                "shape": "series",
+                "dimension": {
+                  "kind": "powers",
+                  "quote": 1,
+                  "base": -1
+                }
+              },
+              "name": "distance",
+              "binding_kind": "let"
+            },
+            "mode": "price",
+            "span": {
+              "start_line": 34,
+              "start_column": 3,
+              "end_line": 34,
+              "end_column": 21,
+              "start_byte": 889,
+              "end_byte": 907
+            }
+          },
+          "target": {
+            "expression": {
+              "kind": "Literal",
+              "node_id": "risk.target.expression",
+              "span": {
+                "start_line": 35,
+                "start_column": 15,
+                "end_line": 35,
+                "end_column": 18,
+                "start_byte": 922,
+                "end_byte": 925
+              },
+              "inferred_type": {
+                "kind": "numeric",
+                "shape": "scalar",
+                "dimension": {
+                  "kind": "powers",
+                  "quote": 0,
+                  "base": 0
+                }
+              },
+              "value": 0.3,
+              "dimension": {
+                "kind": "powers",
+                "quote": 0,
+                "base": 0
+              }
+            },
+            "mode": "ratio",
+            "span": {
+              "start_line": 35,
+              "start_column": 3,
+              "end_line": 35,
+              "end_column": 18,
+              "start_byte": 910,
+              "end_byte": 925
+            }
+          },
+          "max_open_positions": 1
+        },
+        "backtest": {
+          "from_date": "2024-01-01",
+          "to_date": "2024-01-08",
+          "capital": 1000.0,
+          "currency": "USDT",
+          "fee_rate": 0.001,
+          "slippage_rate": 0.0005,
+          "execution": "next_bar_open",
+          "calendar": "24x7",
+          "span": {
+            "start_line": 36,
+            "start_column": 1,
+            "end_line": 42,
+            "end_column": 16,
+            "start_byte": 926,
+            "end_byte": 1078
+          }
+        },
+        "span": {
+          "start_line": 1,
+          "start_column": 1,
+          "end_line": 43,
+          "end_column": 1,
+          "start_byte": 0,
+          "end_byte": 1079
+        }
+      },
+      "data_compatible": true
+    },
+    "explain": {
+      "schema_version": 1,
+      "valid": true,
+      "source_hash": "ffef8bb2260b1a3f5104c3901a99382083225a1a02cce9673a0d530436205ebb",
+      "spec_hash": "801304a787058ccb6f38c1df94b318adf658550d820af787cc08436779d2aebe",
+      "warmup_index": 3,
+      "resolved_window": {
+        "first_open": "2024-01-01T00:00:00Z",
+        "last_close_at": "2024-01-09T00:00:00Z",
+        "readiness_index": 3,
+        "first_signal_at": "2024-01-05T00:00:00Z",
+        "first_execution_at": "2024-01-05T00:00:00Z"
+      },
+      "diagnostics": [
+        {
+          "code": "W_RSI_SCALE",
+          "message": "RSI uses a 0 to 100 scale. A percentage threshold is a fraction.",
+          "severity": "warning",
+          "span": {
+            "start_line": 26,
+            "start_column": 17,
+            "end_line": 26,
+            "end_column": 29,
+            "start_byte": 737,
+            "end_byte": 749
+          },
+          "suggestion": null,
+          "data_row": null,
+          "node_id": null,
+          "details": {}
+        },
+        {
+          "code": "W_UNUSED_LET",
+          "message": "Unused let explicit counts toward warmup",
+          "severity": "warning",
+          "span": {
+            "start_line": 7,
+            "start_column": 1,
+            "end_line": 7,
+            "end_column": 28,
+            "start_byte": 130,
+            "end_byte": 157
+          },
+          "suggestion": null,
+          "data_row": null,
+          "node_id": null,
+          "details": {}
+        },
+        {
+          "code": "W_UNUSED_LET",
+          "message": "Unused let nested counts toward warmup",
+          "severity": "warning",
+          "span": {
+            "start_line": 8,
+            "start_column": 1,
+            "end_line": 8,
+            "end_column": 36,
+            "start_byte": 158,
+            "end_byte": 193
+          },
+          "suggestion": null,
+          "data_row": null,
+          "node_id": null,
+          "details": {}
+        },
+        {
+          "code": "W_UNUSED_LET",
+          "message": "Unused let exp counts toward warmup",
+          "severity": "warning",
+          "span": {
+            "start_line": 9,
+            "start_column": 1,
+            "end_line": 9,
+            "end_column": 17,
+            "start_byte": 194,
+            "end_byte": 210
+          },
+          "suggestion": null,
+          "data_row": null,
+          "node_id": null,
+          "details": {}
+        },
+        {
+          "code": "W_UNUSED_LET",
+          "message": "Unused let recovered counts toward warmup",
+          "severity": "warning",
+          "span": {
+            "start_line": 10,
+            "start_column": 1,
+            "end_line": 10,
+            "end_column": 30,
+            "start_byte": 211,
+            "end_byte": 240
+          },
+          "suggestion": null,
+          "data_row": null,
+          "node_id": null,
+          "details": {}
+        },
+        {
+          "code": "W_UNUSED_LET",
+          "message": "Unused let points counts toward warmup",
+          "severity": "warning",
+          "span": {
+            "start_line": 11,
+            "start_column": 1,
+            "end_line": 11,
+            "end_column": 20,
+            "start_byte": 241,
+            "end_byte": 260
+          },
+          "suggestion": null,
+          "data_row": null,
+          "node_id": null,
+          "details": {}
+        },
+        {
+          "code": "W_UNUSED_LET",
+          "message": "Unused let linedelay counts toward warmup",
+          "severity": "warning",
+          "span": {
+            "start_line": 13,
+            "start_column": 1,
+            "end_line": 13,
+            "end_column": 36,
+            "start_byte": 294,
+            "end_byte": 329
+          },
+          "suggestion": null,
+          "data_row": null,
+          "node_id": null,
+          "details": {}
+        },
+        {
+          "code": "W_UNUSED_LET",
+          "message": "Unused let signalvalue counts toward warmup",
+          "severity": "warning",
+          "span": {
+            "start_line": 14,
+            "start_column": 1,
+            "end_line": 14,
+            "end_column": 37,
+            "start_byte": 330,
+            "end_byte": 366
+          },
+          "suggestion": null,
+          "data_row": null,
+          "node_id": null,
+          "details": {}
+        },
+        {
+          "code": "W_UNUSED_LET",
+          "message": "Unused let hist counts toward warmup",
+          "severity": "warning",
+          "span": {
+            "start_line": 15,
+            "start_column": 1,
+            "end_line": 15,
+            "end_column": 33,
+            "start_byte": 367,
+            "end_byte": 399
+          },
+          "suggestion": null,
+          "data_row": null,
+          "node_id": null,
+          "details": {}
+        },
+        {
+          "code": "W_UNUSED_LET",
+          "message": "Unused let upperband counts toward warmup",
+          "severity": "warning",
+          "span": {
+            "start_line": 17,
+            "start_column": 1,
+            "end_line": 17,
+            "end_column": 41,
+            "start_byte": 422,
+            "end_byte": 462
+          },
+          "suggestion": null,
+          "data_row": null,
+          "node_id": null,
+          "details": {}
+        },
+        {
+          "code": "W_UNUSED_LET",
+          "message": "Unused let middleband counts toward warmup",
+          "severity": "warning",
+          "span": {
+            "start_line": 18,
+            "start_column": 1,
+            "end_line": 18,
+            "end_column": 43,
+            "start_byte": 463,
+            "end_byte": 505
+          },
+          "suggestion": null,
+          "data_row": null,
+          "node_id": null,
+          "details": {}
+        },
+        {
+          "code": "W_UNUSED_LET",
+          "message": "Unused let lowerband counts toward warmup",
+          "severity": "warning",
+          "span": {
+            "start_line": 19,
+            "start_column": 1,
+            "end_line": 19,
+            "end_column": 41,
+            "start_byte": 506,
+            "end_byte": 546
+          },
+          "suggestion": null,
+          "data_row": null,
+          "node_id": null,
+          "details": {}
+        },
+        {
+          "code": "W_UNUSED_LET",
+          "message": "Unused let highest counts toward warmup",
+          "severity": "warning",
+          "span": {
+            "start_line": 20,
+            "start_column": 1,
+            "end_line": 20,
+            "end_column": 32,
+            "start_byte": 547,
+            "end_byte": 578
+          },
+          "suggestion": null,
+          "data_row": null,
+          "node_id": null,
+          "details": {}
+        },
+        {
+          "code": "W_UNUSED_LET",
+          "message": "Unused let lowest counts toward warmup",
+          "severity": "warning",
+          "span": {
+            "start_line": 21,
+            "start_column": 1,
+            "end_line": 21,
+            "end_column": 30,
+            "start_byte": 579,
+            "end_byte": 608
+          },
+          "suggestion": null,
+          "data_row": null,
+          "node_id": null,
+          "details": {}
+        },
+        {
+          "code": "W_UNUSED_LET",
+          "message": "Unused let again counts toward warmup",
+          "severity": "warning",
+          "span": {
+            "start_line": 23,
+            "start_column": 1,
+            "end_line": 23,
+            "end_column": 26,
+            "start_byte": 637,
+            "end_byte": 662
+          },
+          "suggestion": null,
+          "data_row": null,
+          "node_id": null,
+          "details": {}
+        },
+        {
+          "code": "W_UNUSED_LET",
+          "message": "Unused let hole counts toward warmup",
+          "severity": "warning",
+          "span": {
+            "start_line": 24,
+            "start_column": 1,
+            "end_line": 24,
+            "end_column": 25,
+            "start_byte": 663,
+            "end_byte": 687
+          },
+          "suggestion": null,
+          "data_row": null,
+          "node_id": null,
+          "details": {}
+        },
+        {
+          "code": "W_UNUSED_LET",
+          "message": "Unused let deviation counts toward warmup",
+          "severity": "warning",
+          "span": {
+            "start_line": 25,
+            "start_column": 1,
+            "end_line": 25,
+            "end_column": 33,
+            "start_byte": 688,
+            "end_byte": 720
+          },
+          "suggestion": null,
+          "data_row": null,
+          "node_id": null,
+          "details": {}
+        }
+      ],
+      "text": "Indicator compatibility\nTESTUSDT, 86400 seconds per UTC bar, 2024-01-01 through 2024-01-08 inclusive.\nStart with 1000 USDT.\nlet source = (close / (high - low))\nlet simple = SMA(close, 2)\nlet explicit = SMA(close, 2)\nlet nested = SMA(EMA(close, 2), 2)[1]\nlet exp = EMA(close, 2)\nlet recovered = EMA(source, 2)\nlet points = RSI(close, 2)\nlet linevalue = MACD(close, 2, 3, 2).line\nlet linedelay = MACD(close, 2, 3, 2).line[1]\nlet signalvalue = MACD(close, 2, 3, 2).signal\nlet hist = MACD(close, 2, 3, 2).histogram\nlet distance = ATR(2)\nlet upperband = BBANDS(source, 2, 2).upper\nlet middleband = BBANDS(source, 2, 2).middle\nlet lowerband = BBANDS(source, 2, 2).lower\nlet highest = HIGHEST(volume, 2)\nlet lowest = LOWEST(source, 2)\nlet returns = ROC(volume, 2)\nlet again = ROC(volume, 2)\nlet hole = ROC(source, 2)\nlet deviation = STDDEV(source, 2)\nlet threshold = (RSI(close, 1) > 0.3)\nAt close, enter when (threshold and (simple > 0)).\nAt next open, allocate ((1 + returns) * 0.5) of equity including entry fee.\nExit all at the next open after (linevalue crosses below 0).\nStop distance distance (price), sampled at signal and frozen at entry.\nTarget distance 0.3 (fraction of fill), sampled at signal and frozen at entry.\nWarmup index 3. Protection at open precedes signal exits. Stop wins simultaneous intrabar touches. Final holdings marked at close.\nFee 10 bps and adverse slippage 5 bps per side. Buy-and-hold enters at the first executable open.\nDataset d54c2c13d6a12aa4c1d9a12721ae112edad46b99e10c87e55fa4c8fb7890f24d. Gap policy reject. First eligible close 2024-01-05T00:00:00Z, first executable open 2024-01-05T00:00:00Z.",
+      "assumptions": {
+        "calendar": "24x7",
+        "gap_policy": "reject",
+        "terminal": "mark_to_market",
+        "benchmark": "warmup_aligned_hold"
+      }
+    },
+    "projected_bytes": "{\"backtest\":{\"calendar\":\"24x7\",\"capital\":1000,\"currency\":\"USDT\",\"execution\":\"next_bar_open\",\"fee_rate\":0.001,\"from_date\":\"2024-01-01\",\"slippage_rate\":0.0005,\"to_date\":\"2024-01-08\"},\"bindings\":[{\"expression\":{\"kind\":\"Binary\",\"left\":{\"binding_kind\":\"builtin\",\"kind\":\"Reference\",\"name\":\"close\"},\"operator\":\"/\",\"right\":{\"kind\":\"Binary\",\"left\":{\"binding_kind\":\"builtin\",\"kind\":\"Reference\",\"name\":\"high\"},\"operator\":\"-\",\"right\":{\"binding_kind\":\"builtin\",\"kind\":\"Reference\",\"name\":\"low\"}}},\"name\":\"source\"},{\"expression\":{\"arguments\":[{\"binding_kind\":\"builtin\",\"kind\":\"Reference\",\"name\":\"close\"},{\"dimension\":{\"kind\":\"count\"},\"kind\":\"Literal\",\"value\":2}],\"function\":\"SMA\",\"kind\":\"Call\"},\"name\":\"simple\"},{\"expression\":{\"arguments\":[{\"binding_kind\":\"builtin\",\"kind\":\"Reference\",\"name\":\"close\"},{\"dimension\":{\"kind\":\"count\"},\"kind\":\"Literal\",\"value\":2}],\"function\":\"SMA\",\"kind\":\"Call\"},\"name\":\"explicit\"},{\"expression\":{\"bars\":1,\"base\":{\"arguments\":[{\"arguments\":[{\"binding_kind\":\"builtin\",\"kind\":\"Reference\",\"name\":\"close\"},{\"dimension\":{\"kind\":\"count\"},\"kind\":\"Literal\",\"value\":2}],\"function\":\"EMA\",\"kind\":\"Call\"},{\"dimension\":{\"kind\":\"count\"},\"kind\":\"Literal\",\"value\":2}],\"function\":\"SMA\",\"kind\":\"Call\"},\"kind\":\"Lookback\"},\"name\":\"nested\"},{\"expression\":{\"arguments\":[{\"binding_kind\":\"builtin\",\"kind\":\"Reference\",\"name\":\"close\"},{\"dimension\":{\"kind\":\"count\"},\"kind\":\"Literal\",\"value\":2}],\"function\":\"EMA\",\"kind\":\"Call\"},\"name\":\"exp\"},{\"expression\":{\"arguments\":[{\"binding_kind\":\"let\",\"kind\":\"Reference\",\"name\":\"source\"},{\"dimension\":{\"kind\":\"count\"},\"kind\":\"Literal\",\"value\":2}],\"function\":\"EMA\",\"kind\":\"Call\"},\"name\":\"recovered\"},{\"expression\":{\"arguments\":[{\"binding_kind\":\"builtin\",\"kind\":\"Reference\",\"name\":\"close\"},{\"dimension\":{\"kind\":\"count\"},\"kind\":\"Literal\",\"value\":2}],\"function\":\"RSI\",\"kind\":\"Call\"},\"name\":\"points\"},{\"expression\":{\"base\":{\"arguments\":[{\"binding_kind\":\"builtin\",\"kind\":\"Reference\",\"name\":\"close\"},{\"dimension\":{\"kind\":\"count\"},\"kind\":\"Literal\",\"value\":2},{\"dimension\":{\"kind\":\"count\"},\"kind\":\"Literal\",\"value\":3},{\"dimension\":{\"kind\":\"count\"},\"kind\":\"Literal\",\"value\":2}],\"function\":\"MACD\",\"kind\":\"Call\"},\"field\":\"line\",\"kind\":\"Field\"},\"name\":\"linevalue\"},{\"expression\":{\"bars\":1,\"base\":{\"base\":{\"arguments\":[{\"binding_kind\":\"builtin\",\"kind\":\"Reference\",\"name\":\"close\"},{\"dimension\":{\"kind\":\"count\"},\"kind\":\"Literal\",\"value\":2},{\"dimension\":{\"kind\":\"count\"},\"kind\":\"Literal\",\"value\":3},{\"dimension\":{\"kind\":\"count\"},\"kind\":\"Literal\",\"value\":2}],\"function\":\"MACD\",\"kind\":\"Call\"},\"field\":\"line\",\"kind\":\"Field\"},\"kind\":\"Lookback\"},\"name\":\"linedelay\"},{\"expression\":{\"base\":{\"arguments\":[{\"binding_kind\":\"builtin\",\"kind\":\"Reference\",\"name\":\"close\"},{\"dimension\":{\"kind\":\"count\"},\"kind\":\"Literal\",\"value\":2},{\"dimension\":{\"kind\":\"count\"},\"kind\":\"Literal\",\"value\":3},{\"dimension\":{\"kind\":\"count\"},\"kind\":\"Literal\",\"value\":2}],\"function\":\"MACD\",\"kind\":\"Call\"},\"field\":\"signal\",\"kind\":\"Field\"},\"name\":\"signalvalue\"},{\"expression\":{\"base\":{\"arguments\":[{\"binding_kind\":\"builtin\",\"kind\":\"Reference\",\"name\":\"close\"},{\"dimension\":{\"kind\":\"count\"},\"kind\":\"Literal\",\"value\":2},{\"dimension\":{\"kind\":\"count\"},\"kind\":\"Literal\",\"value\":3},{\"dimension\":{\"kind\":\"count\"},\"kind\":\"Literal\",\"value\":2}],\"function\":\"MACD\",\"kind\":\"Call\"},\"field\":\"histogram\",\"kind\":\"Field\"},\"name\":\"hist\"},{\"expression\":{\"arguments\":[{\"dimension\":{\"kind\":\"count\"},\"kind\":\"Literal\",\"value\":2}],\"function\":\"ATR\",\"kind\":\"Call\"},\"name\":\"distance\"},{\"expression\":{\"base\":{\"arguments\":[{\"binding_kind\":\"let\",\"kind\":\"Reference\",\"name\":\"source\"},{\"dimension\":{\"kind\":\"count\"},\"kind\":\"Literal\",\"value\":2},{\"dimension\":{\"base\":0,\"kind\":\"powers\",\"quote\":0},\"kind\":\"Literal\",\"value\":2}],\"function\":\"BBANDS\",\"kind\":\"Call\"},\"field\":\"upper\",\"kind\":\"Field\"},\"name\":\"upperband\"},{\"expression\":{\"base\":{\"arguments\":[{\"binding_kind\":\"let\",\"kind\":\"Reference\",\"name\":\"source\"},{\"dimension\":{\"kind\":\"count\"},\"kind\":\"Literal\",\"value\":2},{\"dimension\":{\"base\":0,\"kind\":\"powers\",\"quote\":0},\"kind\":\"Literal\",\"value\":2}],\"function\":\"BBANDS\",\"kind\":\"Call\"},\"field\":\"middle\",\"kind\":\"Field\"},\"name\":\"middleband\"},{\"expression\":{\"base\":{\"arguments\":[{\"binding_kind\":\"let\",\"kind\":\"Reference\",\"name\":\"source\"},{\"dimension\":{\"kind\":\"count\"},\"kind\":\"Literal\",\"value\":2},{\"dimension\":{\"base\":0,\"kind\":\"powers\",\"quote\":0},\"kind\":\"Literal\",\"value\":2}],\"function\":\"BBANDS\",\"kind\":\"Call\"},\"field\":\"lower\",\"kind\":\"Field\"},\"name\":\"lowerband\"},{\"expression\":{\"arguments\":[{\"binding_kind\":\"builtin\",\"kind\":\"Reference\",\"name\":\"volume\"},{\"dimension\":{\"kind\":\"count\"},\"kind\":\"Literal\",\"value\":2}],\"function\":\"HIGHEST\",\"kind\":\"Call\"},\"name\":\"highest\"},{\"expression\":{\"arguments\":[{\"binding_kind\":\"let\",\"kind\":\"Reference\",\"name\":\"source\"},{\"dimension\":{\"kind\":\"count\"},\"kind\":\"Literal\",\"value\":2}],\"function\":\"LOWEST\",\"kind\":\"Call\"},\"name\":\"lowest\"},{\"expression\":{\"arguments\":[{\"binding_kind\":\"builtin\",\"kind\":\"Reference\",\"name\":\"volume\"},{\"dimension\":{\"kind\":\"count\"},\"kind\":\"Literal\",\"value\":2}],\"function\":\"ROC\",\"kind\":\"Call\"},\"name\":\"returns\"},{\"expression\":{\"arguments\":[{\"binding_kind\":\"builtin\",\"kind\":\"Reference\",\"name\":\"volume\"},{\"dimension\":{\"kind\":\"count\"},\"kind\":\"Literal\",\"value\":2}],\"function\":\"ROC\",\"kind\":\"Call\"},\"name\":\"again\"},{\"expression\":{\"arguments\":[{\"binding_kind\":\"let\",\"kind\":\"Reference\",\"name\":\"source\"},{\"dimension\":{\"kind\":\"count\"},\"kind\":\"Literal\",\"value\":2}],\"function\":\"ROC\",\"kind\":\"Call\"},\"name\":\"hole\"},{\"expression\":{\"arguments\":[{\"binding_kind\":\"let\",\"kind\":\"Reference\",\"name\":\"source\"},{\"dimension\":{\"kind\":\"count\"},\"kind\":\"Literal\",\"value\":2}],\"function\":\"STDDEV\",\"kind\":\"Call\"},\"name\":\"deviation\"},{\"expression\":{\"kind\":\"Compare\",\"left\":{\"arguments\":[{\"binding_kind\":\"builtin\",\"kind\":\"Reference\",\"name\":\"close\"},{\"dimension\":{\"kind\":\"count\"},\"kind\":\"Literal\",\"value\":1}],\"function\":\"RSI\",\"kind\":\"Call\"},\"operator\":\">\",\"right\":{\"dimension\":{\"base\":0,\"kind\":\"powers\",\"quote\":0},\"kind\":\"Literal\",\"value\":0.3}},\"name\":\"threshold\"}],\"dsl_version\":1,\"entry\":{\"condition\":{\"kind\":\"Boolean\",\"operands\":[{\"binding_kind\":\"let\",\"kind\":\"Reference\",\"name\":\"threshold\"},{\"kind\":\"Compare\",\"left\":{\"binding_kind\":\"let\",\"kind\":\"Reference\",\"name\":\"simple\"},\"operator\":\">\",\"right\":{\"dimension\":{\"base\":0,\"kind\":\"powers\",\"quote\":0},\"kind\":\"Literal\",\"value\":0}}],\"operator\":\"and\"},\"sizing\":{\"expression\":{\"kind\":\"Binary\",\"left\":{\"kind\":\"Binary\",\"left\":{\"dimension\":{\"base\":0,\"kind\":\"powers\",\"quote\":0},\"kind\":\"Literal\",\"value\":1},\"operator\":\"+\",\"right\":{\"binding_kind\":\"let\",\"kind\":\"Reference\",\"name\":\"returns\"}},\"operator\":\"*\",\"right\":{\"dimension\":{\"base\":0,\"kind\":\"powers\",\"quote\":0},\"kind\":\"Literal\",\"value\":0.5}},\"kind\":\"equity_fraction\"}},\"exit\":{\"action\":\"sell_all\",\"condition\":{\"direction\":\"below\",\"kind\":\"Cross\",\"left\":{\"binding_kind\":\"let\",\"kind\":\"Reference\",\"name\":\"linevalue\"},\"right\":{\"dimension\":{\"base\":0,\"kind\":\"powers\",\"quote\":0},\"kind\":\"Literal\",\"value\":0}}},\"risk\":{\"max_open_positions\":1,\"stop\":{\"expression\":{\"binding_kind\":\"let\",\"kind\":\"Reference\",\"name\":\"distance\"},\"mode\":\"price\"},\"target\":{\"expression\":{\"dimension\":{\"base\":0,\"kind\":\"powers\",\"quote\":0},\"kind\":\"Literal\",\"value\":0.3},\"mode\":\"ratio\"}},\"schema_version\":1,\"symbol\":\"TESTUSDT\",\"timeframe_seconds\":86400}",
+    "vectors": {
+      "source": {
+        "ready": 0,
+        "values": [
+          "0x1.4000000000000p+2",
+          "0x1.8000000000000p+2",
+          null,
+          "0x1.0000000000000p+3",
+          "0x1.2000000000000p+3",
+          "0x1.1000000000000p+3",
+          "0x1.0000000000000p+3",
+          "0x1.4000000000000p+3"
+        ]
+      },
+      "simple": {
+        "ready": 1,
+        "values": [
+          null,
+          "0x1.6000000000000p+3",
+          "0x1.a000000000000p+3",
+          "0x1.e000000000000p+3",
+          "0x1.1000000000000p+4",
+          "0x1.1800000000000p+4",
+          "0x1.0800000000000p+4",
+          "0x1.2000000000000p+4"
+        ]
+      },
+      "explicit": {
+        "ready": 1,
+        "values": [
+          null,
+          "0x1.6000000000000p+3",
+          "0x1.a000000000000p+3",
+          "0x1.e000000000000p+3",
+          "0x1.1000000000000p+4",
+          "0x1.1800000000000p+4",
+          "0x1.0800000000000p+4",
+          "0x1.2000000000000p+4"
+        ]
+      },
+      "nested": {
+        "ready": 3,
+        "values": [
+          null,
+          null,
+          null,
+          "0x1.8000000000000p+3",
+          "0x1.c000000000000p+3",
+          "0x1.0000000000000p+4",
+          "0x1.1000000000000p+4",
+          "0x1.0aaaaaaaaaaaap+4"
+        ]
+      },
+      "exp": {
+        "ready": 1,
+        "values": [
+          null,
+          "0x1.6000000000000p+3",
+          "0x1.a000000000000p+3",
+          "0x1.e000000000000p+3",
+          "0x1.1000000000000p+4",
+          "0x1.1000000000000p+4",
+          "0x1.0555555555555p+4",
+          "0x1.2c71c71c71c72p+4"
+        ]
+      },
+      "recovered": {
+        "ready": 1,
+        "values": [
+          null,
+          "0x1.6000000000000p+2",
+          null,
+          null,
+          "0x1.1000000000000p+3",
+          "0x1.1000000000000p+3",
+          "0x1.0555555555555p+3",
+          "0x1.2c71c71c71c72p+3"
+        ]
+      },
+      "points": {
+        "ready": 2,
+        "values": [
+          null,
+          null,
+          "0x1.9000000000000p+6",
+          "0x1.9000000000000p+6",
+          "0x1.9000000000000p+6",
+          "0x1.0aaaaaaaaaaaap+6",
+          "0x1.3ffffffffffffp+5",
+          "0x1.56db6db6db6dbp+6"
+        ]
+      },
+      "linevalue": {
+        "ready": 2,
+        "values": [
+          null,
+          null,
+          "0x1.0000000000000p+0",
+          "0x1.0000000000000p+0",
+          "0x1.0000000000000p+0",
+          "0x1.0000000000000p-1",
+          "0x1.5555555555500p-4",
+          "0x1.4e38e38e38e40p-1"
+        ],
+        "record": {
+          "ready": 3,
+          "order": [
+            "line",
+            "signal",
+            "histogram"
+          ],
+          "values": {
+            "line": [
+              null,
+              null,
+              "0x1.0000000000000p+0",
+              "0x1.0000000000000p+0",
+              "0x1.0000000000000p+0",
+              "0x1.0000000000000p-1",
+              "0x1.5555555555500p-4",
+              "0x1.4e38e38e38e40p-1"
+            ],
+            "signal": [
+              null,
+              null,
+              null,
+              "0x1.0000000000000p+0",
+              "0x1.0000000000000p+0",
+              "0x1.5555555555556p-1",
+              "0x1.1c71c71c71c64p-2",
+              "0x1.0e38e38e38e3bp-1"
+            ],
+            "histogram": [
+              null,
+              null,
+              null,
+              "0x0.0p+0",
+              "0x0.0p+0",
+              "-0x1.5555555555558p-3",
+              "-0x1.8e38e38e38e48p-3",
+              "0x1.0000000000014p-3"
+            ]
+          }
+        }
+      },
+      "linedelay": {
+        "ready": 3,
+        "values": [
+          null,
+          null,
+          null,
+          "0x1.0000000000000p+0",
+          "0x1.0000000000000p+0",
+          "0x1.0000000000000p+0",
+          "0x1.0000000000000p-1",
+          "0x1.5555555555500p-4"
+        ]
+      },
+      "signalvalue": {
+        "ready": 3,
+        "values": [
+          null,
+          null,
+          null,
+          "0x1.0000000000000p+0",
+          "0x1.0000000000000p+0",
+          "0x1.5555555555556p-1",
+          "0x1.1c71c71c71c64p-2",
+          "0x1.0e38e38e38e3bp-1"
+        ],
+        "record": {
+          "ready": 3,
+          "order": [
+            "line",
+            "signal",
+            "histogram"
+          ],
+          "values": {
+            "line": [
+              null,
+              null,
+              "0x1.0000000000000p+0",
+              "0x1.0000000000000p+0",
+              "0x1.0000000000000p+0",
+              "0x1.0000000000000p-1",
+              "0x1.5555555555500p-4",
+              "0x1.4e38e38e38e40p-1"
+            ],
+            "signal": [
+              null,
+              null,
+              null,
+              "0x1.0000000000000p+0",
+              "0x1.0000000000000p+0",
+              "0x1.5555555555556p-1",
+              "0x1.1c71c71c71c64p-2",
+              "0x1.0e38e38e38e3bp-1"
+            ],
+            "histogram": [
+              null,
+              null,
+              null,
+              "0x0.0p+0",
+              "0x0.0p+0",
+              "-0x1.5555555555558p-3",
+              "-0x1.8e38e38e38e48p-3",
+              "0x1.0000000000014p-3"
+            ]
+          }
+        }
+      },
+      "hist": {
+        "ready": 3,
+        "values": [
+          null,
+          null,
+          null,
+          "0x0.0p+0",
+          "0x0.0p+0",
+          "-0x1.5555555555558p-3",
+          "-0x1.8e38e38e38e48p-3",
+          "0x1.0000000000014p-3"
+        ],
+        "record": {
+          "ready": 3,
+          "order": [
+            "line",
+            "signal",
+            "histogram"
+          ],
+          "values": {
+            "line": [
+              null,
+              null,
+              "0x1.0000000000000p+0",
+              "0x1.0000000000000p+0",
+              "0x1.0000000000000p+0",
+              "0x1.0000000000000p-1",
+              "0x1.5555555555500p-4",
+              "0x1.4e38e38e38e40p-1"
+            ],
+            "signal": [
+              null,
+              null,
+              null,
+              "0x1.0000000000000p+0",
+              "0x1.0000000000000p+0",
+              "0x1.5555555555556p-1",
+              "0x1.1c71c71c71c64p-2",
+              "0x1.0e38e38e38e3bp-1"
+            ],
+            "histogram": [
+              null,
+              null,
+              null,
+              "0x0.0p+0",
+              "0x0.0p+0",
+              "-0x1.5555555555558p-3",
+              "-0x1.8e38e38e38e48p-3",
+              "0x1.0000000000014p-3"
+            ]
+          }
+        }
+      },
+      "distance": {
+        "ready": 1,
+        "values": [
+          null,
+          "0x1.4000000000000p+1",
+          "0x1.2000000000000p+1",
+          "0x1.5000000000000p+1",
+          "0x1.6800000000000p+1",
+          "0x1.3400000000000p+1",
+          "0x1.1a00000000000p+1",
+          "0x1.cd00000000000p+1"
+        ]
+      },
+      "upperband": {
+        "ready": 1,
+        "values": [
+          null,
+          "0x1.a000000000000p+2",
+          null,
+          null,
+          "0x1.3000000000000p+3",
+          "0x1.2800000000000p+3",
+          "0x1.1800000000000p+3",
+          "0x1.6000000000000p+3"
+        ],
+        "record": {
+          "ready": 1,
+          "order": [
+            "middle",
+            "upper",
+            "lower"
+          ],
+          "values": {
+            "middle": [
+              null,
+              "0x1.6000000000000p+2",
+              null,
+              null,
+              "0x1.1000000000000p+3",
+              "0x1.1800000000000p+3",
+              "0x1.0800000000000p+3",
+              "0x1.2000000000000p+3"
+            ],
+            "upper": [
+              null,
+              "0x1.a000000000000p+2",
+              null,
+              null,
+              "0x1.3000000000000p+3",
+              "0x1.2800000000000p+3",
+              "0x1.1800000000000p+3",
+              "0x1.6000000000000p+3"
+            ],
+            "lower": [
+              null,
+              "0x1.2000000000000p+2",
+              null,
+              null,
+              "0x1.e000000000000p+2",
+              "0x1.0800000000000p+3",
+              "0x1.f000000000000p+2",
+              "0x1.c000000000000p+2"
+            ]
+          }
+        }
+      },
+      "middleband": {
+        "ready": 1,
+        "values": [
+          null,
+          "0x1.6000000000000p+2",
+          null,
+          null,
+          "0x1.1000000000000p+3",
+          "0x1.1800000000000p+3",
+          "0x1.0800000000000p+3",
+          "0x1.2000000000000p+3"
+        ],
+        "record": {
+          "ready": 1,
+          "order": [
+            "middle",
+            "upper",
+            "lower"
+          ],
+          "values": {
+            "middle": [
+              null,
+              "0x1.6000000000000p+2",
+              null,
+              null,
+              "0x1.1000000000000p+3",
+              "0x1.1800000000000p+3",
+              "0x1.0800000000000p+3",
+              "0x1.2000000000000p+3"
+            ],
+            "upper": [
+              null,
+              "0x1.a000000000000p+2",
+              null,
+              null,
+              "0x1.3000000000000p+3",
+              "0x1.2800000000000p+3",
+              "0x1.1800000000000p+3",
+              "0x1.6000000000000p+3"
+            ],
+            "lower": [
+              null,
+              "0x1.2000000000000p+2",
+              null,
+              null,
+              "0x1.e000000000000p+2",
+              "0x1.0800000000000p+3",
+              "0x1.f000000000000p+2",
+              "0x1.c000000000000p+2"
+            ]
+          }
+        }
+      },
+      "lowerband": {
+        "ready": 1,
+        "values": [
+          null,
+          "0x1.2000000000000p+2",
+          null,
+          null,
+          "0x1.e000000000000p+2",
+          "0x1.0800000000000p+3",
+          "0x1.f000000000000p+2",
+          "0x1.c000000000000p+2"
+        ],
+        "record": {
+          "ready": 1,
+          "order": [
+            "middle",
+            "upper",
+            "lower"
+          ],
+          "values": {
+            "middle": [
+              null,
+              "0x1.6000000000000p+2",
+              null,
+              null,
+              "0x1.1000000000000p+3",
+              "0x1.1800000000000p+3",
+              "0x1.0800000000000p+3",
+              "0x1.2000000000000p+3"
+            ],
+            "upper": [
+              null,
+              "0x1.a000000000000p+2",
+              null,
+              null,
+              "0x1.3000000000000p+3",
+              "0x1.2800000000000p+3",
+              "0x1.1800000000000p+3",
+              "0x1.6000000000000p+3"
+            ],
+            "lower": [
+              null,
+              "0x1.2000000000000p+2",
+              null,
+              null,
+              "0x1.e000000000000p+2",
+              "0x1.0800000000000p+3",
+              "0x1.f000000000000p+2",
+              "0x1.c000000000000p+2"
+            ]
+          }
+        }
+      },
+      "highest": {
+        "ready": 1,
+        "values": [
+          null,
+          "0x1.0000000000000p+0",
+          "0x1.8000000000000p+1",
+          "0x1.0000000000000p+2",
+          "0x1.4000000000000p+2",
+          "0x1.8000000000000p+2",
+          "0x1.c000000000000p+2",
+          "0x1.0000000000000p+3"
+        ]
+      },
+      "lowest": {
+        "ready": 1,
+        "values": [
+          null,
+          "0x1.4000000000000p+2",
+          null,
+          null,
+          "0x1.0000000000000p+3",
+          "0x1.1000000000000p+3",
+          "0x1.0000000000000p+3",
+          "0x1.0000000000000p+3"
+        ]
+      },
+      "returns": {
+        "ready": 2,
+        "values": [
+          null,
+          null,
+          "0x1.0000000000000p+1",
+          null,
+          "0x1.5555555555556p-1",
+          "0x1.0000000000000p-1",
+          "0x1.9999999999998p-2",
+          "0x1.5555555555554p-2"
+        ]
+      },
+      "again": {
+        "ready": 2,
+        "values": [
+          null,
+          null,
+          "0x1.0000000000000p+1",
+          null,
+          "0x1.5555555555556p-1",
+          "0x1.0000000000000p-1",
+          "0x1.9999999999998p-2",
+          "0x1.5555555555554p-2"
+        ]
+      },
+      "hole": {
+        "ready": 2,
+        "values": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          "0x1.0000000000000p-4",
+          "-0x1.c71c71c71c720p-4",
+          "0x1.6969696969698p-3"
+        ]
+      },
+      "deviation": {
+        "ready": 1,
+        "values": [
+          null,
+          "0x1.0000000000000p-1",
+          null,
+          null,
+          "0x1.0000000000000p-1",
+          "0x1.0000000000000p-2",
+          "0x1.0000000000000p-2",
+          "0x1.0000000000000p+0"
+        ]
+      },
+      "threshold": {
+        "ready": 1,
+        "values": [
+          null,
+          "0x1.0000000000000p+0",
+          "0x1.0000000000000p+0",
+          "0x1.0000000000000p+0",
+          "0x1.0000000000000p+0",
+          "0x0.0p+0",
+          "0x0.0p+0",
+          "0x1.0000000000000p+0"
+        ]
+      }
+    },
+    "prefix_counters": {
+      "0": {
+        "reasons": {
+          "warmup": 25
+        },
+        "calls": 14
+      },
+      "1": {
+        "reasons": {
+          "warmup": 36
+        },
+        "calls": 14
+      },
+      "2": {
+        "reasons": {
+          "warmup": 40,
+          "zero_denominator": 1
+        },
+        "calls": 14
+      },
+      "3": {
+        "reasons": {
+          "warmup": 40,
+          "zero_denominator": 2
+        },
+        "calls": 14
+      },
+      "4": {
+        "reasons": {
+          "warmup": 40,
+          "zero_denominator": 2
+        },
+        "calls": 14
+      },
+      "5": {
+        "reasons": {
+          "warmup": 40,
+          "zero_denominator": 2
+        },
+        "calls": 14
+      },
+      "6": {
+        "reasons": {
+          "warmup": 40,
+          "zero_denominator": 2
+        },
+        "calls": 14
+      },
+      "7": {
+        "reasons": {
+          "warmup": 40,
+          "zero_denominator": 2
+        },
+        "calls": 14
+      }
+    },
+    "identities": {
+      "source_hash": "ffef8bb2260b1a3f5104c3901a99382083225a1a02cce9673a0d530436205ebb",
+      "spec_hash": "801304a787058ccb6f38c1df94b318adf658550d820af787cc08436779d2aebe",
+      "dataset_hash": "d54c2c13d6a12aa4c1d9a12721ae112edad46b99e10c87e55fa4c8fb7890f24d",
+      "config_hash": "f6376d80cd21d49989c517e5b9bd0e0bd999d0e8b049b92fd6d468635d1a9826",
+      "result_digest": "e7ff62d681e20272279b20d156fbffb10b50c9c57caea43162851b099863ed64",
+      "dsl_version": 1,
+      "semantics_version": "1.1.0",
+      "schema_version": 2
+    },
+    "raw_data_hash": "9a2b1fc0b470aa6aa2df238a9ae7b32596fb01a415a96844467d9023e91bc6df",
+    "ledger": {
+      "schema_version": 2,
+      "summary": {
+        "schema_version": 1,
+        "quote_currency": "USDT",
+        "symbol": "TESTUSDT",
+        "timeframe": "1d",
+        "starting_capital": 1000.0,
+        "final_equity": 1145.5899491440546,
+        "final_cash": 166.66666666666663,
+        "open_position": {
+          "trade_id": "T000001",
+          "entry_bar": 5,
+          "entry_at": "2024-01-06T00:00:00Z",
+          "quantity": 48.946164123869394,
+          "entry_reference": 17.0,
+          "entry_price": 17.008499999999998,
+          "entry_fee": 0.8325008325008325,
+          "protection": {
+            "stop": {
+              "node_id": "risk.stop.expression",
+              "sampled_bar": 4,
+              "sampled_at": "2024-01-06T00:00:00Z",
+              "expression_value": 2.8125,
+              "unit": "price",
+              "entry_anchor": 17.008499999999998,
+              "distance": 2.8125,
+              "trigger_price": 14.195999999999998
+            },
+            "target": {
+              "node_id": "risk.target.expression",
+              "sampled_bar": 4,
+              "sampled_at": "2024-01-06T00:00:00Z",
+              "expression_value": 0.3,
+              "unit": "ratio",
+              "entry_anchor": 17.008499999999998,
+              "distance": 5.102549999999999,
+              "trigger_price": 22.11105
+            }
+          },
+          "entry_fill_id": "F00000001",
+          "mark_price": 20.0,
+          "unrealized_gross": 146.42244997655538
+        },
+        "benchmark": {
+          "name": "warmup_aligned_hold",
+          "entry_at": "2024-01-05T00:00:00Z",
+          "quantity": 55.472319340385305,
+          "entry_reference": 18.0,
+          "entry_price": 18.009,
+          "entry_fee": 0.9990009990009989,
+          "final_cash": 0.0,
+          "final_equity": 1109.4463868077062,
+          "costs": {
+            "entry_fees": 0.9990009990009989,
+            "exit_fees": 0.0,
+            "total_fees": 0.9990009990009989,
+            "entry_slippage_cost": 0.49925087406348667,
+            "exit_slippage_cost": 0.0,
+            "total_slippage_cost": 0.49925087406348667
+          },
+          "terminal": "mark_to_market",
+          "metrics": {
+            "total_return": 0.10944638680770624,
+            "cagr": 113.65300120320923,
+            "sharpe": 3.2799500792840055,
+            "max_drawdown": 0.11244289055383516,
+            "closed_trades": 0,
+            "wins": 0,
+            "losses": 0,
+            "breakeven": 0,
+            "win_rate": null,
+            "profit_factor": null,
+            "profit_factor_status": "no_closed_trades",
+            "exposure_fraction": 0.5,
+            "total_fees": 0.9990009990009989,
+            "total_slippage_cost": 0.49925087406348667
+          }
+        },
+        "costs": {
+          "entry_fees": 0.8325008325008325,
+          "exit_fees": 0.0,
+          "total_fees": 0.8325008325008325,
+          "entry_slippage_cost": 0.41604239505278967,
+          "exit_slippage_cost": 0.0,
+          "total_slippage_cost": 0.41604239505278967
+        },
+        "metrics": {
+          "total_return": 0.14558994914405465,
+          "cagr": 494.50914032474793,
+          "sharpe": 4.815613629544578,
+          "max_drawdown": 0.05019470735142306,
+          "closed_trades": 0,
+          "wins": 0,
+          "losses": 0,
+          "breakeven": 0,
+          "win_rate": null,
+          "profit_factor": null,
+          "profit_factor_status": "no_closed_trades",
+          "exposure_fraction": 0.375,
+          "total_fees": 0.8325008325008325,
+          "total_slippage_cost": 0.41604239505278967
+        },
+        "counts": {
+          "signals": 2,
+          "entry_rejections": 1,
+          "expired_orders": 0,
+          "dual_touches": 0,
+          "numeric_adjustments": 0,
+          "unavailable_by_reason": {
+            "warmup": 49,
+            "zero_denominator": 2
+          }
+        },
+        "window": {
+          "first_open": "2024-01-01T00:00:00Z",
+          "last_close_at": "2024-01-09T00:00:00Z"
+        },
+        "benchmark_entry_at": "2024-01-05T00:00:00Z",
+        "warnings": [
+          {
+            "code": "W_RSI_SCALE",
+            "message": "RSI uses a 0 to 100 scale. A percentage threshold is a fraction.",
+            "severity": "warning",
+            "span": {
+              "start_line": 26,
+              "start_column": 17,
+              "end_line": 26,
+              "end_column": 29,
+              "start_byte": 737,
+              "end_byte": 749
+            },
+            "suggestion": null,
+            "data_row": null,
+            "node_id": null,
+            "details": {}
+          },
+          {
+            "code": "W_UNUSED_LET",
+            "message": "Unused let explicit counts toward warmup",
+            "severity": "warning",
+            "span": {
+              "start_line": 7,
+              "start_column": 1,
+              "end_line": 7,
+              "end_column": 28,
+              "start_byte": 130,
+              "end_byte": 157
+            },
+            "suggestion": null,
+            "data_row": null,
+            "node_id": null,
+            "details": {}
+          },
+          {
+            "code": "W_UNUSED_LET",
+            "message": "Unused let nested counts toward warmup",
+            "severity": "warning",
+            "span": {
+              "start_line": 8,
+              "start_column": 1,
+              "end_line": 8,
+              "end_column": 36,
+              "start_byte": 158,
+              "end_byte": 193
+            },
+            "suggestion": null,
+            "data_row": null,
+            "node_id": null,
+            "details": {}
+          },
+          {
+            "code": "W_UNUSED_LET",
+            "message": "Unused let exp counts toward warmup",
+            "severity": "warning",
+            "span": {
+              "start_line": 9,
+              "start_column": 1,
+              "end_line": 9,
+              "end_column": 17,
+              "start_byte": 194,
+              "end_byte": 210
+            },
+            "suggestion": null,
+            "data_row": null,
+            "node_id": null,
+            "details": {}
+          },
+          {
+            "code": "W_UNUSED_LET",
+            "message": "Unused let recovered counts toward warmup",
+            "severity": "warning",
+            "span": {
+              "start_line": 10,
+              "start_column": 1,
+              "end_line": 10,
+              "end_column": 30,
+              "start_byte": 211,
+              "end_byte": 240
+            },
+            "suggestion": null,
+            "data_row": null,
+            "node_id": null,
+            "details": {}
+          },
+          {
+            "code": "W_UNUSED_LET",
+            "message": "Unused let points counts toward warmup",
+            "severity": "warning",
+            "span": {
+              "start_line": 11,
+              "start_column": 1,
+              "end_line": 11,
+              "end_column": 20,
+              "start_byte": 241,
+              "end_byte": 260
+            },
+            "suggestion": null,
+            "data_row": null,
+            "node_id": null,
+            "details": {}
+          },
+          {
+            "code": "W_UNUSED_LET",
+            "message": "Unused let linedelay counts toward warmup",
+            "severity": "warning",
+            "span": {
+              "start_line": 13,
+              "start_column": 1,
+              "end_line": 13,
+              "end_column": 36,
+              "start_byte": 294,
+              "end_byte": 329
+            },
+            "suggestion": null,
+            "data_row": null,
+            "node_id": null,
+            "details": {}
+          },
+          {
+            "code": "W_UNUSED_LET",
+            "message": "Unused let signalvalue counts toward warmup",
+            "severity": "warning",
+            "span": {
+              "start_line": 14,
+              "start_column": 1,
+              "end_line": 14,
+              "end_column": 37,
+              "start_byte": 330,
+              "end_byte": 366
+            },
+            "suggestion": null,
+            "data_row": null,
+            "node_id": null,
+            "details": {}
+          },
+          {
+            "code": "W_UNUSED_LET",
+            "message": "Unused let hist counts toward warmup",
+            "severity": "warning",
+            "span": {
+              "start_line": 15,
+              "start_column": 1,
+              "end_line": 15,
+              "end_column": 33,
+              "start_byte": 367,
+              "end_byte": 399
+            },
+            "suggestion": null,
+            "data_row": null,
+            "node_id": null,
+            "details": {}
+          },
+          {
+            "code": "W_UNUSED_LET",
+            "message": "Unused let upperband counts toward warmup",
+            "severity": "warning",
+            "span": {
+              "start_line": 17,
+              "start_column": 1,
+              "end_line": 17,
+              "end_column": 41,
+              "start_byte": 422,
+              "end_byte": 462
+            },
+            "suggestion": null,
+            "data_row": null,
+            "node_id": null,
+            "details": {}
+          },
+          {
+            "code": "W_UNUSED_LET",
+            "message": "Unused let middleband counts toward warmup",
+            "severity": "warning",
+            "span": {
+              "start_line": 18,
+              "start_column": 1,
+              "end_line": 18,
+              "end_column": 43,
+              "start_byte": 463,
+              "end_byte": 505
+            },
+            "suggestion": null,
+            "data_row": null,
+            "node_id": null,
+            "details": {}
+          },
+          {
+            "code": "W_UNUSED_LET",
+            "message": "Unused let lowerband counts toward warmup",
+            "severity": "warning",
+            "span": {
+              "start_line": 19,
+              "start_column": 1,
+              "end_line": 19,
+              "end_column": 41,
+              "start_byte": 506,
+              "end_byte": 546
+            },
+            "suggestion": null,
+            "data_row": null,
+            "node_id": null,
+            "details": {}
+          },
+          {
+            "code": "W_UNUSED_LET",
+            "message": "Unused let highest counts toward warmup",
+            "severity": "warning",
+            "span": {
+              "start_line": 20,
+              "start_column": 1,
+              "end_line": 20,
+              "end_column": 32,
+              "start_byte": 547,
+              "end_byte": 578
+            },
+            "suggestion": null,
+            "data_row": null,
+            "node_id": null,
+            "details": {}
+          },
+          {
+            "code": "W_UNUSED_LET",
+            "message": "Unused let lowest counts toward warmup",
+            "severity": "warning",
+            "span": {
+              "start_line": 21,
+              "start_column": 1,
+              "end_line": 21,
+              "end_column": 30,
+              "start_byte": 579,
+              "end_byte": 608
+            },
+            "suggestion": null,
+            "data_row": null,
+            "node_id": null,
+            "details": {}
+          },
+          {
+            "code": "W_UNUSED_LET",
+            "message": "Unused let again counts toward warmup",
+            "severity": "warning",
+            "span": {
+              "start_line": 23,
+              "start_column": 1,
+              "end_line": 23,
+              "end_column": 26,
+              "start_byte": 637,
+              "end_byte": 662
+            },
+            "suggestion": null,
+            "data_row": null,
+            "node_id": null,
+            "details": {}
+          },
+          {
+            "code": "W_UNUSED_LET",
+            "message": "Unused let hole counts toward warmup",
+            "severity": "warning",
+            "span": {
+              "start_line": 24,
+              "start_column": 1,
+              "end_line": 24,
+              "end_column": 25,
+              "start_byte": 663,
+              "end_byte": 687
+            },
+            "suggestion": null,
+            "data_row": null,
+            "node_id": null,
+            "details": {}
+          },
+          {
+            "code": "W_UNUSED_LET",
+            "message": "Unused let deviation counts toward warmup",
+            "severity": "warning",
+            "span": {
+              "start_line": 25,
+              "start_column": 1,
+              "end_line": 25,
+              "end_column": 33,
+              "start_byte": 688,
+              "end_byte": 720
+            },
+            "suggestion": null,
+            "data_row": null,
+            "node_id": null,
+            "details": {}
+          },
+          {
+            "code": "W_METRIC_UNAVAILABLE",
+            "message": "strategy profit_factor unavailable: no_closed_trades",
+            "severity": "info",
+            "span": null,
+            "suggestion": null,
+            "data_row": null,
+            "node_id": null,
+            "details": {
+              "account": "strategy",
+              "metric": "profit_factor",
+              "reason": "no_closed_trades"
+            }
+          },
+          {
+            "code": "W_METRIC_UNAVAILABLE",
+            "message": "strategy win_rate unavailable: no_closed_trades",
+            "severity": "info",
+            "span": null,
+            "suggestion": null,
+            "data_row": null,
+            "node_id": null,
+            "details": {
+              "account": "strategy",
+              "metric": "win_rate",
+              "reason": "no_closed_trades"
+            }
+          },
+          {
+            "code": "W_METRIC_UNAVAILABLE",
+            "message": "benchmark profit_factor unavailable: no_closed_trades",
+            "severity": "info",
+            "span": null,
+            "suggestion": null,
+            "data_row": null,
+            "node_id": null,
+            "details": {
+              "account": "benchmark",
+              "metric": "profit_factor",
+              "reason": "no_closed_trades"
+            }
+          },
+          {
+            "code": "W_METRIC_UNAVAILABLE",
+            "message": "benchmark win_rate unavailable: no_closed_trades",
+            "severity": "info",
+            "span": null,
+            "suggestion": null,
+            "data_row": null,
+            "node_id": null,
+            "details": {
+              "account": "benchmark",
+              "metric": "win_rate",
+              "reason": "no_closed_trades"
+            }
+          },
+          {
+            "code": "W_WARMUP_DELAY",
+            "message": "W_WARMUP_DELAY: 3 occurrences",
+            "severity": "warning",
+            "span": null,
+            "suggestion": null,
+            "data_row": null,
+            "node_id": null,
+            "details": {
+              "count": 3
+            }
+          }
+        ]
+      },
+      "trades": [],
+      "equity": [
+        {
+          "index": 0,
+          "timestamp": "2024-01-01T00:00:00Z",
+          "phase": "initial",
+          "bar_index": null,
+          "mark_price": null,
+          "exposed": false,
+          "cash": 1000.0,
+          "quantity": 0.0,
+          "equity": 1000.0,
+          "peak_equity": 1000.0,
+          "drawdown": 0.0,
+          "cumulative_return": 0.0,
+          "benchmark_cash": 1000.0,
+          "benchmark_quantity": 0.0,
+          "benchmark_equity": 1000.0,
+          "benchmark_peak_equity": 1000.0,
+          "benchmark_drawdown": 0.0
+        },
+        {
+          "index": 1,
+          "timestamp": "2024-01-02T00:00:00Z",
+          "phase": "close",
+          "bar_index": 0,
+          "mark_price": 10.0,
+          "exposed": false,
+          "cash": 1000.0,
+          "quantity": 0.0,
+          "equity": 1000.0,
+          "peak_equity": 1000.0,
+          "drawdown": 0.0,
+          "cumulative_return": 0.0,
+          "benchmark_cash": 1000.0,
+          "benchmark_quantity": 0.0,
+          "benchmark_equity": 1000.0,
+          "benchmark_peak_equity": 1000.0,
+          "benchmark_drawdown": 0.0
+        },
+        {
+          "index": 2,
+          "timestamp": "2024-01-03T00:00:00Z",
+          "phase": "close",
+          "bar_index": 1,
+          "mark_price": 12.0,
+          "exposed": false,
+          "cash": 1000.0,
+          "quantity": 0.0,
+          "equity": 1000.0,
+          "peak_equity": 1000.0,
+          "drawdown": 0.0,
+          "cumulative_return": 0.0,
+          "benchmark_cash": 1000.0,
+          "benchmark_quantity": 0.0,
+          "benchmark_equity": 1000.0,
+          "benchmark_peak_equity": 1000.0,
+          "benchmark_drawdown": 0.0
+        },
+        {
+          "index": 3,
+          "timestamp": "2024-01-04T00:00:00Z",
+          "phase": "close",
+          "bar_index": 2,
+          "mark_price": 14.0,
+          "exposed": false,
+          "cash": 1000.0,
+          "quantity": 0.0,
+          "equity": 1000.0,
+          "peak_equity": 1000.0,
+          "drawdown": 0.0,
+          "cumulative_return": 0.0,
+          "benchmark_cash": 1000.0,
+          "benchmark_quantity": 0.0,
+          "benchmark_equity": 1000.0,
+          "benchmark_peak_equity": 1000.0,
+          "benchmark_drawdown": 0.0
+        },
+        {
+          "index": 4,
+          "timestamp": "2024-01-05T00:00:00Z",
+          "phase": "close",
+          "bar_index": 3,
+          "mark_price": 16.0,
+          "exposed": false,
+          "cash": 1000.0,
+          "quantity": 0.0,
+          "equity": 1000.0,
+          "peak_equity": 1000.0,
+          "drawdown": 0.0,
+          "cumulative_return": 0.0,
+          "benchmark_cash": 1000.0,
+          "benchmark_quantity": 0.0,
+          "benchmark_equity": 1000.0,
+          "benchmark_peak_equity": 1000.0,
+          "benchmark_drawdown": 0.0
+        },
+        {
+          "index": 5,
+          "timestamp": "2024-01-06T00:00:00Z",
+          "phase": "close",
+          "bar_index": 4,
+          "mark_price": 18.0,
+          "exposed": false,
+          "cash": 1000.0,
+          "quantity": 0.0,
+          "equity": 1000.0,
+          "peak_equity": 1000.0,
+          "drawdown": 0.0,
+          "cumulative_return": 0.0,
+          "benchmark_cash": 0.0,
+          "benchmark_quantity": 55.472319340385305,
+          "benchmark_equity": 998.5017481269355,
+          "benchmark_peak_equity": 1000.0,
+          "benchmark_drawdown": -0.0014982518730645156
+        },
+        {
+          "index": 6,
+          "timestamp": "2024-01-07T00:00:00Z",
+          "phase": "close",
+          "bar_index": 5,
+          "mark_price": 17.0,
+          "exposed": true,
+          "cash": 166.66666666666663,
+          "quantity": 48.946164123869394,
+          "equity": 998.7514567724463,
+          "peak_equity": 1000.0,
+          "drawdown": -0.0012485432275536335,
+          "cumulative_return": -0.0012485432275536335,
+          "benchmark_cash": 0.0,
+          "benchmark_quantity": 55.472319340385305,
+          "benchmark_equity": 943.0294287865502,
+          "benchmark_peak_equity": 1000.0,
+          "benchmark_drawdown": -0.05697057121344984
+        },
+        {
+          "index": 7,
+          "timestamp": "2024-01-08T00:00:00Z",
+          "phase": "close",
+          "bar_index": 6,
+          "mark_price": 16.0,
+          "exposed": true,
+          "cash": 166.66666666666663,
+          "quantity": 48.946164123869394,
+          "equity": 949.8052926485769,
+          "peak_equity": 1000.0,
+          "drawdown": -0.05019470735142306,
+          "cumulative_return": -0.05019470735142306,
+          "benchmark_cash": 0.0,
+          "benchmark_quantity": 55.472319340385305,
+          "benchmark_equity": 887.5571094461649,
+          "benchmark_peak_equity": 1000.0,
+          "benchmark_drawdown": -0.11244289055383516
+        },
+        {
+          "index": 8,
+          "timestamp": "2024-01-09T00:00:00Z",
+          "phase": "close",
+          "bar_index": 7,
+          "mark_price": 20.0,
+          "exposed": true,
+          "cash": 166.66666666666663,
+          "quantity": 48.946164123869394,
+          "equity": 1145.5899491440546,
+          "peak_equity": 1145.5899491440546,
+          "drawdown": 0.0,
+          "cumulative_return": 0.14558994914405465,
+          "benchmark_cash": 0.0,
+          "benchmark_quantity": 55.472319340385305,
+          "benchmark_equity": 1109.4463868077062,
+          "benchmark_peak_equity": 1109.4463868077062,
+          "benchmark_drawdown": 0.0
+        }
+      ],
+      "events": [
+        {
+          "sequence": 1,
+          "event_id": "E00000001",
+          "bar_index": 3,
+          "bar_open_at": "2024-01-04T00:00:00Z",
+          "observed_at": "2024-01-05T00:00:00Z",
+          "time_precision": "close",
+          "phase": 7,
+          "kind": "signal",
+          "reason": "buy",
+          "order_id": "O00000001",
+          "trade_id": null,
+          "fill_id": null,
+          "linked_event_id": null,
+          "side": "buy",
+          "reference_price": null,
+          "fill_price": null,
+          "quantity": null,
+          "fee": null,
+          "cash_delta": 0.0,
+          "cash_after": 1000.0,
+          "quantity_after": 0.0,
+          "protection": null,
+          "trace": {
+            "root_node_id": "entry.condition",
+            "value": true,
+            "invalid_reason": null,
+            "operands": [
+              {
+                "node_id": "entry.condition",
+                "value": 1.0,
+                "unit": "boolean",
+                "valid": true
+              },
+              {
+                "node_id": "entry.condition.operands.0",
+                "value": 1.0,
+                "unit": "boolean",
+                "valid": true
+              },
+              {
+                "node_id": "entry.condition.operands.1",
+                "value": 1.0,
+                "unit": "boolean",
+                "valid": true
+              },
+              {
+                "node_id": "entry.condition.operands.1.left",
+                "value": 15.0,
+                "unit": "price",
+                "valid": true
+              },
+              {
+                "node_id": "entry.condition.operands.1.right",
+                "value": 0.0,
+                "unit": "ratio",
+                "valid": true
+              }
+            ]
+          },
+          "diagnostic_code": null
+        },
+        {
+          "sequence": 2,
+          "event_id": "E00000002",
+          "bar_index": 3,
+          "bar_open_at": "2024-01-04T00:00:00Z",
+          "observed_at": "2024-01-05T00:00:00Z",
+          "time_precision": "close",
+          "phase": 7,
+          "kind": "entry_rejected",
+          "reason": "invalid_sizing",
+          "order_id": "O00000001",
+          "trade_id": null,
+          "fill_id": null,
+          "linked_event_id": "E00000001",
+          "side": null,
+          "reference_price": null,
+          "fill_price": null,
+          "quantity": null,
+          "fee": null,
+          "cash_delta": 0.0,
+          "cash_after": 1000.0,
+          "quantity_after": 0.0,
+          "protection": null,
+          "trace": null,
+          "diagnostic_code": null
+        },
+        {
+          "sequence": 3,
+          "event_id": "E00000003",
+          "bar_index": 4,
+          "bar_open_at": "2024-01-05T00:00:00Z",
+          "observed_at": "2024-01-06T00:00:00Z",
+          "time_precision": "close",
+          "phase": 7,
+          "kind": "signal",
+          "reason": "buy",
+          "order_id": "O00000002",
+          "trade_id": null,
+          "fill_id": null,
+          "linked_event_id": null,
+          "side": "buy",
+          "reference_price": null,
+          "fill_price": null,
+          "quantity": null,
+          "fee": null,
+          "cash_delta": 0.0,
+          "cash_after": 1000.0,
+          "quantity_after": 0.0,
+          "protection": null,
+          "trace": {
+            "root_node_id": "entry.condition",
+            "value": true,
+            "invalid_reason": null,
+            "operands": [
+              {
+                "node_id": "entry.condition",
+                "value": 1.0,
+                "unit": "boolean",
+                "valid": true
+              },
+              {
+                "node_id": "entry.condition.operands.0",
+                "value": 1.0,
+                "unit": "boolean",
+                "valid": true
+              },
+              {
+                "node_id": "entry.condition.operands.1",
+                "value": 1.0,
+                "unit": "boolean",
+                "valid": true
+              },
+              {
+                "node_id": "entry.condition.operands.1.left",
+                "value": 17.0,
+                "unit": "price",
+                "valid": true
+              },
+              {
+                "node_id": "entry.condition.operands.1.right",
+                "value": 0.0,
+                "unit": "ratio",
+                "valid": true
+              }
+            ]
+          },
+          "diagnostic_code": null
+        },
+        {
+          "sequence": 4,
+          "event_id": "E00000004",
+          "bar_index": 4,
+          "bar_open_at": "2024-01-05T00:00:00Z",
+          "observed_at": "2024-01-06T00:00:00Z",
+          "time_precision": "close",
+          "phase": 7,
+          "kind": "order_queued",
+          "reason": "buy",
+          "order_id": "O00000002",
+          "trade_id": null,
+          "fill_id": null,
+          "linked_event_id": "E00000003",
+          "side": null,
+          "reference_price": null,
+          "fill_price": null,
+          "quantity": null,
+          "fee": null,
+          "cash_delta": 0.0,
+          "cash_after": 1000.0,
+          "quantity_after": 0.0,
+          "protection": null,
+          "trace": null,
+          "diagnostic_code": null
+        },
+        {
+          "sequence": 5,
+          "event_id": "E00000005",
+          "bar_index": 5,
+          "bar_open_at": "2024-01-06T00:00:00Z",
+          "observed_at": "2024-01-06T00:00:00Z",
+          "time_precision": "open",
+          "phase": 3,
+          "kind": "fill",
+          "reason": "entry",
+          "order_id": "O00000002",
+          "trade_id": "T000001",
+          "fill_id": "F00000001",
+          "linked_event_id": null,
+          "side": "buy",
+          "reference_price": 17.0,
+          "fill_price": 17.008499999999998,
+          "quantity": 48.946164123869394,
+          "fee": 0.8325008325008325,
+          "cash_delta": -833.3333333333334,
+          "cash_after": 166.66666666666663,
+          "quantity_after": 48.946164123869394,
+          "protection": {
+            "stop": {
+              "node_id": "risk.stop.expression",
+              "sampled_bar": 4,
+              "sampled_at": "2024-01-06T00:00:00Z",
+              "expression_value": 2.8125,
+              "unit": "price",
+              "entry_anchor": 17.008499999999998,
+              "distance": 2.8125,
+              "trigger_price": 14.195999999999998
+            },
+            "target": {
+              "node_id": "risk.target.expression",
+              "sampled_bar": 4,
+              "sampled_at": "2024-01-06T00:00:00Z",
+              "expression_value": 0.3,
+              "unit": "ratio",
+              "entry_anchor": 17.008499999999998,
+              "distance": 5.102549999999999,
+              "trigger_price": 22.11105
+            }
+          },
+          "trace": {
+            "root_node_id": "entry.condition",
+            "value": true,
+            "invalid_reason": null,
+            "operands": [
+              {
+                "node_id": "entry.condition",
+                "value": 1.0,
+                "unit": "boolean",
+                "valid": true
+              },
+              {
+                "node_id": "entry.condition.operands.0",
+                "value": 1.0,
+                "unit": "boolean",
+                "valid": true
+              },
+              {
+                "node_id": "entry.condition.operands.1",
+                "value": 1.0,
+                "unit": "boolean",
+                "valid": true
+              },
+              {
+                "node_id": "entry.condition.operands.1.left",
+                "value": 17.0,
+                "unit": "price",
+                "valid": true
+              },
+              {
+                "node_id": "entry.condition.operands.1.right",
+                "value": 0.0,
+                "unit": "ratio",
+                "valid": true
+              }
+            ]
+          },
+          "diagnostic_code": null
+        },
+        {
+          "sequence": 6,
+          "event_id": "E00000006",
+          "bar_index": 7,
+          "bar_open_at": "2024-01-08T00:00:00Z",
+          "observed_at": "2024-01-09T00:00:00Z",
+          "time_precision": "close",
+          "phase": 7,
+          "kind": "signal",
+          "reason": "entry_ignored_holding",
+          "order_id": null,
+          "trade_id": null,
+          "fill_id": null,
+          "linked_event_id": null,
+          "side": "buy",
+          "reference_price": null,
+          "fill_price": null,
+          "quantity": null,
+          "fee": null,
+          "cash_delta": 0.0,
+          "cash_after": 166.66666666666663,
+          "quantity_after": 48.946164123869394,
+          "protection": null,
+          "trace": null,
+          "diagnostic_code": null
+        }
+      ],
+      "diagnostics": [
+        {
+          "code": "W_RSI_SCALE",
+          "message": "RSI uses a 0 to 100 scale. A percentage threshold is a fraction.",
+          "severity": "warning",
+          "span": {
+            "start_line": 26,
+            "start_column": 17,
+            "end_line": 26,
+            "end_column": 29,
+            "start_byte": 737,
+            "end_byte": 749
+          },
+          "suggestion": null,
+          "data_row": null,
+          "node_id": null,
+          "details": {}
+        },
+        {
+          "code": "W_UNUSED_LET",
+          "message": "Unused let explicit counts toward warmup",
+          "severity": "warning",
+          "span": {
+            "start_line": 7,
+            "start_column": 1,
+            "end_line": 7,
+            "end_column": 28,
+            "start_byte": 130,
+            "end_byte": 157
+          },
+          "suggestion": null,
+          "data_row": null,
+          "node_id": null,
+          "details": {}
+        },
+        {
+          "code": "W_UNUSED_LET",
+          "message": "Unused let nested counts toward warmup",
+          "severity": "warning",
+          "span": {
+            "start_line": 8,
+            "start_column": 1,
+            "end_line": 8,
+            "end_column": 36,
+            "start_byte": 158,
+            "end_byte": 193
+          },
+          "suggestion": null,
+          "data_row": null,
+          "node_id": null,
+          "details": {}
+        },
+        {
+          "code": "W_UNUSED_LET",
+          "message": "Unused let exp counts toward warmup",
+          "severity": "warning",
+          "span": {
+            "start_line": 9,
+            "start_column": 1,
+            "end_line": 9,
+            "end_column": 17,
+            "start_byte": 194,
+            "end_byte": 210
+          },
+          "suggestion": null,
+          "data_row": null,
+          "node_id": null,
+          "details": {}
+        },
+        {
+          "code": "W_UNUSED_LET",
+          "message": "Unused let recovered counts toward warmup",
+          "severity": "warning",
+          "span": {
+            "start_line": 10,
+            "start_column": 1,
+            "end_line": 10,
+            "end_column": 30,
+            "start_byte": 211,
+            "end_byte": 240
+          },
+          "suggestion": null,
+          "data_row": null,
+          "node_id": null,
+          "details": {}
+        },
+        {
+          "code": "W_UNUSED_LET",
+          "message": "Unused let points counts toward warmup",
+          "severity": "warning",
+          "span": {
+            "start_line": 11,
+            "start_column": 1,
+            "end_line": 11,
+            "end_column": 20,
+            "start_byte": 241,
+            "end_byte": 260
+          },
+          "suggestion": null,
+          "data_row": null,
+          "node_id": null,
+          "details": {}
+        },
+        {
+          "code": "W_UNUSED_LET",
+          "message": "Unused let linedelay counts toward warmup",
+          "severity": "warning",
+          "span": {
+            "start_line": 13,
+            "start_column": 1,
+            "end_line": 13,
+            "end_column": 36,
+            "start_byte": 294,
+            "end_byte": 329
+          },
+          "suggestion": null,
+          "data_row": null,
+          "node_id": null,
+          "details": {}
+        },
+        {
+          "code": "W_UNUSED_LET",
+          "message": "Unused let signalvalue counts toward warmup",
+          "severity": "warning",
+          "span": {
+            "start_line": 14,
+            "start_column": 1,
+            "end_line": 14,
+            "end_column": 37,
+            "start_byte": 330,
+            "end_byte": 366
+          },
+          "suggestion": null,
+          "data_row": null,
+          "node_id": null,
+          "details": {}
+        },
+        {
+          "code": "W_UNUSED_LET",
+          "message": "Unused let hist counts toward warmup",
+          "severity": "warning",
+          "span": {
+            "start_line": 15,
+            "start_column": 1,
+            "end_line": 15,
+            "end_column": 33,
+            "start_byte": 367,
+            "end_byte": 399
+          },
+          "suggestion": null,
+          "data_row": null,
+          "node_id": null,
+          "details": {}
+        },
+        {
+          "code": "W_UNUSED_LET",
+          "message": "Unused let upperband counts toward warmup",
+          "severity": "warning",
+          "span": {
+            "start_line": 17,
+            "start_column": 1,
+            "end_line": 17,
+            "end_column": 41,
+            "start_byte": 422,
+            "end_byte": 462
+          },
+          "suggestion": null,
+          "data_row": null,
+          "node_id": null,
+          "details": {}
+        },
+        {
+          "code": "W_UNUSED_LET",
+          "message": "Unused let middleband counts toward warmup",
+          "severity": "warning",
+          "span": {
+            "start_line": 18,
+            "start_column": 1,
+            "end_line": 18,
+            "end_column": 43,
+            "start_byte": 463,
+            "end_byte": 505
+          },
+          "suggestion": null,
+          "data_row": null,
+          "node_id": null,
+          "details": {}
+        },
+        {
+          "code": "W_UNUSED_LET",
+          "message": "Unused let lowerband counts toward warmup",
+          "severity": "warning",
+          "span": {
+            "start_line": 19,
+            "start_column": 1,
+            "end_line": 19,
+            "end_column": 41,
+            "start_byte": 506,
+            "end_byte": 546
+          },
+          "suggestion": null,
+          "data_row": null,
+          "node_id": null,
+          "details": {}
+        },
+        {
+          "code": "W_UNUSED_LET",
+          "message": "Unused let highest counts toward warmup",
+          "severity": "warning",
+          "span": {
+            "start_line": 20,
+            "start_column": 1,
+            "end_line": 20,
+            "end_column": 32,
+            "start_byte": 547,
+            "end_byte": 578
+          },
+          "suggestion": null,
+          "data_row": null,
+          "node_id": null,
+          "details": {}
+        },
+        {
+          "code": "W_UNUSED_LET",
+          "message": "Unused let lowest counts toward warmup",
+          "severity": "warning",
+          "span": {
+            "start_line": 21,
+            "start_column": 1,
+            "end_line": 21,
+            "end_column": 30,
+            "start_byte": 579,
+            "end_byte": 608
+          },
+          "suggestion": null,
+          "data_row": null,
+          "node_id": null,
+          "details": {}
+        },
+        {
+          "code": "W_UNUSED_LET",
+          "message": "Unused let again counts toward warmup",
+          "severity": "warning",
+          "span": {
+            "start_line": 23,
+            "start_column": 1,
+            "end_line": 23,
+            "end_column": 26,
+            "start_byte": 637,
+            "end_byte": 662
+          },
+          "suggestion": null,
+          "data_row": null,
+          "node_id": null,
+          "details": {}
+        },
+        {
+          "code": "W_UNUSED_LET",
+          "message": "Unused let hole counts toward warmup",
+          "severity": "warning",
+          "span": {
+            "start_line": 24,
+            "start_column": 1,
+            "end_line": 24,
+            "end_column": 25,
+            "start_byte": 663,
+            "end_byte": 687
+          },
+          "suggestion": null,
+          "data_row": null,
+          "node_id": null,
+          "details": {}
+        },
+        {
+          "code": "W_UNUSED_LET",
+          "message": "Unused let deviation counts toward warmup",
+          "severity": "warning",
+          "span": {
+            "start_line": 25,
+            "start_column": 1,
+            "end_line": 25,
+            "end_column": 33,
+            "start_byte": 688,
+            "end_byte": 720
+          },
+          "suggestion": null,
+          "data_row": null,
+          "node_id": null,
+          "details": {}
+        },
+        {
+          "code": "W_METRIC_UNAVAILABLE",
+          "message": "strategy profit_factor unavailable: no_closed_trades",
+          "severity": "info",
+          "span": null,
+          "suggestion": null,
+          "data_row": null,
+          "node_id": null,
+          "details": {
+            "account": "strategy",
+            "metric": "profit_factor",
+            "reason": "no_closed_trades"
+          }
+        },
+        {
+          "code": "W_METRIC_UNAVAILABLE",
+          "message": "strategy win_rate unavailable: no_closed_trades",
+          "severity": "info",
+          "span": null,
+          "suggestion": null,
+          "data_row": null,
+          "node_id": null,
+          "details": {
+            "account": "strategy",
+            "metric": "win_rate",
+            "reason": "no_closed_trades"
+          }
+        },
+        {
+          "code": "W_METRIC_UNAVAILABLE",
+          "message": "benchmark profit_factor unavailable: no_closed_trades",
+          "severity": "info",
+          "span": null,
+          "suggestion": null,
+          "data_row": null,
+          "node_id": null,
+          "details": {
+            "account": "benchmark",
+            "metric": "profit_factor",
+            "reason": "no_closed_trades"
+          }
+        },
+        {
+          "code": "W_METRIC_UNAVAILABLE",
+          "message": "benchmark win_rate unavailable: no_closed_trades",
+          "severity": "info",
+          "span": null,
+          "suggestion": null,
+          "data_row": null,
+          "node_id": null,
+          "details": {
+            "account": "benchmark",
+            "metric": "win_rate",
+            "reason": "no_closed_trades"
+          }
+        },
+        {
+          "code": "W_WARMUP_DELAY",
+          "message": "W_WARMUP_DELAY: 3 occurrences",
+          "severity": "warning",
+          "span": null,
+          "suggestion": null,
+          "data_row": null,
+          "node_id": null,
+          "details": {
+            "count": 3
+          }
+        }
+      ]
+    }
+  }
+}

@@ -48,6 +48,7 @@ exclude_docs: |
   /mvp1-plan-audit.md
   /mvp1-release.md
   /next-milestones/
+  /plans/
   /requirements.txt
   /risk-register.md
   /test-plan.md

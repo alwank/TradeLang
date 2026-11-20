@@ -70,9 +70,23 @@ Each `order_queued` row links to its signal through `linked_event_id`. Each fill
 ## Compare and replay runs
 
 - `source_hash` identifies exact strategy bytes. A whitespace or comment edit changes it.
-- `spec_hash` identifies the normalized typed strategy. Formatting and source spans are excluded. Declaration names and order are retained.
-- `dataset_hash` identifies the normalized candles and semantic market metadata. CSV and Parquet encodings can share it when their normalized rows and metadata match. The raw file hash is recorded separately as `import_source_hash`.
-- `run_fingerprint` identifies the versioned strategy, dataset, resolved configuration, and runtime environment. Keep the code, interpreter, and dependency inventory fixed when comparing fingerprints.
+- **V1-ID01.** `spec_hash` identifies the normalized typed strategy. Formatting and source spans are excluded. Declaration names and order are retained.
+- **V1-ID02.** `dataset_hash` identifies the normalized candles and semantic market metadata. CSV and Parquet encodings can share it when their normalized rows and metadata match. The raw file hash is recorded separately as `import_source_hash`.
+- **V1-ID03.** `run_fingerprint` identifies the versioned strategy, dataset, resolved configuration, and runtime environment. Keep the code, interpreter, and dependency inventory fixed when comparing fingerprints.
 - `result_digest` identifies the logical summary, trades, equity, events, and diagnostics. It excludes the run ID, artifact paths, and physical Parquet encoding.
+
+JSON used for identity is UTF-8 with sorted object keys, compact separators, normalized finite decimal exponents, and both signs of zero written as `0`. The dataset byte stream starts with `tradelang.dataset.v1\n`, a little-endian unsigned 32-bit metadata-header length, and the canonical metadata bytes. Each row then contributes a little-endian signed 64-bit opening time in UTC microseconds and five binary64 OHLCV values. Gap policy belongs in configuration identity. Timeframe is normalized to seconds.
+
+The run fingerprint hashes the canonical object with `dsl_version`, `semantics_version`, `spec_hash`, `dataset_hash`, `environment_hash`, and `config_hash`. For the result digest, hash the stream of summary, trades, equity, events, and diagnostics in that order. Each section starts with its name and a newline, followed by its canonical JSON records, each terminated by a newline. Diagnostic spans are omitted from the digest, including spans in summary warnings.
+
+| Version | Scope |
+| --- | --- |
+| DSL 1 and typed strategy schema 1 | Accepted source and serialized compiler output |
+| Semantics 1.1.0 | Evaluation, clock, order phases, and accounting |
+| Artifact schema 2 | Published bundle and manifest structure |
+| Metadata, summary, and inspection envelopes 1 | Independently versioned JSON payloads |
+| Package version and code revision | Executing source and reproducibility evidence |
+
+A code-only migration can preserve the source, normalized spec, dataset, configuration, and result digest while changing the environment hash and run fingerprint. Two runs in the same recorded environment have distinct run IDs.
 
 To reproduce a bundle, use its source, dataset copy, and metadata with the recorded package and dependencies. Write to a fresh directory, then compare the fingerprints and result digests. Generated run bundles contain the original submitted data and strategy, so review both before sharing one.

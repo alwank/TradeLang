@@ -5,6 +5,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: astral-sh/setup-uv@v6
       - name: Build documentation
         run: uv run --no-project --python 3.12 --with-requirements docs/requirements.txt mkdocs build --strict
