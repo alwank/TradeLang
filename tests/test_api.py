@@ -290,3 +290,29 @@ def test_openapi_matches_contract():
     assert AST_SCHEMA == json.loads(
         Path("docs/schemas/strategy.schema.json").read_text()
     )
+
+
+@pytest.mark.parametrize("command", ["validate", "explain"])
+@pytest.mark.parametrize("valid", [True, False])
+def test_registry_catalog_api_cli_parity(tmp_path, command, valid):
+    from language_cases import FIXTURES
+
+    source = (FIXTURES / "catalog.trade").read_text()
+    if not valid:
+        source = source.replace("BBANDS(source,2,2).upper", "BBANDS(source,0,0).upper")
+    path = tmp_path / "catalog.trade"
+    path.write_text(source)
+    code, response = cli(command, path)
+    http = request(create_app(), command, headers=ORIGIN, json={"source": source})
+    assert http.status_code == 200
+    body = http.json()
+    assert body["valid"] == response["ok"] == valid
+    assert body["diagnostics"] == response["diagnostics"]
+    if valid:
+        assert code == 0
+        assert response["result"] == {key: body[key] for key in response["result"]}
+    else:
+        assert code == 2
+        assert response["result"] is None
+        assert body["spec_hash"] is None
+        assert body["diagnostics"][0]["code"] == "E202_PERIOD"

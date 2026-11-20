@@ -139,6 +139,11 @@ def test_catalog_baseline_parity(tmp_path):
 
     candidate_output = tmp_path / "candidate"
     assert catalog_snapshot(candidate_output) == expected
+    before, after = (
+        environment_identity(out) for out in (baseline_output, candidate_output)
+    )
+    assert all(before[key] != after[key] for key in before)
+
 
 def capture_fixture():
     # Explicit maintenance command. Pytest never writes expected records.
