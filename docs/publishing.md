@@ -22,9 +22,10 @@ Before the first public push, confirm that `LICENSE` and the package metadata re
 
 Keep milestone drafts, early verification reports, and draft endpoint contracts in private project notes. If you publish a design decision, update its status and links first. Use release notes to record user-visible changes to the language, simulation assumptions, and artifact schemas.
 
-## Connect Read the Docs
+## Publish to Read the Docs
 
-1. Push the reviewed repository with `mkdocs.yml`, `.readthedocs.yaml`, and the docs source on its default branch.
-2. In Read the Docs Community, connect the repository through the Git provider integration and add it as a project. Set the default branch to the branch you pushed, typically `main`. [Add a documentation project](https://docs.readthedocs.com/platform/stable/intro/add-project.html)
-3. Check that the `latest` build succeeds and open its site. Add the assigned documentation URL to the repository README and package metadata after confirming it. [Read the Docs tutorial](https://docs.readthedocs.com/platform/stable/tutorial/)
-4. Tag the first release once it's ready. Verify that Read the Docs builds the matching version, then use `stable` as the default when you want the site to open on the released docs. Keep `latest` for the default branch. [Read the Docs versioning](https://docs.readthedocs.com/platform/stable/versions.html)
+1. Open a GitHub pull request against `main`. Wait for GitHub Actions and the Read the Docs check, then use the Read the Docs check link to inspect the preview.
+2. Merge the pull request. Read the Docs builds the `latest` version from `main` using `.readthedocs.yaml` and `mkdocs.yml`.
+3. Check that the `latest` build for the merge commit succeeds, then open the changed pages on the public site. [Build history](https://app.readthedocs.org/projects/tradelang/builds/) · [Published docs](https://tradelang.readthedocs.io/en/latest/)
+
+When publishing a tagged release, verify that Read the Docs builds the matching version. The `stable` version can serve as the default for released documentation. [Read the Docs versioning](https://docs.readthedocs.com/platform/stable/versions.html)

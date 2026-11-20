@@ -14,7 +14,7 @@ After the [first backtest](quickstart.md), check your strategy and dataset toget
 Replace the three example filenames with your own. Review any diagnostics, then confirm the resolved window and first execution open in the explanation before backtesting.
 
 ```sh
-uv run --no-sync tradelang explain my-strategy.trade --data candles.csv --metadata metadata.json
+tradelang explain my-strategy.trade --data candles.csv --metadata metadata.json
 ```
 
 ## File formats

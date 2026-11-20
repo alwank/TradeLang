@@ -7,9 +7,9 @@ Use the optional HTTP service to inspect strategy source, save drafts, and impor
 From the repository root, install the optional API dependencies and start the supervisor with a fresh library. The examples use a POSIX shell and `curl`.
 
 ```sh
-uv sync --locked --no-dev --no-editable --extra api
+uv tool install --python 3.12 '.[api]'
 library_root=$(mktemp -d "${TMPDIR:-/tmp}/tradelang-library.XXXXXX")
-uv run --no-sync tradelang-local --data-root "$library_root"
+tradelang-local --data-root "$library_root"
 ```
 
 In another terminal, check the service and inspect the generated OpenAPI schema.
@@ -21,7 +21,7 @@ curl -fsS http://127.0.0.1:8000/openapi.json
 
 The service accepts loopback requests at `127.0.0.1:8000`. Use this address in requests because the Host header is checked. For POST, PUT, and DELETE, send `Origin: http://127.0.0.1:3000`. Use `Content-Type: application/json` for JSON writes and multipart for dataset uploads. Use Ctrl-C in the service terminal to stop it.
 
-For source-only inspection, start `uv run --no-sync tradelang-api` on the same port after stopping the supervisor. The standalone service has the two editor endpoints and reports degraded health because it runs without a worker. The supervisor persists drafts and datasets under `--data-root`. If its worker stops, `/health` returns HTTP 503 while editor routes remain available.
+For source-only inspection, start `tradelang-api` on the same port after stopping the supervisor. The standalone service has the two editor endpoints and reports degraded health because it runs without a worker. The supervisor persists drafts and datasets under `--data-root`. If its worker stops, `/health` returns HTTP 503 while editor routes remain available.
 
 ## Validate or explain source
 
@@ -29,7 +29,7 @@ Both routes accept a JSON object containing `source` and an optional `dataset_id
 
 ```sh
 api=http://127.0.0.1:8000/api/v1
-payload=$(uv run --no-sync python -c 'import json, pathlib; print(json.dumps({"source": pathlib.Path("docs/fixtures/core.trade").read_bytes().decode("utf-8")}))')
+payload=$(uv run --no-project --python 3.12 python -c 'import json, pathlib; print(json.dumps({"source": pathlib.Path("docs/fixtures/core.trade").read_bytes().decode("utf-8")}))')
 curl -fsS "$api/strategies/validate" \
   -H 'Origin: http://127.0.0.1:3000' -H 'Content-Type: application/json' \
   --data-binary "$payload"
@@ -47,7 +47,7 @@ With the supervised service running, upload the [quickstart candles](fixtures/co
 imported=$(curl -fsS "$api/datasets/import" \
   -H 'Origin: http://127.0.0.1:3000' \
   -F 'file=@docs/fixtures/core.csv' -F 'metadata=<docs/fixtures/metadata.json')
-dataset_id=$(printf '%s\n' "$imported" | uv run --no-sync python -c 'import json, sys; print(json.load(sys.stdin)["dataset"]["id"])')
+dataset_id=$(printf '%s\n' "$imported" | uv run --no-project --python 3.12 python -c 'import json, sys; print(json.load(sys.stdin)["dataset"]["id"])')
 ```
 
 Dataset IDs select individual imports. Use `dataset_hash` to compare normalized candles and semantic metadata across imports. Equivalent CSV and Parquet uploads can also have distinct IDs and share a hash.
@@ -62,7 +62,7 @@ Dataset IDs select individual imports. Use `dataset_hash` to compare normalized 
 Add the imported ID to the source-only `payload` from the previous section and send the resulting body to both routes.
 
 ```sh
-with_dataset=$(printf '%s\n' "$payload" | uv run --no-sync python -c 'import json, sys; print(json.dumps(dict(json.load(sys.stdin), dataset_id=sys.argv[1])))' "$dataset_id")
+with_dataset=$(printf '%s\n' "$payload" | uv run --no-project --python 3.12 python -c 'import json, sys; print(json.dumps(dict(json.load(sys.stdin), dataset_id=sys.argv[1])))' "$dataset_id")
 for command in validate explain; do
   curl -fsS "$api/strategies/$command" \
     -H 'Origin: http://127.0.0.1:3000' -H 'Content-Type: application/json' \
@@ -90,7 +90,7 @@ Check `valid` even on HTTP 200. For example, changing the strategy market to `OT
 ### Save and update a draft
 
 ```sh
-draft=$(printf '%s\n' "$payload" | uv run --no-sync python -c 'import json, sys; print(json.dumps(dict(json.load(sys.stdin), name="Golden demo")))')
+draft=$(printf '%s\n' "$payload" | uv run --no-project --python 3.12 python -c 'import json, sys; print(json.dumps(dict(json.load(sys.stdin), name="Golden demo")))')
 curl -fsS -i "$api/strategies" \
   -H 'Origin: http://127.0.0.1:3000' -H 'Content-Type: application/json' \
   --data-binary "$draft"
