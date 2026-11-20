@@ -1,0 +1,42 @@
+tradelang 1
+strategy "Indicator compatibility"
+market TESTUSDT
+timeframe 1d
+let source = close / (high - low)
+let simple = SMA(2)
+let explicit = SMA(close,2)
+let nested = SMA(EMA(close,2),2)[1]
+let exp = EMA(2)
+let recovered = EMA(source,2)
+let points = RSI(2)
+let linevalue = MACD(2,3,2).line
+let linedelay = MACD(2,3,2).line[1]
+let signalvalue = MACD(2,3,2).signal
+let hist = MACD(2,3,2).histogram
+let distance = ATR(2)
+let upperband = BBANDS(source,2,2).upper
+let middleband = BBANDS(source,2,2).middle
+let lowerband = BBANDS(source,2,2).lower
+let highest = HIGHEST(volume,2)
+let lowest = LOWEST(source,2)
+let returns = ROC(volume,2)
+let again = ROC(volume,2)
+let hole = ROC(source,2)
+let deviation = STDDEV(source,2)
+let threshold = RSI(1) > 30%
+entry:
+  when threshold and simple > 0
+  buy using (1 + returns) * 50% of equity
+exit:
+  when linevalue crosses below 0
+  sell all
+risk:
+  stop loss distance
+  take profit 30%
+backtest:
+  from 2024-01-01 to 2024-01-08
+  capital 1000 USDT
+  fee 10 bps per side
+  slippage 5 bps per side
+  execute at next bar open
+  calendar 24x7

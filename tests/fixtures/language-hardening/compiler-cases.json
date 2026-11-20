@@ -1,0 +1,64 @@
+{
+  "baseline_sha": "f7f9b47f310ce825e900f3753c59e62a53625927",
+  "dsl_version": 1,
+  "spec_schema_version": 1,
+  "phase": "compile",
+  "cases": [
+    {
+      "case_id": "C-PAR-001",
+      "clauses": ["V1-TYPE09", "V1-ERR01"],
+      "acceptance": ["P1-AC04", "P2-AC04"],
+      "expression": "BBANDS(close,0,0).upper",
+      "failure": {"code": "E202_PERIOD", "message": "Period must be an integer literal from 1 to 10000", "from_column": 26, "to_column": 27},
+      "derivation": "Period validation precedes multiplier validation."
+    },
+    {
+      "case_id": "C-PAR-002",
+      "clauses": ["V1-TYPE09", "V1-ERR01"],
+      "acceptance": ["P1-AC04", "P2-AC04"],
+      "expression": "SMA(1,0)",
+      "failure": {"code": "E203_TYPE", "message": "Indicator requires a price, volume or ratio series", "from_column": 13, "to_column": 21},
+      "derivation": "The source kind/shape check precedes the period check."
+    },
+    {
+      "case_id": "C-PAR-003",
+      "clauses": ["V1-TYPE09", "V1-ERR01"],
+      "acceptance": ["P1-AC04", "P2-AC04"],
+      "expression": "SMA(1,10/0)",
+      "failure": {"code": "E206_CONSTANT_INVALID", "message": "Division by constant zero", "from_column": 19, "to_column": 23},
+      "derivation": "Arguments compile before the descriptor validates their roles."
+    },
+    {
+      "case_id": "C-RDY-001",
+      "clauses": ["V1-TYPE08", "V1-READY01"],
+      "acceptance": ["P1-AC06", "P2-AC02"],
+      "expression": "MACD(2,3,2).line[1]",
+      "ready": 3,
+      "derivation": "The line uses the three-period slow EMA and is ready at row two. The offset adds one row."
+    },
+    {
+      "case_id": "C-RDY-002",
+      "clauses": ["V1-TYPE08", "V1-ERR01"],
+      "acceptance": ["P1-AC04", "P2-AC04"],
+      "expression": "MACD(2,3,2)[1].line",
+      "failure": {"code": "E205_OFFSET", "message": "Offset requires numeric market series and 0..100000 bars", "from_column": 24, "to_column": 27},
+      "derivation": "The offset applies to the record before the field is selected."
+    },
+    {
+      "case_id": "C-TYP-001",
+      "clauses": ["V1-TYPE06"],
+      "acceptance": ["P1-AC03"],
+      "expression": "close > (0%)",
+      "ready": 0,
+      "derivation": "Grouping preserves the zero ratio literal."
+    },
+    {
+      "case_id": "C-TYP-002",
+      "clauses": ["V1-TYPE06", "V1-ERR01"],
+      "acceptance": ["P1-AC03", "P1-AC04"],
+      "expression": "close > (1-1)",
+      "failure": {"code": "E201_UNIT", "message": "Compare compatible units; use an explicit numeric unit", "from_column": 13, "to_column": 26, "suggestion": null},
+      "derivation": "A computed zero has the ratio dimension and does not qualify for the literal exception."
+    }
+  ]
+}
