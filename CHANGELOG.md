@@ -9,3 +9,4 @@
 - Run bundles use artifact schema 2 and include the exact inputs, equity curves, trades, ordered events, and runtime identity.
 - The optional loopback API supports source inspection, strategy drafts and revisions, and historical candle imports.
 - MkDocs provides a quickstart, runnable strategies, and language and execution references. CI checks the documentation build.
+- The v1 contract now identifies its conformance clauses and failure phases. The internal indicator registry preserves existing signatures, readiness, and backtest results.

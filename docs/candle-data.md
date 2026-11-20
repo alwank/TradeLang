@@ -1,5 +1,7 @@
 # Candle data
 
+**V1-DATA01.** CSV and Parquet share the same normalized candle and metadata contract.
+
 Supply one historical OHLCV dataset as CSV or Parquet. Use raw spot prices on a continuous UTC grid with one fixed candle duration. Each row describes a completed candle, timestamped at its open. Dataset metadata declares the market, units, and gap policy.
 
 ## Use your own candles
