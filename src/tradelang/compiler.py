@@ -7,13 +7,14 @@ import json
 import math
 import operator
 import re
-from dataclasses import replace
 from datetime import date
 from functools import cache
 from importlib.resources import files
 
 from lark import Lark, UnexpectedInput
 
+from .functions.contracts import Argument, InvalidCall
+from .functions.registry import FUNCTIONS
 from .model import (
     COUNT,
     MONEY,
@@ -65,18 +66,13 @@ RESERVED = set(re.findall(r"_K_([A-Z]+)\.2:", GRAMMAR.lower(), re.IGNORECASE)) |
 RESERVED.update(
     [
         "equity",
-        "upper",
-        "middle",
-        "lower",
-        "line",
-        "signal",
-        "histogram",
         "volume",
         "money",
         "count",
         "price",
     ]
 )
+RESERVED.update(field.name for function in FUNCTIONS.values() for field in function.fields)
 
 
 @cache
@@ -206,9 +202,7 @@ class Compiler:
                             "E204_SELECTOR",
                             f"Unknown field {field} for this expression",
                         )
-                    ready = e.ready
-                    if field == "line":
-                        ready -= int(e.args[-1].value) - 1
+                    ready = FUNCTIONS[e.value].field_ready(field, e.args)
                     e = build(
                         "field", field, [e], Type("numeric", True, e.type.unit), ready
                     )
@@ -251,7 +245,9 @@ class Compiler:
                     "E201_UNIT",
                     "Compare compatible units; use an explicit numeric unit",
                 )
-            if any(x.op == "call" and x.value == "RSI" for x in args) and any(
+            if any(
+                x.op == "call" and FUNCTIONS[x.value].scale == "points" for x in args
+            ) and any(
                 x.data == "percent" for x in (c[0], c[-1])
             ):
                 w = Problem(
@@ -330,72 +326,26 @@ class Compiler:
         )
 
     def call(self, t, sub, build):
-        name = str(t.children[0])
-        trees = list(t.children[1].children) if len(t.children) > 1 else []
-        args = [sub(x) for x in trees]
-        if any(x.account for x in args):
-            self.fail(t, "E203_TYPE", "Indicator inputs cannot depend on account state")
-        implicit = name in {"RSI", "MACD"} or (
-            name in {"SMA", "EMA"} and len(args) == 1
-        )
-        if implicit:
-            args.insert(0, build("builtin", "close", [], Type("numeric", True, PRICE)))
-        source = None if name == "ATR" else (args[0] if args else None)
-        expected = {"ATR": 1, "MACD": 4, "BBANDS": 3}.get(name, 2)
-        if len(args) != expected:
-            self.fail(t, "E203_TYPE", f"{name} has incorrect arity")
-        if source and (
-            source.type.kind != "numeric"
-            or not source.type.series
-            or source.type.unit not in (RATIO, PRICE, VOLUME)
-        ):
-            self.fail(
-                t, "E203_TYPE", "Indicator requires a price, volume or ratio series"
-            )
-        start = 1 if source else 0
-        end = -1 if name == "BBANDS" else len(args)
-        periods = []
-        for i in range(start, len(args[:end])):
-            tree = trees[i - int(implicit)]
-            if (
-                tree.data != "number"
-                or not str(tree.children[0]).isdigit()
-                or not 1 <= args[i].value <= 10000
-            ):
-                self.fail(
-                    tree,
-                    "E202_PERIOD",
-                    "Period must be an integer literal from 1 to 10000",
-                )
-            periods.append(int(args[i].value))
-            args[i] = replace(args[i], type=Type(unit=COUNT))
-        if name == "BBANDS" and (
-            trees[-1].data != "number" or not 0 < args[-1].value <= 10
-        ):
-            self.fail(
-                t, "E203_TYPE", "Band multiplier must be a positive literal at most 10"
-            )
-        if name == "MACD" and periods[0] >= periods[1]:
-            self.fail(t, "E202_PERIOD", "Fast period must be below slow period")
-        fields = {
-            "MACD": ("line", "signal", "histogram"),
-            "BBANDS": ("upper", "middle", "lower"),
-        }.get(name, ())
-        unit = (
-            RATIO if name in {"RSI", "ROC"} else source.type.unit if source else PRICE
-        )
-        delay = periods[0] - 1 + int(name in {"RSI", "ROC"})
-        if name == "MACD":
-            delay = periods[1] + periods[2] - 2
+        function = FUNCTIONS[str(t.children[0])]
+        trees = t.children[1].children if len(t.children) > 1 else ()
+        arguments = [
+            Argument(sub(tree), str(tree.children[0]) if tree.data == "number" else None)
+            for tree in trees
+        ]
+
+        def default_close():
+            return build("builtin", "close", [], Type("numeric", True, PRICE))
+
+        try:
+            args = function.bind(arguments, default_close)
+        except InvalidCall as error:
+            origin = t if error.argument is None else trees[error.argument]
+            self.fail(origin, error.code, str(error))
         self.calls.add(t)
         if len(self.calls) > 128:
             self.fail(t, "E207_LIMIT", "More than 128 unique indicator calls")
         return build(
-            "call",
-            name,
-            args,
-            Type("record" if fields else "numeric", True, unit, fields),
-            delay + (source.ready if source else 0),
+            "call", function.name, args, function.output_type(args), function.readiness(args)
         )
 
     def compile(self):
