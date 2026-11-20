@@ -1,8 +1,15 @@
 name: TradeLang
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '47 3 * * 1'
 jobs:
   verify:
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
         with:
@@ -13,7 +20,7 @@ jobs:
       - run: uv sync --locked --extra api
       - run: uv run --extra api ruff check src tests scripts
       - run: uv run --extra api mypy src
-      - run: uv run --extra api pytest
+      - run: uv run --locked --extra api pytest
       - run: uv build
       - name: Verify the installed wheel and record dependency evidence
         run: |
@@ -31,3 +38,27 @@ jobs:
         with:
           name: release-dependency-evidence
           path: release-evidence/
+  language-deep:
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      TRADELANG_TEST_PROFILE: language-deep
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --locked --extra api
+      - name: Run deeper conformance, property, and fuzz checks
+        run: |
+          set -o pipefail
+          uv run --locked --extra api python -c 'import hypothesis, os; print("Hypothesis", hypothesis.__version__, os.environ["TRADELANG_TEST_PROFILE"])' | tee language-deep.log
+          uv run --locked --extra api pytest tests/conformance tests/property tests/fuzz tests/test_registry_parity.py tests/test_execution_contract.py tests/test_identity_protocol.py --hypothesis-show-statistics --junitxml=language-deep.xml | tee -a language-deep.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: language-deep-evidence
+          path: |
+            language-deep.log
+            language-deep.xml
