@@ -195,7 +195,7 @@ class Evaluator:
                     tuple(id(x) if isinstance(x, np.ndarray) else x for x in args),
                 )
                 if key not in self.call_cache:
-                    if e.value in {"SMA", "STDDEV", "HIGHEST", "LOWEST", "BBANDS"}:
+                    if e.value not in {"MACD", "ROC"}:
                         function = FUNCTIONS[e.value]
                         context = KernelContext(
                             {name: self.columns[name] for name in function.required_columns},
