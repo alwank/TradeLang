@@ -1,6 +1,6 @@
 # Command-line reference
 
-After [installing TradeLang](quickstart.md#install), run `tradelang --version` for the installed package version or `tradelang COMMAND --help` for options.
+Use `validate` to check inputs, `explain` to inspect rules and timing, and `backtest` to simulate trades. Run `tradelang --version` for the installed package version or `tradelang COMMAND --help` for a command’s options. See [Run your first backtest](quickstart.md) for installation and an end-to-end example.
 
 ## Validate
 
@@ -28,7 +28,7 @@ Run the strategy and write an auditable [artifact bundle](results.md#artifact-fi
 
 ## Data options
 
-For any command with `--data`, choose a [metadata JSON file](candle-data.md#declare-metadata) or supply the metadata flags as shown here.
+For any command with `--data`, choose a [metadata JSON file](candle-data.md#declare-metadata) or supply metadata as flags. This example uses a POSIX shell.
 
 ```sh
 tradelang backtest docs/fixtures/core.trade --data docs/fixtures/core.csv \
@@ -54,7 +54,7 @@ All the metadata flags shown are required in flag mode except `--gap-policy`, wh
 }
 ```
 
-The object above illustrates the shape. A failure carries diagnostic entries. Each includes a code, severity, message, and applicable source span or one-based data row. Successful inspection and backtest responses can also carry warnings. See the [language diagnostics](language-spec.md#diagnostics-and-explanation) for common codes.
+The object above illustrates the shape. A failure carries diagnostic entries. Each includes a code, severity, message, and applicable source span or one-based data row. Successful inspection and backtest responses can also carry warnings. See the [language diagnostics](language-spec.md#diagnostics-and-explanation) for the fields and [Troubleshoot a backtest](troubleshoot-backtests.md) for example fixes.
 
 | Exit status | Meaning |
 | --- | --- |

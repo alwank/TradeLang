@@ -46,16 +46,4 @@ SMA and EMA default to `close` when called with one argument. RSI and MACD alway
 
 ### Check MACD warmup
 
-From the repository root, create the `runs/` directory if needed and save a copy of the [quickstart strategy](fixtures/core.trade) as `runs/macd-warmup.trade`. Insert this declaration immediately before `entry:`.
-
-```text
-let prior = MACD(12, 26, 9).line[1]
-```
-
-Run [source-only explanation](cli.md#explain) to check structural readiness.
-
-```sh
-tradelang explain runs/macd-warmup.trade --json
-```
-
-`result.warmup_index` is `26`. The line is first ready at zero-based row 25 and the one-row lookback adds one. Replace `.line[1]` with `.signal[1]` or `.histogram[1]` and rerun the command. Both fields are first ready at row 33, so the index becomes `34`. Every declaration contributes to strategy warmup, including this unused one.
+See [Check MACD warmup](strategy-patterns.md#check-macd-warmup) for a runnable comparison of line, signal, and histogram readiness.

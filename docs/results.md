@@ -1,6 +1,6 @@
 # Results and artifacts
 
-A successful `tradelang backtest` writes a bundle to `--out`. Start with `summary.json` to read the result, `trades.csv` to inspect completed round trips, and `events.jsonl` to trace a decision through a fill, rejection, or expiry.
+A successful `tradelang backtest` writes the artifacts listed here to the directory you pass with `--out`. For a walkthrough, see [Inspect and compare backtests](inspect-backtest-results.md).
 
 ## Read the equity and benchmark
 
@@ -54,18 +54,7 @@ The CLI stages files in a sibling directory and publishes a successful bundle at
 
 ### Trace the quickstart trade
 
-Run the [quickstart backtest](quickstart.md#simulate-and-check-the-fills). In its `events.jsonl`, the six rows carrying an order ID show the two sides of the trade.
-
-| `sequence` | `observed_at` (UTC) | `kind` / `reason` | `time_precision` | `order_id` | `fill_id` |
-| ---: | --- | --- | --- | --- | --- |
-| 1 | `2024-01-02T00:00:00Z` | `signal` / `buy` | `close` | `O00000001` | |
-| 2 | `2024-01-02T00:00:00Z` | `order_queued` / `buy` | `close` | `O00000001` | |
-| 3 | `2024-01-02T00:00:00Z` | `fill` / `entry` | `open` | `O00000001` | `F00000001` |
-| 5 | `2024-01-03T00:00:00Z` | `signal` / `sell` | `close` | `O00000002` | |
-| 6 | `2024-01-03T00:00:00Z` | `order_queued` / `sell` | `close` | `O00000002` | |
-| 7 | `2024-01-03T00:00:00Z` | `fill` / `signal_exit` | `open` | `O00000002` | `F00000002` |
-
-Each `order_queued` row links to its signal through `linked_event_id`. Each fill shares its order's `order_id`. The close and next open share a timestamp, so use `sequence` to see the order of operations. Both fills carry `trade_id` `T000001`, which matches the single row in `trades.csv`. That row records an entry price of 110, an exit price of 120, and an exit reason of `signal_exit`.
+See [Trace the quickstart trade](inspect-backtest-results.md#trace-the-quickstart-trade) for a worked example using `events.jsonl` and `trades.csv`.
 
 ## Compare and replay runs
 
@@ -87,8 +76,6 @@ The run fingerprint hashes the canonical object with `dsl_version`, `semantics_v
 | Metadata, summary, and inspection envelopes 1 | Independently versioned JSON payloads |
 | Package version and code revision | Executing source and reproducibility evidence |
 
-A code-only migration can preserve the source, normalized spec, dataset, configuration, and result digest while changing the environment hash and run fingerprint. This happened in the v1 indicator registry migration. Two runs in the same recorded environment have distinct run IDs.
+An implementation change can affect the environment hash and run fingerprint even when the source, normalized spec, dataset, configuration, and result digest match. The v1 indicator registry migration is an example. TradeLang gives each run its own run ID.
 
-Open `manifest.json` in each bundle and compare `result_digest` for the logical results and `run_fingerprint` for the run configuration and recorded environment. To verify a specific file, compute its SHA-256 and compare it with the `sha256` of the matching `name` in that bundle's `artifact_files` list.
-
-To reproduce a bundle, use its source, dataset copy, and metadata with the recorded package and dependencies. Write to a fresh directory, then compare the fingerprints and result digests. Generated run bundles contain the original submitted data and strategy, so review both before sharing one.
+See [Compare backtests and replay a run](inspect-backtest-results.md#compare-and-replay-runs) to compare manifests, check a file checksum, and replay a bundle.

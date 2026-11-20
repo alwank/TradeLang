@@ -1,10 +1,10 @@
 # Backtesting basics
 
-A backtest applies a strategy to past prices and simulates what would have happened under stated rules. TradeLang runs one long spot position at a time on a 24/7 UTC calendar. A long spot position buys an asset with cash and later sells it.
+A backtest simulates trades on historical prices using rules you specify. TradeLang models one long spot position at a time on a 24/7 UTC calendar. You open a long spot position by buying an asset with cash, and close it by selling the asset.
 
 ## Read a candle
 
-A candle summarizes trading during a fixed interval, such as one hour or one day. Its **OHLCV** fields are the opening price, highest price, lowest price, closing price, and quantity traded. TradeLang timestamps a candle at the start of its interval in UTC. For example, the daily candle labeled January 1 opens at midnight on January 1 and completes at midnight on January 2.
+A candle summarizes trading during a fixed interval, such as one hour or one day. Its opening price, high, low, closing price, and traded volume are called **OHLCV**. The opening and closing prices are the first and last prices in the interval. TradeLang timestamps a candle at the start of its interval in UTC. For example, the daily candle labeled January 1 opens at midnight on January 1 and completes at midnight on January 2.
 
 The [quickstart candles](fixtures/core.csv) are synthetic and use the example market `TESTUSDT`, quoted in USDT.
 
@@ -16,12 +16,12 @@ The [quickstart candles](fixtures/core.csv) are synthetic and use the example ma
 
 ## Follow a signal to a fill
 
-A **signal** is a decision from the strategy’s rules. A **fill** is the simulated execution of an order at a price and quantity. TradeLang evaluates ordinary entry and exit rules when a candle completes. The resulting order can fill at the next observed candle’s open.
+A **signal** is a decision from the strategy’s rules. A signal can queue an **order**, an instruction to buy or sell. A **fill** is the simulated execution of that order at a price and quantity. TradeLang evaluates ordinary entry and exit rules when a candle completes. The resulting order can fill at the next observed candle’s open.
 
 1. The example allows a buy whenever it is flat and the exit rule is false. On the January 1 close of 100 USDT, it queues a buy. The January 2 open fills it at 110 USDT.
 2. The exit rule triggers when the close reaches at least 112 USDT. The January 2 close meets that rule and queues a sell. The January 3 open fills it at 120 USDT.
 
-The January 2 close and January 3 open share a UTC timestamp. The event sequence records the close decision before the opening fill. See the [quickstart trade trace](results.md#trace-the-quickstart-trade).
+The January 2 close and January 3 open share a UTC timestamp. The event sequence records the close decision before the opening fill. See the [quickstart trade trace](inspect-backtest-results.md#trace-the-quickstart-trade).
 
 ## Account for size and costs
 
@@ -31,6 +31,6 @@ The strategy can specify **fees** and **slippage** per side, so they apply at en
 
 ## Interpret the result
 
-**Equity** is cash plus the current value of any open position. The backtest records equity over time, completed trades, and the events behind each decision. These help you check whether the rules behaved as intended on the supplied candles. Results depend on the date range, data, and execution assumptions. The synthetic examples demonstrate the workflow and carry no evidence about future performance.
+**Equity** is cash plus the current value of any open position. The backtest records equity over time, completed trades, and the events behind each decision. Use completed trades to check the prices and costs. Use the event log to see why an order was queued, filled, rejected, or expired. Open positions contribute to final equity at the last closing price. Results depend on the date range, data, and execution assumptions. The examples use synthetic prices to isolate the effect of the rules.
 
 Next, [run your first backtest](quickstart.md) and find the signals and fills in the output files.

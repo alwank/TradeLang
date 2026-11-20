@@ -15,11 +15,18 @@ markdown_extensions:
 
 nav:
   - Home: index.md
-  - Learn:
-      - Backtesting basics: backtesting-basics.md
-      - First backtest: quickstart.md
+  - Get started:
+      - Run your first backtest: quickstart.md
       - Write a strategy: writing-strategies.md
       - Example strategies: example-strategies.md
+  - How-to guides:
+      - Use your own candle data: use-your-own-candles.md
+      - Apply common strategy patterns: strategy-patterns.md
+      - Inspect and compare backtests: inspect-backtest-results.md
+      - Troubleshoot a backtest: troubleshoot-backtests.md
+      - Use the local HTTP API: use-local-api.md
+  - Concepts:
+      - Backtesting basics: backtesting-basics.md
   - Reference:
       - TradeLang strategy language v1: language-spec.md
       - Indicators: indicators.md
@@ -28,7 +35,8 @@ nav:
       - Command line: cli.md
       - Results and artifacts: results.md
       - Local HTTP API: local-api.md
-  - Build and publish the docs: publishing.md
+  - Contribute:
+      - Build and publish the docs: publishing.md
 
 validation:
   omitted_files: warn

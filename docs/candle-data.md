@@ -6,18 +6,7 @@ Supply one historical OHLCV dataset as CSV or Parquet. Use raw spot prices on a 
 
 ## Use your own candles
 
-After the [first backtest](quickstart.md), check your strategy and dataset together before you run on your own prices.
-
-- Use completed spot candles with the required OHLCV columns, ordered by opening timestamp.
-- Match the strategy’s `market`, `timeframe`, and `capital` currency to the metadata’s `symbol`, `timeframe`, and `quote_currency`.
-- Include the first and last complete candles in the strategy’s date range. Include earlier candles if your indicators need history before the first eligible signal.
-- Check the gap policy. The default `reject` reports missing candles.
-
-Replace the three example filenames with your own. Review any diagnostics, then confirm the resolved window and first execution open in the explanation before backtesting.
-
-```sh
-tradelang explain my-strategy.trade --data candles.csv --metadata metadata.json
-```
+Follow [Use your own candle data](use-your-own-candles.md) to prepare your files, check coverage, and run a backtest.
 
 ## File formats
 

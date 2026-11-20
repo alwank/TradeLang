@@ -14,8 +14,6 @@ Whitespace, including indentation and newlines, separates tokens. A `#` outside 
 
 Use the optional `tradelang 1` directive before the `strategy` header to declare version 1. This is also the default when the directive is omitted. The legacy spelling `dsl 1` is accepted as an alias. Typed strategy JSON and run manifests record the language version as `dsl_version: 1`.
 
-Sections and directives follow the order in [Write a strategy](writing-strategies.md#file-structure). Entry and exit each require one Boolean condition and one order. An omitted risk block leaves the position without protective levels. The maximum is always one position.
-
 | Clause | v1 lexical rule |
 | --- | --- |
 | V1-LEX01 | The compiler accepts UTF-8 with an optional initial BOM and preserves exact source bytes. LF and CRLF are valid. |
@@ -23,6 +21,23 @@ Sections and directives follow the order in [Write a strategy](writing-strategie
 | V1-LEX03 | Section order is strategy, market, timeframe, lets, entry, exit, optional risk, and backtest. Entry and exit each have one condition and one order. |
 | V1-LEX04 | Keywords, builtins, and binding names are lowercase. Function names are uppercase. `tradelang` is available as a binding name, and `dsl` is reserved. |
 | V1-LEX05 | Numbers use the digit-led decimal and exponent grammar below. Market, currency, and timeframe tokens follow the packaged grammar. |
+
+## Strategy file structure
+
+Use the sections in this order.
+
+| Section or directive | Purpose |
+| --- | --- |
+| `tradelang 1` | Optional version directive. Version 1 is the default. Existing strategies can still use `dsl 1`. |
+| `strategy "…"` | Required display name in double quotes. |
+| `market` and `timeframe` | Required symbol and fixed duration such as `15m`, `1h`, or `1d`. |
+| `let` | Optional immutable declarations. A declaration can reference earlier declarations. |
+| `entry:` | Required Boolean `when` condition followed by `buy using`. |
+| `exit:` | Required Boolean `when` condition followed by `sell all`. |
+| `risk:` | Optional. Include at least one of `stop loss`, `take profit`, or `max open positions 1`, in that order. |
+| `backtest:` | Required inclusive UTC date range, capital, fee, slippage, execution mode, and calendar, in the order shown above. |
+
+The maximum is one open position. If you omit the risk block, the position has no protective levels. See [Write a strategy](writing-strategies.md) for a complete file.
 
 ## Expression grammar and precedence
 

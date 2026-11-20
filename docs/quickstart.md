@@ -1,12 +1,12 @@
 # Run your first backtest
 
-Install TradeLang, run an included strategy on three synthetic candles, and trace one completed trade. If candles, signals, or fills are new to you, start with [backtesting basics](backtesting-basics.md).
+Run a bundled strategy on three sample candles. You’ll see why the strategy buys at 110 USDT, sells at 120 USDT, and finishes with about 1,090.91 USDT. If you’re new to candles or simulated orders, see [Backtesting basics](backtesting-basics.md).
+
+Before you start, install [Git](https://git-scm.com/install/) and [uv](https://docs.astral.sh/uv/getting-started/installation/). The commands work in a POSIX shell or PowerShell.
 
 ## Install
 
-Install [Git](https://git-scm.com/install/) and [uv](https://docs.astral.sh/uv/getting-started/installation/), then open a terminal. TradeLang uses Python 3.12, which `uv` can install when needed.
-
-Clone the repository and enter its root directory. If you already have a checkout, run the install command from there.
+Clone the repository and enter its root directory. If you already have a checkout, start there and skip the first two commands.
 
 ```sh
 git clone https://github.com/alwank/TradeLang.git
@@ -15,41 +15,50 @@ uv tool install --python 3.12 .
 tradelang --version
 ```
 
-`uv tool install` makes `tradelang` available in new terminals and from any directory. If your shell cannot find `tradelang`, run `uv tool update-shell` and reopen the terminal. The commands also work in PowerShell.
+`uv` can fetch Python 3.12 during installation. The last command prints the installed TradeLang version. If your shell cannot find `tradelang`, run `uv tool update-shell` and open a new terminal in the checkout. After updating the checkout, add `--reinstall` to the install command to refresh the CLI.
 
-After pulling updates, repeat your install command with `--reinstall` to refresh the CLI. Run the examples below from the repository root so their relative paths resolve.
+Run the remaining commands from the repository root so the example paths resolve.
 
 ## Validate and explain
 
-The [strategy file](fixtures/core.trade) sets the rules and starts with 1,000 USDT. The [candles](fixtures/core.csv) provide prices and volume. The [metadata](fixtures/metadata.json) describes the market, currency, and candle interval.
-
-The strategy buys with all available equity when flat and the exit condition is false. It signals an exit when the completed close is at least `112 price`. The fee and slippage are both zero.
+Validate the [example strategy](fixtures/core.trade). It starts with 1,000 USDT, buys when it holds no position and the exit rule is false, and signals an exit at a completed close of at least `112 price`. Fees and slippage are zero so you can check the result by hand.
 
 ```sh
 tradelang validate docs/fixtures/core.trade
+```
+
+Look for `Valid strategy: Golden next-open ledger. Warmup index 0.` A warmup index of zero means the rules have enough history on the first candle.
+
+Ask TradeLang to explain the strategy using the [sample candles](fixtures/core.csv) and their [metadata](fixtures/metadata.json). The metadata describes the market, quote currency, and candle interval.
+
+```sh
 tradelang explain docs/fixtures/core.trade --data docs/fixtures/core.csv --metadata docs/fixtures/metadata.json
 ```
 
-`validate` checks the strategy and reports `Warmup index 0`, which means it needs no earlier candles before evaluating its rules. `explain` shows how TradeLang reads the rules and uses the data to report the first eligible signal close and execution open. For this fixture, both occur at `2024-01-02T00:00:00Z`. The simulator processes the January 1 close before the January 2 open.
+Look for `First eligible close 2024-01-02T00:00:00Z, first executable open 2024-01-02T00:00:00Z`. The January 1 candle closes at the same instant the January 2 candle opens. TradeLang processes the close decision first.
 
 ## Simulate and check the fills
+
+Run the backtest and write its files to `runs/first`.
 
 ```sh
 tradelang backtest docs/fixtures/core.trade --data docs/fixtures/core.csv --metadata docs/fixtures/metadata.json --out runs/first
 ```
 
-| UTC candle (by opening date) | Open | Close | Strategy action |
+The CLI prints `Final equity 1090.9091 USDT` and the output path. If that directory already contains a run, see [Choose a fresh output directory](troubleshoot-backtests.md#choose-a-fresh-output-directory).
+
+The trade follows the three candles in order. Each row is labeled by its UTC opening date.
+
+| Candle opens | Open | Close | What TradeLang does |
 | --- | ---: | ---: | --- |
-| 2024-01-01 | 100 | 100 | The close queues a buy. |
-| 2024-01-02 | 110 | 112 | The open buys `1000 / 110` units. The close queues a sell. |
-| 2024-01-03 | 120 | 120 | The open sells the whole position. |
+| January 1 | 100 | 100 | Queues a buy at the close. |
+| January 2 | 110 | 112 | Buys `1000 / 110` units at the open and queues a sell at the close. |
+| January 3 | 120 | 120 | Sells the whole position at the open. |
 
-Open `runs/first` in a file browser or editor and check these outputs.
+Open `runs/first` and check the output files.
 
-- `summary.json` contains `final_equity`. Expect approximately **1,090.91 USDT**, a return of **9.09%**.
-- `trades.csv` records one completed trade with an `entry_price` of **110 USDT** and an `exit_price` of **120 USDT**.
-- `events.jsonl` lists the signals, queued orders, and fills in order.
+- In `summary.json`, `final_equity` is about **1,090.91 USDT**.
+- In `trades.csv`, the one completed trade has an `entry_price` of **110 USDT** and an `exit_price` of **120 USDT**.
+- In `events.jsonl`, each signal comes before its queued order and fill. [Trace the quickstart trade](inspect-backtest-results.md#trace-the-quickstart-trade) to see how the records link together.
 
-If TradeLang reports that the output directory must be new or empty, choose another `--out` path, such as `runs/first-again`.
-
-Next, [write and change the strategy](writing-strategies.md) to see how sizing changes the result.
+Next, [write a strategy](writing-strategies.md) and see what happens when you commit a quarter of the starting equity. If your strategy is ready, [use your own candle data](use-your-own-candles.md).
