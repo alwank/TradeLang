@@ -43,3 +43,7 @@ SMA and EMA default to `close` when called with one argument. RSI and MACD alway
 | Compare with a Bollinger band | `close < BBANDS(close, 20, 2).lower` |
 | Compare the prior MACD line with zero | `MACD(12, 26, 9).line[1] > 0` |
 | Set a stop two ATRs from the fill | `stop loss 2 * ATR(14)` |
+
+### Check MACD warmup
+
+See [Check MACD warmup](strategy-patterns.md#check-macd-warmup) for a runnable comparison of line, signal, and histogram readiness.

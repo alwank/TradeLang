@@ -1,5 +1,7 @@
 # Execution semantics 1.1.0
 
+This reference defines when TradeLang evaluates rules, fills orders, and accounts for cash and positions. For a worked introduction, see [Backtesting basics](backtesting-basics.md).
+
 TradeLang models a single long spot position and one cash balance in the quote currency. It uses fractional quantity and a fixed UTC candle grid. The model omits borrowing, shorting, scaling into positions, partial fills, lot sizes, market impact, and corporate actions. Volume is observational. A fill on a zero-volume candle can emit `W_ZERO_VOLUME_FILL`.
 
 ## Clock, window and readiness
@@ -70,7 +72,7 @@ For example, with a fill at 100 and a sampled ATR of 2, `stop loss 2 * ATR(14)` 
 
 The compiler and simulator use binary64 values. Signal comparisons and OHLC trigger tests use exact comparisons of those values. Entry quantity can move toward zero by up to four representable steps so the rounded fee-inclusive debit stays within budget. An invalid entry proposal can be rejected while the run continues. A sale with invalid prices, proceeds, or accounting fails with `E_NUMERIC_EXECUTION`. An exit fee that underflows to zero when the fee rate is positive also fails.
 
-Use the recorded runtime and input identity when [replaying a run](results.md#compare-and-replay-runs). Platform and dependency changes can affect results.
+Use the recorded runtime and input identity when [replaying a run](inspect-backtest-results.md#compare-and-replay-runs). Platform and dependency changes can affect results.
 
 ## Buy-and-hold and terminal state
 

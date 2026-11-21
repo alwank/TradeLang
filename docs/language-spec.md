@@ -14,8 +14,6 @@ Whitespace, including indentation and newlines, separates tokens. A `#` outside 
 
 Use the optional `tradelang 1` directive before the `strategy` header to declare version 1. This is also the default when the directive is omitted. The legacy spelling `dsl 1` is accepted as an alias. Typed strategy JSON and run manifests record the language version as `dsl_version: 1`.
 
-Sections and directives follow the order in [Write a strategy](writing-strategies.md#file-structure). Entry and exit each require one Boolean condition and one order. An omitted risk block leaves the position without protective levels. The maximum is always one position.
-
 | Clause | v1 lexical rule |
 | --- | --- |
 | V1-LEX01 | The compiler accepts UTF-8 with an optional initial BOM and preserves exact source bytes. LF and CRLF are valid. |
@@ -23,6 +21,23 @@ Sections and directives follow the order in [Write a strategy](writing-strategie
 | V1-LEX03 | Section order is strategy, market, timeframe, lets, entry, exit, optional risk, and backtest. Entry and exit each have one condition and one order. |
 | V1-LEX04 | Keywords, builtins, and binding names are lowercase. Function names are uppercase. `tradelang` is available as a binding name, and `dsl` is reserved. |
 | V1-LEX05 | Numbers use the digit-led decimal and exponent grammar below. Market, currency, and timeframe tokens follow the packaged grammar. |
+
+## Strategy file structure
+
+Use the sections in this order.
+
+| Section or directive | Purpose |
+| --- | --- |
+| `tradelang 1` | Optional version directive. Version 1 is the default. Existing strategies can still use `dsl 1`. |
+| `strategy "…"` | Required display name in double quotes. |
+| `market` and `timeframe` | Required symbol and fixed duration such as `15m`, `1h`, or `1d`. |
+| `let` | Optional immutable declarations. A declaration can reference earlier declarations. |
+| `entry:` | Required Boolean `when` condition followed by `buy using`. |
+| `exit:` | Required Boolean `when` condition followed by `sell all`. |
+| `risk:` | Optional. Include at least one of `stop loss`, `take profit`, or `max open positions 1`, in that order. |
+| `backtest:` | Required inclusive UTC date range, capital, fee, slippage, execution mode, and calendar, in the order shown above. |
+
+The maximum is one open position. If you omit the risk block, the position has no protective levels. See [Write a strategy](writing-strategies.md) for a complete file.
 
 ## Expression grammar and precedence
 
@@ -141,7 +156,7 @@ CLI and HTTP JSON responses include diagnostics with `code`, `severity`, `messag
 | V1-ERR03 | Expression evaluation | A runtime arithmetic fault makes the affected value unavailable. Run summaries record the evaluator's reason totals. |
 | V1-ERR04 | Order proposal | Invalid market sizing, protection, or fill-time budget can consume and reject an entry before mutating the ledger. |
 | V1-ERR05 | Execution and publication | Invalid exit accounting and other fatal numeric errors raise `E_NUMERIC_EXECUTION`. A failed run has no successful bundle. |
-| V1-ERR06 | CLI and HTTP | CLI exits 2 for domain/input errors, 3 for `E_IO`, 4 for fatal numeric execution, and 130 for `E_INTERRUPT`. `E_USAGE` exits 2. The inspection API can return HTTP 200 with `valid=false` and source diagnostics. |
+| V1-ERR06 | CLI and HTTP | CLI exits 2 for domain/input errors, 3 for `E_USAGE` or `E_IO`, 4 for fatal numeric execution, and 130 for `E_INTERRUPT`. The inspection API can return HTTP 200 with `valid=false` and source diagnostics. |
 
 Use [`explain`](cli.md#explain) to see normalized expressions, expanded indicator defaults, and structural warmup. Explanation writes percentage literals as their normalized ratios and periods as integers. Include a dataset to resolve the execution window.
 

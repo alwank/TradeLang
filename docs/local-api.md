@@ -1,126 +1,65 @@
 # Local HTTP API
 
-Use the optional HTTP service to inspect strategy source, save drafts, and import datasets. Run simulations with the [CLI](cli.md#backtest).
+The optional local HTTP API validates and explains strategy source. In supervised mode, it also stores strategy drafts and imported datasets. Run simulations with the [CLI](cli.md#backtest).
 
 ## Start the service
 
-From the repository root, install the optional API dependencies and start the supervisor with a fresh library. The examples use a POSIX shell and `curl`.
+Follow [Use the local HTTP API](use-local-api.md#start-the-service) to install the optional dependencies and start the service.
 
-```sh
-uv tool install --python 3.12 '.[api]'
-library_root=$(mktemp -d "${TMPDIR:-/tmp}/tradelang-library.XXXXXX")
-tradelang-local --data-root "$library_root"
-```
+| Command | Available routes |
+| --- | --- |
+| `tradelang-local` | Health, OpenAPI, strategy inspection, and the draft and dataset library. The library persists under `--data-root`. |
+| `tradelang-api` | Health, OpenAPI, and source inspection. |
 
-In another terminal, check the service and inspect the generated OpenAPI schema.
+Both modes listen on `127.0.0.1:8000` and require that address in the Host header. For POST, PUT, and DELETE, send `Origin: http://127.0.0.1:3000`. Send `Content-Type: application/json` for JSON bodies and multipart form data for dataset imports.
 
-```sh
-curl -fsS http://127.0.0.1:8000/health
-curl -fsS http://127.0.0.1:8000/openapi.json
-```
-
-The service accepts loopback requests at `127.0.0.1:8000`. Use this address in requests because the Host header is checked. For POST, PUT, and DELETE, send `Origin: http://127.0.0.1:3000`. Use `Content-Type: application/json` for JSON writes and multipart for dataset uploads. Use Ctrl-C in the service terminal to stop it.
-
-For source-only inspection, start `tradelang-api` on the same port after stopping the supervisor. The standalone service has the two editor endpoints and reports degraded health because it runs without a worker. The supervisor persists drafts and datasets under `--data-root`. If its worker stops, `/health` returns HTTP 503 while editor routes remain available.
+`GET /health` returns HTTP 200 with `status: "ok"` when the worker is available. Without a worker, including in standalone mode, it returns HTTP 503 with `status: "degraded"`. Inspection routes remain available while the API process is running.
 
 ## Validate or explain source
 
-Both routes accept a JSON object containing `source` and an optional `dataset_id`. Start with a source-only request in the second terminal, from the repository root.
+For runnable requests, see [Validate or explain source](use-local-api.md#validate-or-explain-source).
 
-```sh
-api=http://127.0.0.1:8000/api/v1
-payload=$(uv run --no-project --python 3.12 python -c 'import json, pathlib; print(json.dumps({"source": pathlib.Path("docs/fixtures/core.trade").read_bytes().decode("utf-8")}))')
-curl -fsS "$api/strategies/validate" \
-  -H 'Origin: http://127.0.0.1:3000' -H 'Content-Type: application/json' \
-  --data-binary "$payload"
-```
-
-Use the same body with `/api/v1/strategies/explain`. Both responses carry `valid`, diagnostics, and the source hash. A compiled source has a spec hash and warmup index. Validation gives the typed `spec` on success. Explanation gives `text` and `assumptions`. A source-only request leaves `resolved_window` null and, on the validation response, `data_compatible` null.
+Both inspection endpoints accept `source` and an optional `dataset_id`. Responses include `valid`, diagnostics, and the source hash. A compiled strategy has a spec hash and warmup index. Successful validation returns the typed `spec`. Explanation returns `text` and `assumptions` for valid source and compatible data. A source-only request has `resolved_window: null` and, for validation, `data_compatible: null`.
 
 ## Save a draft and import candles
 
-### Import and select a dataset
+Follow the [supervised library workflow](use-local-api.md#save-a-draft-and-import-candles) to use these endpoints.
 
-With the supervised service running, upload the [quickstart candles](fixtures/core.csv) and [metadata](fixtures/metadata.json). The first import into the fresh library returns HTTP 201 with `deduplicated: false`. Use the returned `dataset.id` in inspection requests.
+- <a id="import-and-select-a-dataset"></a>[Import and select a dataset](use-local-api.md#import-and-select-a-dataset) to get its ID.
+- <a id="validate-and-explain-with-the-dataset"></a>[Validate and explain with the dataset](use-local-api.md#validate-and-explain-with-the-dataset) to check the resolved window.
+- <a id="save-and-update-a-draft"></a>[Save and update a draft](use-local-api.md#save-and-update-a-draft) to store strategy source.
 
-```sh
-imported=$(curl -fsS "$api/datasets/import" \
-  -H 'Origin: http://127.0.0.1:3000' \
-  -F 'file=@docs/fixtures/core.csv' -F 'metadata=<docs/fixtures/metadata.json')
-dataset_id=$(printf '%s\n' "$imported" | uv run --no-project --python 3.12 python -c 'import json, sys; print(json.load(sys.stdin)["dataset"]["id"])')
-```
+An update requires the current `If-Match` ETag and the `expected_revision` number. A source change creates a revision and a new ETag. A rename changes the ETag and preserves the revision number. An identical update preserves both.
 
-Dataset IDs select individual imports. Use `dataset_hash` to compare normalized candles and semantic metadata across imports. Equivalent CSV and Parquet uploads can also have distinct IDs and share a hash.
-
-| Upload after the first import | HTTP status | Identity |
-| --- | --- | --- |
-| Same file bytes and validated metadata, with the upload filename changed to `renamed.csv` | 200 | `deduplicated: true`, original `dataset.id` and `dataset_hash`. |
-| Same file bytes with `timeframe` changed from `1d` to `24h` in the metadata | 201 | `deduplicated: false`, new `dataset.id` and the same `dataset_hash`. Both timeframes normalize to the same duration. |
-
-### Validate and explain with the dataset
-
-Add the imported ID to the source-only `payload` from the previous section and send the resulting body to both routes.
-
-```sh
-with_dataset=$(printf '%s\n' "$payload" | uv run --no-project --python 3.12 python -c 'import json, sys; print(json.dumps(dict(json.load(sys.stdin), dataset_id=sys.argv[1])))' "$dataset_id")
-for command in validate explain; do
-  curl -fsS "$api/strategies/$command" \
-    -H 'Origin: http://127.0.0.1:3000' -H 'Content-Type: application/json' \
-    --data-binary "$with_dataset"
-  printf '\n'
-done
-```
-
-Both responses have `valid: true` and the following `resolved_window`. The validation response also has `data_compatible: true`.
-
-```json
-{
-  "first_open": "2024-01-01T00:00:00Z",
-  "last_close_at": "2024-01-04T00:00:00Z",
-  "readiness_index": 0,
-  "first_signal_at": "2024-01-02T00:00:00Z",
-  "first_execution_at": "2024-01-02T00:00:00Z"
-}
-```
-
-`readiness_index` is the zero-based [structural warmup index](language-spec.md#unavailable-and-bounded-computation). Here the first eligible close and next open share a timestamp because the candles are contiguous.
-
-Check `valid` even on HTTP 200. For example, changing the strategy market to `OTHERUSDT` yields `valid: false`, a null `resolved_window`, and an `E402_WINDOW` diagnostic. On validation, `data_compatible` is `false` in this case. A well-formed UUID absent from the library returns HTTP 404 with `E_DATASET_NOT_FOUND` in the [error response](#handle-errors).
-
-### Save and update a draft
-
-```sh
-draft=$(printf '%s\n' "$payload" | uv run --no-project --python 3.12 python -c 'import json, sys; print(json.dumps(dict(json.load(sys.stdin), name="Golden demo")))')
-curl -fsS -i "$api/strategies" \
-  -H 'Origin: http://127.0.0.1:3000' -H 'Content-Type: application/json' \
-  --data-binary "$draft"
-```
-
-Drafts can contain work-in-progress source. Creation returns HTTP 201, a `Location` header, an `ETag` header, and `current_revision: 1`. Pass the current ETag as `If-Match`, including its quotes, and the current revision as `expected_revision` when updating the draft. A source change creates a new revision and ETag. A rename changes the ETag and preserves the revision number. An identical update preserves both.
-
-Archiving with `DELETE` and the current ETag returns HTTP 204. The draft disappears from the active list and its detail route returns HTTP 404. Its revision list and saved revisions remain readable.
+Archiving with DELETE and the current ETag returns HTTP 204. The draft disappears from the active list and its detail route returns HTTP 404. Its revision list and saved revisions remain readable.
 
 ## Routes
 
-The running service's [OpenAPI document](http://127.0.0.1:8000/openapi.json) describes the request and response schemas. Paths in the table are relative to `/api/v1`.
+The running service's [OpenAPI document](http://127.0.0.1:8000/openapi.json) describes the request and response schemas. The table uses paths relative to `/api/v1`. `{ident}` is a strategy or dataset identifier, and `{revision}` is the strategy revision number.
 
 | Method and path | Behavior |
 | --- | --- |
 | `POST /strategies/validate` | Compile source and optionally validate window compatibility. |
 | `POST /strategies/explain` | Explain the compiled source and assumptions. |
 | `GET /strategies`, `POST /strategies` | List active drafts or save a new draft. The optional `q` query parameter matches substrings of the draft name, case-insensitively. |
-| `GET /strategies/{id}` | Read the current draft and ETag. |
-| `PUT /strategies/{id}` | Send `name`, `source`, and `expected_revision` with the current `If-Match` ETag. |
-| `DELETE /strategies/{id}` | Archive the draft with the current `If-Match` ETag. |
-| `GET /strategies/{id}/revisions`, `GET /strategies/{id}/revisions/{revision}` | List or read saved source revisions. |
-| `GET /datasets`, `GET /datasets/{id}` | List imports or read metadata, quality, and a row preview. |
+| `GET /strategies/{ident}` | Read the current draft and ETag. |
+| `PUT /strategies/{ident}` | Send `name`, `source`, and `expected_revision` with the current `If-Match` ETag. |
+| `DELETE /strategies/{ident}` | Archive the draft with the current `If-Match` ETag. |
+| `GET /strategies/{ident}/revisions`, `GET /strategies/{ident}/revisions/{revision}` | List or read saved source revisions. |
+| `GET /datasets`, `GET /datasets/{ident}` | List imports or read metadata, quality, and a row preview. |
 | `POST /datasets/import` | Upload one `file` and one `metadata` JSON part. |
 
 Library routes require the supervised service. List routes accept `limit` from 1 to 500 (default 50). They return `items`, `next_cursor`, and `snapshot`, the creation-time cutoff used for pagination. Pass `next_cursor` as an opaque `cursor` on the same list route and with the same filters. A null `next_cursor` marks the last page.
 
+## Dataset import identity
+
+A new import returns HTTP 201 with `deduplicated: false`. A repeat upload with the same file bytes and validated metadata returns HTTP 200 with `deduplicated: true` and the original dataset ID. The filename can change without affecting this check.
+
+Use `dataset_hash` to compare normalized candles and semantic metadata across imports. A separate upload with `timeframe` written as `24h` instead of `1d` creates a new ID with the same hash. Equivalent CSV and Parquet uploads can also have distinct IDs and share a hash. See [the dataset hash contract](results.md#compare-and-replay-runs).
+
 ## Handle errors
 
-For non-success HTTP responses from inspection and library routes, read `error.code` and `error.message`. The JSON response also includes `schema_version: 1`, a `request_id`, and `error.diagnostics` and `error.retryable`. Dataset validation failures may include row diagnostics. To see the status, headers, and error body in `curl`, use `-i` and omit `-f`. For inspection responses with HTTP 200, read the top-level `valid` and `diagnostics` fields.
+For HTTP errors from inspection and library routes, read `error.code` and `error.message`. The JSON response also includes `schema_version: 1`, a `request_id`, and `error.diagnostics` and `error.retryable`. Dataset validation failures may include row diagnostics. To see the status, headers, and error body in `curl`, use `-i` and omit `-f`. For inspection responses with HTTP 200, read the top-level `valid` and `diagnostics` fields.
 
 | HTTP status | What to check |
 | --- | --- |
