@@ -54,7 +54,7 @@ jobs:
         run: |
           set -o pipefail
           uv run --locked --extra api python -c 'import hypothesis, os; print("Hypothesis", hypothesis.__version__, os.environ["TRADELANG_TEST_PROFILE"])' | tee language-deep.log
-          uv run --locked --extra api pytest tests/conformance tests/property tests/fuzz tests/test_registry_parity.py tests/test_execution_contract.py tests/test_identity_protocol.py --hypothesis-show-statistics --junitxml=language-deep.xml | tee -a language-deep.log
+          uv run --locked --extra api pytest tests/conformance tests/property tests/fuzz tests/test_registry_parity.py tests/test_execution_contract.py tests/test_identity_protocol.py tests/test_indicator_expansion.py tests/test_indicator_references.py tests/test_volume_profile.py --hypothesis-show-statistics --junitxml=language-deep.xml | tee -a language-deep.log
       - uses: actions/upload-artifact@v4
         if: always()
         with:

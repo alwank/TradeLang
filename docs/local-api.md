@@ -25,7 +25,7 @@ For source-only inspection, start `tradelang-api` on the same port after stoppin
 
 ## Validate or explain source
 
-Both routes accept a JSON object containing `source` and an optional `dataset_id`. Start with a source-only request in the second terminal, from the repository root.
+Both routes accept a JSON object containing `source` and an optional `dataset_id`. For a strategy using `VPROFILE`, send the primary `dataset_id` and a separate `profile_dataset_id` for the [lower-timeframe input](candle-data.md#pair-candles-for-volume-profile). An unknown supplied ID returns HTTP 404 with `E_DATASET_NOT_FOUND`. An incompatible pairing returns HTTP 200 with `valid: false` and an `E402_WINDOW` diagnostic. Start with a source-only request in the second terminal, from the repository root.
 
 ```sh
 api=http://127.0.0.1:8000/api/v1

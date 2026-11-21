@@ -6,7 +6,7 @@ from .model import Problem
 from .report import explain, identity, resolved
 
 
-def inspect_source(source: bytes, command: str, dataset=None):
+def inspect_source(source: bytes, command: str, dataset=None, *, profile=None):
     """Inspect exact source bytes. Domain failures retain their diagnostic spans."""
     if command not in ("validate", "explain"):
         raise ValueError("Unknown inspection command")
@@ -30,13 +30,17 @@ def inspect_source(source: bytes, command: str, dataset=None):
             warmup_index=strategy.warmup,
             diagnostics=list(strategy.warnings),
         )
-        if dataset is not None and command == "validate":
+        if (dataset is not None or profile is not None) and command == "validate":
             response["data_compatible"] = False
+        if profile is not None and dataset is None:
+            raise Problem("E402_WINDOW", "A profile dataset requires a primary dataset")
         if command == "explain":
-            response.update(explain(strategy, dataset))
+            response.update(explain(strategy, dataset, profile=profile))
         else:
             if dataset is not None:
-                response["resolved_window"] = resolved(strategy, dataset)
+                response["resolved_window"] = resolved(
+                    strategy, dataset, profile=profile
+                )
                 response["data_compatible"] = True
             response["spec"] = strategy.public()
         response["valid"] = True

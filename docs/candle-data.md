@@ -74,3 +74,11 @@ Candles before the first in-window open can initialize indicators. If history ru
 ## Choose a gap policy
 
 The default `reject` policy requires every interval between the first and last submitted row to have exactly one candle. With `allow`, a pending order fills at the next observed open, including across a gap. Rolling windows, lookbacks, and crossings count observed rows. Protection can observe the next available open and range. The engine leaves missing prices unknown and requires window-edge coverage under either policy. Sharpe is unavailable when gaps fall inside the execution window.
+
+## Pair candles for Volume Profile
+
+Strategies that call `VPROFILE` use a primary OHLCV dataset and a lower-timeframe OHLCV dataset for the same market. Both inputs use the same symbol, quote currency, 24×7 calendar, raw spot prices, base-quantity volume, and UTC opening timestamps. The lower timeframe must be strictly smaller and divide the primary timeframe evenly. For example, a five-minute primary dataset can use one-minute child bars.
+
+The engine uses primary candles for signals and fills. Each primary row uses child candles that open in its interval and close by its closing time. Every expected child timestamp within an observed primary interval must be present for that row's profile contribution to be available. An allowed primary gap contributes no interval. An allowed child gap within an observed primary interval makes the profile unavailable until the affected primary row leaves the lookback. Each input declares its own gap policy.
+
+Provide the child file and its metadata with the [CLI data options](cli.md#data-options) or select both imported dataset IDs in the [local HTTP inspector](local-api.md#validate-or-explain-source).

@@ -29,6 +29,7 @@ class SourceRequest(Closed):
         description="Exact strategy source, at most 65,536 UTF-8 bytes."
     )
     dataset_id: UuidText | None = None
+    profile_dataset_id: UuidText | None = None
 
 
 class Diagnostic(Closed):

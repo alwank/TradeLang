@@ -19,9 +19,19 @@ import numpy as np
 import pyarrow as pa
 import pyarrow.parquet as pq
 
-from .data import COLUMNS, canonical, digest, hash_json, instant, window
-from .engine import ARTIFACT_SCHEMA_VERSION, SEMANTICS_VERSION, execute
+from .data import (
+    COLUMNS,
+    canonical,
+    digest,
+    hash_json,
+    instant,
+    prepare_window,
+    validate_indicator_data,
+)
+from .engine import ARTIFACT_SCHEMA_VERSION, SEMANTICS_VERSION, execute_prepared
 from .model import UNITS, Problem
+
+PROFILE_ARTIFACT_SCHEMA_VERSION = 3
 
 
 def projection(value):
@@ -44,8 +54,10 @@ def identity(s):
     )
 
 
-def resolved(s, d):
-    a, j, k = window(s, d)
+def resolved(s, d, *, profile=None, prepared=None):
+    if prepared is None:
+        prepared = prepare_window(s, d, profile)
+    a, j, k = prepared.first, prepared.first_signal, prepared.last
     dt = s.seconds * 1000000
     return dict(
         first_open=instant(d.times[a]),
@@ -85,7 +97,7 @@ def render(e):
             return f"({args[0]} {op} {args[1]})"
 
 
-def explain(s, d=None):
+def explain(s, d=None, *, profile=None):
     lines = [
         s.name,
         f"{s.symbol}, {s.seconds} seconds per UTC bar, {s.config.from_date} through {s.config.to_date} inclusive.",
@@ -112,7 +124,7 @@ def explain(s, d=None):
     lines.append(
         f"Fee {canonical(s.config.fee_rate * 10000)} bps and adverse slippage {canonical(s.config.slippage_rate * 10000)} bps per side. Buy-and-hold enters at the first executable open."
     )
-    win = resolved(s, d) if d is not None else None
+    win = resolved(s, d, profile=profile) if d is not None else None
     if win is not None:
         lines.append(
             f"Dataset {d.dataset_hash}. Gap policy {d.meta.gap_policy}. First eligible close {win['first_signal_at']}, first executable open {win['first_execution_at']}."
@@ -121,6 +133,10 @@ def explain(s, d=None):
         lines.append(
             "Select a dataset to resolve bar coverage and execution timestamps."
         )
+        if next(s.calls("VPROFILE"), None):
+            lines.append("Volume Profile requires an aligned lower-timeframe dataset.")
+    if profile is not None:
+        lines.append(f"Volume Profile dataset {profile.dataset_hash}.")
     return dict(
         **identity(s),
         text="\n".join(lines),
@@ -246,15 +262,21 @@ def environment_snapshot(stage):
     )
 
 
-def publish(s, d, out):
+def publish(s, d, out, *, profile=None):
     out = Path(out)
     if out.exists() and (not out.is_dir() or any(out.iterdir())):
         raise FileExistsError("Output directory must be new or empty")
+    paired = profile is not None or next(s.calls("VPROFILE"), None) is not None
+    prepared = prepare_window(s, d, profile) if paired else None
+    if not paired:
+        validate_indicator_data(s)
     out.parent.mkdir(parents=True, exist_ok=True)
     stage = Path(tempfile.mkdtemp(prefix="." + out.name + "-", dir=out.parent))
     started = now()
     try:
-        result = execute(s, d)
+        if prepared is None:
+            prepared = prepare_window(s, d)
+        result = execute_prepared(s, d, prepared)
         summary = result["summary"]
         eq = result["equity"]
         write_json(stage / "summary.json", summary)
@@ -278,6 +300,30 @@ def publish(s, d, out):
         if digest(copied.read_bytes()) != d.source_hash:
             raise Problem("E401_DATA", "Dataset changed after loading")
         write_json(stage / "metadata.json", d.meta.model_dump())
+        profile_identity = None
+        profile_manifest = {}
+        if profile is not None:
+            data_file = "profile-input" + profile.path.suffix.lower()
+            metadata_file = "profile-metadata.json"
+            profile_copy = stage / data_file
+            shutil.copyfile(profile.path, profile_copy)
+            with profile_copy.open("rb") as stream:
+                if (
+                    hashlib.file_digest(stream, "sha256").hexdigest()
+                    != profile.source_hash
+                ):
+                    raise Problem("E401_DATA", "Profile dataset changed after loading")
+            write_json(stage / metadata_file, profile.meta.model_dump())
+            profile_identity = dict(
+                role="volume_profile", dataset_hash=profile.dataset_hash
+            )
+            profile_manifest["profile_input"] = dict(
+                **profile_identity,
+                source_hash=profile.source_hash,
+                gap_policy=profile.meta.gap_policy,
+                data_file=data_file,
+                metadata_file=metadata_file,
+            )
         gap_sizes = np.diff(d.times) // 1000000
         write_json(
             stage / "dataset-summary.json",
@@ -310,23 +356,30 @@ def publish(s, d, out):
             numeric="binary64_v1",
             max_rows=1000000,
         )
-        win = resolved(s, d)
+        win = resolved(s, d, prepared=prepared)
         ids = identity(s)
+        configuration = dict(
+            policy=policy,
+            window=win,
+            backtest=projection(s.public()["backtest"]),
+            dataset_hash=d.dataset_hash,
+        )
+        if profile is not None:
+            configuration["profile_dataset"] = dict(
+                role="volume_profile",
+                dataset_hash=profile.dataset_hash,
+                gap_policy=profile.meta.gap_policy,
+            )
         signature = dict(
             dsl_version=1,
             semantics_version=SEMANTICS_VERSION,
             spec_hash=ids["spec_hash"],
             dataset_hash=d.dataset_hash,
             environment_hash=hash_json(env),
-            config_hash=hash_json(
-                dict(
-                    policy=policy,
-                    window=win,
-                    backtest=projection(s.public()["backtest"]),
-                    dataset_hash=d.dataset_hash,
-                )
-            ),
+            config_hash=hash_json(configuration),
         )
+        if profile_identity is not None:
+            signature["profile_dataset"] = profile_identity
         logical = hashlib.sha256()
         for key in ("summary", "trades", "equity", "events", "diagnostics"):
             items = [result[key]] if key == "summary" else result[key]
@@ -344,7 +397,11 @@ def publish(s, d, out):
                     }
                 logical.update(canonical(item).encode() + b"\n")
         manifest = dict(
-            schema_version=ARTIFACT_SCHEMA_VERSION,
+            schema_version=(
+                ARTIFACT_SCHEMA_VERSION
+                if profile is None
+                else PROFILE_ARTIFACT_SCHEMA_VERSION
+            ),
             engine_name="bar-event-v1",
             run_id=str(uuid.uuid4()),
             **signature,
@@ -352,6 +409,7 @@ def publish(s, d, out):
             run_fingerprint=hash_json(signature),
             result_digest=logical.hexdigest(),
             **env,
+            **profile_manifest,
             resolved_policy=policy,
             dataset_metadata=d.meta.model_dump(),
             requested_window={"from": s.config.from_date, "to": s.config.to_date},
@@ -376,6 +434,9 @@ def publish(s, d, out):
             summary=summary,
         )
     except BaseException as exc:
+        if profile is not None:
+            shutil.rmtree(stage, ignore_errors=True)
+            raise
         try:
             for name in ("manifest.json", "summary.json"):
                 (stage / name).unlink(missing_ok=True)

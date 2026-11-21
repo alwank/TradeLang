@@ -1,14 +1,19 @@
 """Typed and lexical contracts for built-in calls, independent of the parser."""
 
+from __future__ import annotations
+
 from collections.abc import Callable, Mapping, MutableMapping, Sequence
 from dataclasses import dataclass, replace
-from typing import Any, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
-from ..model import COUNT, PRICE, RATIO, VOLUME, Expr, Type
+from ..model import COUNT, PRICE, RATIO, UNITS, VOLUME, Expr, Type
 
-Role = Literal["source", "period", "multiplier"]
+if TYPE_CHECKING:
+    from .profile import ProfileWindow
+
+Role = Literal["source", "period", "multiplier", "number", "price_literal"]
 Readiness = Callable[[Sequence[Expr]], int]
-UnitRule = Literal["source", "price", "ratio"]
+UnitRule = Literal["source", "price", "ratio", "volume"]
 MissingPolicy = Literal["window", "reseed", "interval"]
 
 
@@ -16,6 +21,7 @@ MissingPolicy = Literal["window", "reseed", "interval"]
 class Argument:
     expression: Expr
     bare_number: str | None
+    literal_price: bool = False
 
 
 @dataclass(frozen=True)
@@ -32,12 +38,16 @@ class Signature:
 class Field:
     name: str
     readiness: Readiness | None = None
+    unit: UnitRule | None = None
 
 
 @dataclass(frozen=True)
 class KernelContext:
     columns: Mapping[str, Any]
     invalid_counts: MutableMapping[str, int]
+    times: Any = None
+    timeframe_seconds: int | None = None
+    profile: ProfileWindow | None = None
 
 
 Kernel = Callable[[Sequence[Any], KernelContext], Any]
@@ -62,6 +72,8 @@ class Function:
     required_columns: tuple[str, ...] = ()
     validate: Callable[[Sequence[Expr]], None] | None = None
     scale: Literal["points", "fraction"] | None = None
+    requires_clock: bool = False
+    requires_profile: bool = False
 
     def bind(
         self, arguments: Sequence[Argument], default_close: Callable[[], Expr]
@@ -106,22 +118,33 @@ class Function:
                 raise InvalidCall(
                     "E203_TYPE", "Band multiplier must be a positive literal at most 10"
                 )
+            if role == "number" and arg.bare_number is None:
+                raise InvalidCall(
+                    "E203_TYPE", "Expected an unsuffixed numeric literal", index
+                )
+            if role == "price_literal" and not (arg.literal_price and expr.value > 0):
+                raise InvalidCall(
+                    "E203_TYPE", "Expected a positive price literal", index
+                )
             normalized.append(expr)
         if self.validate is not None:
             self.validate(normalized)
         return tuple(normalized)
 
     def output_type(self, arguments: Sequence[Expr]) -> Type:
-        unit = (
-            arguments[0].type.unit
-            if self.unit == "source"
-            else (PRICE if self.unit == "price" else RATIO)
-        )
+        def resolve(rule: UnitRule):
+            return arguments[0].type.unit if rule == "source" else UNITS[rule]
+
         return Type(
             "record" if self.fields else "numeric",
             True,
-            unit,
+            resolve(self.unit),
             tuple(field.name for field in self.fields),
+            tuple(
+                (field.name, resolve(field.unit))
+                for field in self.fields
+                if field.unit is not None
+            ),
         )
 
     def field_ready(self, name: str, arguments: Sequence[Expr]) -> int:

@@ -34,7 +34,7 @@ Unavailable metrics use JSON null. Treat a short-window annualized value as a ma
 | `environment.json`, `dependency-lock.txt`, `source-package.zip` | Runtime build identity, installed package versions, and executing TradeLang source. Bundles may also contain the release build inputs `uv.lock` and `pyproject.toml`. |
 | `manifest.json` | Schema version 2. Version identifiers, resolved window, policy, fingerprints, and SHA-256 checksums and sizes for the other bundle files. |
 
-The CLI stages files in a sibling directory and publishes a successful bundle at the requested path at the end. A run that fails after staging begins can leave a staging directory containing `failure.json`.
+The CLI stages files in a sibling directory and publishes a successful bundle at the requested path at the end. A single-input run that fails after staging begins can leave a staging directory containing `failure.json`. Volume Profile runs remove their staging directory on failure.
 
 ## Read the artifact fields
 
@@ -84,9 +84,16 @@ The run fingerprint hashes the canonical object with `dsl_version`, `semantics_v
 | DSL 1 and typed strategy schema 1 | Accepted source and serialized compiler output |
 | Semantics 1.1.0 | Evaluation, clock, order phases, and accounting |
 | Artifact schema 2 | Published bundle and manifest structure |
+| Artifact schema 3 | Volume Profile runs with a secondary dataset in the manifest |
 | Metadata, summary, and inspection envelopes 1 | Independently versioned JSON payloads |
 | Package version and code revision | Executing source and reproducibility evidence |
 
 A code-only migration can preserve the source, normalized spec, dataset, configuration, and result digest while changing the environment hash and run fingerprint. Two runs in the same recorded environment have distinct run IDs.
 
 To reproduce a bundle, use its source, dataset copy, and metadata with the recorded package and dependencies. Write to a fresh directory, then compare the fingerprints and result digests. Generated run bundles contain the original submitted data and strategy, so review both before sharing one.
+
+### Replay a Volume Profile run
+
+Supply the bundle's primary input and metadata through `--data` and `--metadata`. Pass the file named by `profile_input.data_file` through `--profile-data` and `profile_input.metadata_file` through `--profile-metadata`. Profile inputs are named `profile-input.csv` or `profile-input.parquet` and `profile-metadata.json`. Match the recorded hashes for both input files against the artifact inventory before replay.
+
+The schema 3 manifest carries `profile_dataset` with `role: "volume_profile"` and the secondary dataset's canonical `dataset_hash`. Include this object as an additional member of the run signature when recomputing the fingerprint. The configuration identity includes the same object with its `gap_policy` added. The `profile_input` manifest object records the role, canonical and source hashes, gap policy, and both file names. The raw file hash belongs to the artifact inventory, allowing equivalent CSV and Parquet data to share a fingerprint when the canonical inputs and environment match.

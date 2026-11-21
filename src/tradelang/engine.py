@@ -6,7 +6,7 @@ from collections import Counter
 import numpy as np
 
 from .curve import EquityCurve
-from .data import instant, timeframe_label, window
+from .data import instant, prepare_window, timeframe_label
 from .evaluator import Evaluator
 from .model import PRICE, UNITS, Problem
 
@@ -88,9 +88,13 @@ def charge(c, side, fee, slippage):
     c["total_slippage_cost"] += slippage
 
 
-def execute(s, d):
-    first, j, last = window(s, d)
-    ev = Evaluator(s, d, last)
+def execute(s, d, *, profile=None):
+    return execute_prepared(s, d, prepare_window(s, d, profile))
+
+
+def execute_prepared(s, d, prepared):
+    first, j, last = prepared.first, prepared.first_signal, prepared.last
+    ev = Evaluator(s, d, last, profiles=prepared.profiles)
     for e in s.roots():
         if e and not e.account:
             ev.evaluate(e)
