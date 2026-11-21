@@ -83,15 +83,17 @@ def create_app(
             return failure(422, "E_SOURCE_ENCODING", "Source must be valid UTF-8")
         if len(source) > 65536:
             return failure(413, "E_SOURCE_SIZE", "Source exceeds 64 KiB")
-        dataset = None
+        dataset = profile = None
+        resolver = library.resolve_dataset if library is not None else resolve_dataset
         if body.dataset_id is not None:
-            resolver = (
-                library.resolve_dataset if library is not None else resolve_dataset
-            )
             dataset = resolver(UUID(body.dataset_id))
             if dataset is None:
                 return failure(404, "E_DATASET_NOT_FOUND", "Unknown dataset ID")
-        return inspect_source(source, command, dataset)
+        if body.profile_dataset_id is not None:
+            profile = resolver(UUID(body.profile_dataset_id))
+            if profile is None:
+                return failure(404, "E_DATASET_NOT_FOUND", "Unknown profile dataset ID")
+        return inspect_source(source, command, dataset, profile=profile)
 
     @app.post(
         "/api/v1/strategies/validate",

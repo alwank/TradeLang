@@ -1,0 +1,18 @@
+strategy "Donchian Breakout with Relative Volume"
+market BTCUSDT
+timeframe 1h
+let boundary = DONCHIAN(20).upper[1]
+let active_volume = RVOL(20) > 1.2
+entry:
+  when (close crosses above boundary) and active_volume
+  buy using 10% of equity
+exit:
+  when close < CHANDELIER(22, 22, 3).long_exit
+  sell all
+backtest:
+  from 2022-01-01 to 2025-12-31
+  capital 10000 USDT
+  fee 10 bps per side
+  slippage 5 bps per side
+  execute at next bar open
+  calendar 24x7

@@ -63,6 +63,10 @@ class Type:
     series: bool = False
     unit: Any = RATIO
     fields: tuple = ()
+    field_units: tuple[tuple[str, Any], ...] = ()
+
+    def field_type(self, name: str) -> Type:
+        return Type("numeric", True, dict(self.field_units).get(name, self.unit))
 
     def public(self):
         result: dict[str, Any] = {
@@ -72,9 +76,7 @@ class Type:
         if self.kind == "numeric":
             result["dimension"] = dimension(self.unit)
         if self.kind == "record":
-            result["fields"] = {
-                k: Type("numeric", True, self.unit).public() for k in self.fields
-            }
+            result["fields"] = {k: self.field_type(k).public() for k in self.fields}
         return result
 
 
@@ -191,6 +193,18 @@ class Strategy:
             self.stop,
             self.target,
         ]
+
+    def calls(self, name: str):
+        pending = self.roots()
+        seen = set()
+        while pending:
+            node = pending.pop()
+            if node is None or node in seen:
+                continue
+            seen.add(node)
+            if node.op == "call" and node.value == name:
+                yield node
+            pending.extend(node.args)
 
     def public(self):
         def risk(e, path):

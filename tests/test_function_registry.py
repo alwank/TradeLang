@@ -14,6 +14,7 @@ from language_cases import expression_text
 
 from tradelang.compiler import compile_source
 from tradelang.functions.contracts import Field, KernelContext, Signature
+from tradelang.functions.profile import prepare_profiles
 from tradelang.functions.registry import FUNCTIONS, build_registry
 
 SOURCE = Signature(("source", "period"))
@@ -34,6 +35,116 @@ EXPECTED = {
     "LOWEST": ((SOURCE,), "source", (), "window"),
     "ROC": ((SOURCE,), "ratio", (), "interval"),
     "STDDEV": ((SOURCE,), "source", (), "window"),
+    "WMA": ((CLOSE, SOURCE), "source", (), "window"),
+    "RMA": ((CLOSE, SOURCE), "source", (), "reseed"),
+    "VWMA": ((CLOSE, SOURCE), "source", (), "window"),
+    "CMF": ((PERIOD,), "ratio", (), "window"),
+    "OBV": ((Signature(()),), "volume", (), "reseed"),
+    "VWAP": ((Signature(()),), "price", (), "reseed"),
+    "DONCHIAN": ((PERIOD,), "price", ("upper", "middle", "lower"), "window"),
+    "KELTNER": (
+        (
+            Signature(("period", "period", "multiplier"), implicit_close=True),
+            Signature(("source", "period", "period", "multiplier")),
+        ),
+        "price",
+        ("upper", "middle", "lower"),
+        "reseed",
+    ),
+    "SUPERTREND": (
+        (Signature(("period", "multiplier")),),
+        "price",
+        ("line", "direction"),
+        "reseed",
+    ),
+    "DMI": (
+        (Signature(("period", "period")),),
+        "ratio",
+        ("plus_di", "minus_di", "adx"),
+        "reseed",
+    ),
+    "STOCH": (
+        (Signature(("period", "period", "period")),),
+        "ratio",
+        ("k", "d"),
+        "window",
+    ),
+    "STOCHRSI": (
+        (Signature(("period", "period", "period", "period")),),
+        "ratio",
+        ("k", "d"),
+        "reseed",
+    ),
+    "MFI": ((PERIOD,), "ratio", (), "window"),
+    "CCI": ((PERIOD,), "ratio", (), "window"),
+    "WILLR": ((PERIOD,), "ratio", (), "window"),
+    "SAR": ((Signature(("number", "number")),), "price", (), "reseed"),
+    "HMA": ((CLOSE, SOURCE), "source", (), "window"),
+    "ICHIMOKU": (
+        (Signature(("period", "period", "period")),),
+        "price",
+        ("conversion", "base", "span_a", "span_b"),
+        "window",
+    ),
+    "AROON": ((PERIOD,), "ratio", ("up", "down", "oscillator"), "window"),
+    "MOM": ((CLOSE, SOURCE), "source", (), "interval"),
+    "TRANGE": ((Signature(()),), "price", (), "interval"),
+    "NATR": ((PERIOD,), "ratio", (), "reseed"),
+    "BBPCTB": ((BANDS,), "ratio", (), "window"),
+    "BBWIDTH": ((BANDS,), "ratio", (), "window"),
+    "ADL": ((Signature(()),), "volume", (), "reseed"),
+    "RVOL": ((PERIOD,), "ratio", (), "interval"),
+    "DEMA": ((CLOSE, SOURCE), "source", (), "reseed"),
+    "TEMA": ((CLOSE, SOURCE), "source", (), "reseed"),
+    "ALMA": (
+        (
+            Signature(("period", "number", "number"), implicit_close=True),
+            Signature(("source", "period", "number", "number")),
+        ),
+        "source",
+        (),
+        "window",
+    ),
+    "KAMA": (
+        (
+            Signature(("period", "period", "period"), implicit_close=True),
+            Signature(("source", "period", "period", "period")),
+        ),
+        "source",
+        (),
+        "reseed",
+    ),
+    "AO": ((Signature(("period", "period")),), "price", (), "window"),
+    "CHOP": ((PERIOD,), "ratio", (), "window"),
+    "ULTOSC": ((Signature(("period", "period", "period")),), "ratio", (), "window"),
+    "TSI": (
+        (
+            Signature(("period", "period"), implicit_close=True),
+            Signature(("source", "period", "period")),
+        ),
+        "ratio",
+        (),
+        "reseed",
+    ),
+    "LSMA": ((CLOSE, SOURCE), "source", (), "window"),
+    "CHANDELIER": (
+        (Signature(("period", "period", "multiplier")),),
+        "price",
+        ("long_exit", "short_exit"),
+        "reseed",
+    ),
+    "ZIGZAG": (
+        (Signature(("period", "period", "number")),),
+        "price",
+        ("pivot", "last_high", "last_low", "direction"),
+        "reseed",
+    ),
+    "VPROFILE": (
+        (Signature(("period", "price_literal", "number")),),
+        "price",
+        ("poc", "vah", "val"),
+        "window",
+    ),
 }
 
 
@@ -49,6 +160,9 @@ def test_catalog_names_and_copies():
     assert set(
         json.loads(schema)["$defs"]["Call"]["properties"]["function"]["enum"]
     ) == set(FUNCTIONS)
+    assert set(json.loads(schema)["$defs"]["Field"]["properties"]["field"]["enum"]) == {
+        field.name for function in FUNCTIONS.values() for field in function.fields
+    }
     rows = re.findall(r"^\| ([A-Z]+) \|", Path("docs/indicators.md").read_text(), re.M)
     assert set(rows) == set(FUNCTIONS) == EXPECTED.keys()
     assert list(FUNCTIONS) == sorted(FUNCTIONS)
@@ -109,14 +223,33 @@ def test_kernel_shape_and_read_only_columns(name):
     signature = descriptor.signatures[0]
     series = np.array([10.0, 12.0, 14.0, 9.0, 8.0])
     series.flags.writeable = False
-    args = [series if role == "source" else 2 for role in signature.canonical_roles]
+    args = [
+        series if role == "source" else 0.2 if role == "number" else 2
+        for role in signature.canonical_roles
+    ]
     if name == "MACD":
         args[1] = 1
-    columns = {"high": series + 1, "low": series - 1, "close": series}
+    columns = {"high": series + 1, "low": series - 1, "close": series, "volume": series}
     for value in columns.values():
         value.flags.writeable = False
+    profile = None
+    if descriptor.requires_profile:
+        profile = prepare_profiles(
+            np.arange(len(series)) * 120,
+            120,
+            np.arange(2 * len(series)) * 60,
+            60,
+            np.repeat(series, 2),
+            np.ones(2 * len(series)),
+            [(2, 2, 0.2)],
+        )[(2, 2, 0.2)]
     context = KernelContext(
-        {key: columns[key] for key in descriptor.required_columns}, {}
+        {key: columns[key] for key in descriptor.required_columns},
+        {},
+        times=np.arange(len(series)) * 60_000_000
+        if descriptor.requires_clock
+        else None,
+        profile=profile,
     )
     with np.errstate(all="ignore"):
         output = descriptor.kernel(args, context)

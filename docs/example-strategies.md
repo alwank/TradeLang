@@ -38,6 +38,7 @@ For a different entry signal on the same candles, use `examples/quick/ema.trade`
 | [EMA crossover](examples/02-ema.trade) | Two moving averages with crossings in both directions. |
 | [Previous-high breakout](examples/03-breakout.trade) | A lagged rolling high and ATR-based price distances. |
 | [Arithmetic deviation](examples/04-math.trade) | Named Boolean conditions, dimensionless deviation, and series-based sizing. |
+| [Donchian breakout with volume](examples/05-donchian-volume.trade) | A close crossing the preceding Donchian channel, filtered by relative volume. A close below the Chandelier level queues an exit. |
 
 From the repository root, after [installing TradeLang](quickstart.md#install), generate the hourly dataset offline. The generator writes 35,064 synthetic candles.
 
@@ -45,7 +46,7 @@ From the repository root, after [installing TradeLang](quickstart.md#install), g
 uv run --no-project --python 3.12 python scripts/example_data.py runs/example-data
 ```
 
-In a POSIX shell, backtest all four source files against that dataset.
+In a POSIX shell, backtest the source files against that dataset.
 
 ```sh
 for strategy in docs/examples/*.trade; do

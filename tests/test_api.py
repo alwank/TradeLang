@@ -50,7 +50,7 @@ def test_api_cli_parity(tmp_path, command, example_data):
     threshold = tmp_path / "threshold.trade"
     threshold.write_text(CORE.replace("when true", "when close > 100.00004 price"))
     examples = sorted(Path("docs/examples").glob("*.trade"))
-    assert len(examples) == 4
+    assert len(examples) == 5
     boolean_names = ["volume_confirmed", "entry_ready", "exit_ready"]
     cases = [(path, candles, metadata, example_id) for path in examples]
     cases.append((threshold, FIX / "core.csv", FIX / "metadata.json", golden_id))

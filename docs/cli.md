@@ -40,6 +40,8 @@ tradelang backtest docs/fixtures/core.trade --data docs/fixtures/core.csv \
 
 All the metadata flags shown are required in flag mode except `--gap-policy`, which defaults to `reject`.
 
+For a strategy that uses `VPROFILE`, also pass `--profile-data FILE --profile-metadata FILE`. These select the [lower-timeframe candles and their own metadata](candle-data.md#pair-candles-for-volume-profile). Use both flags together on dataset-aware validation, explanation, and backtest. Source-only validation can compile a profile call before an input is selected. The engine reports `E402_WINDOW` when the required pairing is missing or incompatible and `E_DATA_LIMIT` when the estimated profile workload exceeds the execution limit.
+
 ## JSON and exit status
 
 `--json` writes a single JSON object to stdout for a recognized subcommand.

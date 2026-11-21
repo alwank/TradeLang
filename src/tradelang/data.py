@@ -17,6 +17,7 @@ import pyarrow.parquet as pq
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from .compiler import seconds
+from .functions.profile import ProfileKey, ProfileWindow, prepare_profiles, profile_key
 from .model import Problem
 
 COLUMNS = ("timestamp", "open", "high", "low", "close", "volume")
@@ -96,6 +97,14 @@ class Dataset:
 
     def column(self, name):
         return self.values[:, COLUMNS.index(name) - 1]
+
+
+@dataclass(frozen=True)
+class PreparedWindow:
+    first: int
+    first_signal: int
+    last: int
+    profiles: dict[ProfileKey, ProfileWindow]
 
 
 def timestamp(text):
@@ -249,6 +258,13 @@ def load_dataset(path, metadata, *, as_of_utc: datetime | None = None):
     )
 
 
+def validate_indicator_data(s):
+    if (s.seconds >= 86400 or 86400 % s.seconds) and next(s.calls("VWAP"), None):
+        raise Problem(
+            "E402_WINDOW", "VWAP requires an intraday timeframe that divides a UTC day"
+        )
+
+
 def window(s, d):
     if (s.symbol, s.seconds, s.config.currency) != (
         d.meta.symbol,
@@ -256,6 +272,7 @@ def window(s, d):
         d.meta.quote_currency,
     ):
         raise Problem("E402_WINDOW", "Strategy and dataset metadata differ")
+    validate_indicator_data(s)
     delta = s.seconds * 1000000
     a = micros(datetime.fromisoformat(s.config.from_date).replace(tzinfo=UTC))
     b = micros(
@@ -272,3 +289,50 @@ def window(s, d):
             "E_NO_EXECUTION_WINDOW", "Insufficient completed bars after warmup"
         )
     return i, j, k
+
+
+def prepare_window(strategy, primary, profile=None):
+    keys = dict.fromkeys(
+        profile_key([argument.value for argument in call.args])
+        for call in strategy.calls("VPROFILE")
+    )
+    if keys and profile is None:
+        raise Problem(
+            "E402_WINDOW", "Volume Profile requires a lower-timeframe dataset"
+        )
+    if profile is not None and not keys:
+        raise Problem("E402_WINDOW", "A profile dataset requires a VPROFILE call")
+    first, signal, last = window(strategy, primary)
+    profiles = {}
+    if profile is not None:
+        compatibility_fields = (
+            "symbol",
+            "quote_currency",
+            "price_basis",
+            "calendar",
+            "volume_unit",
+            "timestamp_convention",
+        )
+        profile_seconds = seconds(profile.meta.timeframe)
+        if (
+            profile_seconds >= strategy.seconds
+            or strategy.seconds % profile_seconds
+            or any(
+                getattr(primary.meta, field) != getattr(profile.meta, field)
+                for field in compatibility_fields
+            )
+        ):
+            raise Problem(
+                "E402_WINDOW",
+                "Profile candles must match the primary market and divide its timeframe",
+            )
+        profiles = prepare_profiles(
+            primary.times[: last + 1],
+            strategy.seconds * 1_000_000,
+            profile.times,
+            profile_seconds * 1_000_000,
+            profile.column("close"),
+            profile.column("volume"),
+            keys,
+        )
+    return PreparedWindow(first, signal, last, profiles)

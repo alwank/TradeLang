@@ -14,6 +14,7 @@ from importlib.resources import files
 from lark import Lark, UnexpectedInput
 
 from .functions.contracts import Argument, InvalidCall
+from .functions.profile import MAX_PROFILE_CALLS, ProfileKey, profile_key
 from .functions.registry import FUNCTIONS
 from .model import (
     COUNT,
@@ -72,7 +73,9 @@ RESERVED.update(
         "price",
     ]
 )
-RESERVED.update(field.name for function in FUNCTIONS.values() for field in function.fields)
+# v1 reserved these selectors before the catalog expanded. New selectors
+# are contextual after a dot, so adding them preserves existing let names.
+RESERVED.update(("line", "signal", "histogram", "upper", "middle", "lower"))
 
 
 @cache
@@ -97,6 +100,7 @@ class Compiler:
         self.declared = set()
         self.used = set()
         self.calls = set()
+        self.profile_calls: set[ProfileKey] = set()
         self.nodes = 0
         self.warnings = []
 
@@ -203,9 +207,7 @@ class Compiler:
                             f"Unknown field {field} for this expression",
                         )
                     ready = FUNCTIONS[e.value].field_ready(field, e.args)
-                    e = build(
-                        "field", field, [e], Type("numeric", True, e.type.unit), ready
-                    )
+                    e = build("field", field, [e], e.type.field_type(field), ready)
                 else:
                     if len(str(suffix.children[0])) > 6:
                         self.fail(suffix, "E205_OFFSET", "Maximum offset is 100000")
@@ -245,9 +247,7 @@ class Compiler:
                     "E201_UNIT",
                     "Compare compatible units; use an explicit numeric unit",
                 )
-            if any(
-                x.op == "call" and FUNCTIONS[x.value].scale == "points" for x in args
-            ) and any(
+            if any(x.op == "call" and x.value == "RSI" for x in args) and any(
                 x.data == "percent" for x in (c[0], c[-1])
             ):
                 w = Problem(
@@ -329,7 +329,11 @@ class Compiler:
         function = FUNCTIONS[str(t.children[0])]
         trees = t.children[1].children if len(t.children) > 1 else ()
         arguments = [
-            Argument(sub(tree), str(tree.children[0]) if tree.data == "number" else None)
+            Argument(
+                sub(tree),
+                str(tree.children[0]) if tree.data == "number" else None,
+                tree.data == "typed_number" and tree.children[1] == "price",
+            )
             for tree in trees
         ]
 
@@ -344,8 +348,18 @@ class Compiler:
         self.calls.add(t)
         if len(self.calls) > 128:
             self.fail(t, "E207_LIMIT", "More than 128 unique indicator calls")
+        if function.requires_profile:
+            self.profile_calls.add(profile_key([arg.value for arg in args]))
+            if len(self.profile_calls) > MAX_PROFILE_CALLS:
+                self.fail(
+                    t, "E207_LIMIT", "More than four distinct Volume Profile calls"
+                )
         return build(
-            "call", function.name, args, function.output_type(args), function.readiness(args)
+            "call",
+            function.name,
+            args,
+            function.output_type(args),
+            function.readiness(args),
         )
 
     def compile(self):

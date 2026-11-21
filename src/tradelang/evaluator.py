@@ -5,16 +5,23 @@ import numpy as np
 from .compiler import BINARY, COMPARE
 from .functions.contracts import KernelContext
 from .functions.kernels import lag
+from .functions.profile import profile_key
 from .functions.registry import FUNCTIONS
 
 
 class Evaluator:
-    def __init__(self, strategy, dataset, end):
+    def __init__(self, strategy, dataset, end, *, profiles=None):
         self.columns = {
             k: dataset.column(k)[: end + 1]
             for k in ("open", "high", "low", "close", "volume")
         }
         self.n = end + 1
+        self.times = dataset.times[: self.n]
+        self.times.flags.writeable = False
+        self.timeframe_seconds = strategy.seconds
+        self.profiles = {} if profiles is None else profiles
+        for column in self.columns.values():
+            column.flags.writeable = False
         self.names = {n: e for n, e, _ in strategy.bindings}
         self.cache = {}
         self.invalid = {}
@@ -90,8 +97,16 @@ class Evaluator:
                 if key not in self.call_cache:
                     function = FUNCTIONS[e.value]
                     context = KernelContext(
-                        {name: self.columns[name] for name in function.required_columns},
+                        {
+                            name: self.columns[name]
+                            for name in function.required_columns
+                        },
                         self.invalid,
+                        self.times if function.requires_clock else None,
+                        self.timeframe_seconds if function.requires_clock else None,
+                        self.profiles[profile_key(args)]
+                        if function.requires_profile
+                        else None,
                     )
                     self.call_cache[key] = function.kernel(args, context)
                 return self.call_cache[key]

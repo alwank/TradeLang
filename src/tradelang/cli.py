@@ -2,6 +2,7 @@
 
 import json
 import sys
+from datetime import UTC, datetime
 from importlib.metadata import version
 from pathlib import Path
 
@@ -48,6 +49,8 @@ def register(command):
         strategy: Path,
         data: Path | None = None,
         metadata: Path | None = None,
+        profile_data: Path | None = None,
+        profile_metadata: Path | None = None,
         symbol: str | None = None,
         quote_currency: str | None = None,
         timeframe: str | None = None,
@@ -79,17 +82,37 @@ def register(command):
                 raise typer.BadParameter("Use metadata file or explicit metadata flags")
             if (metadata or flags) and data is None:
                 raise typer.BadParameter("Metadata requires --data")
+            if (profile_data is None) != (profile_metadata is None):
+                raise typer.BadParameter(
+                    "Supply --profile-data with --profile-metadata"
+                )
+            if profile_data is not None and data is None:
+                raise Problem(
+                    "E402_WINDOW", "A profile dataset requires a primary dataset"
+                )
             if out and command != "backtest":
                 raise typer.BadParameter("--out applies to backtest")
+            as_of = datetime.now(UTC) if profile_data is not None else None
             d = (
                 load_dataset(
-                    data, json.loads(metadata.read_text()) if metadata else flags
+                    data,
+                    json.loads(metadata.read_text()) if metadata else flags,
+                    as_of_utc=as_of,
                 )
                 if data
                 else None
             )
+            profile = (
+                load_dataset(
+                    profile_data,
+                    json.loads(profile_metadata.read_text()),
+                    as_of_utc=as_of,
+                )
+                if profile_data is not None and profile_metadata is not None
+                else None
+            )
             if command in ("validate", "explain"):
-                analysis = inspect_source(source, command, d)
+                analysis = inspect_source(source, command, d, profile=profile)
                 response["diagnostics"] = analysis["diagnostics"]
                 if analysis["valid"]:
                     fields = (
@@ -118,7 +141,7 @@ def register(command):
                 if not out or not d:
                     raise typer.BadParameter("Backtest requires --out and --data")
                 s = compile_source(source)
-                r = publish(s, d, out)
+                r = publish(s, d, out, profile=profile)
                 response.update(ok=True, result=r, diagnostics=r["summary"]["warnings"])
         except Problem as exc:
             response["diagnostics"] = [exc.diagnostic]

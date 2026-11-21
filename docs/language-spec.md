@@ -84,7 +84,7 @@ The typed representation normalizes indicator defaults and operator aliases. It 
 
 ## Indicator registry
 
-See the [indicator reference](indicators.md) for all ten signatures, formulas, units, and first-ready rows. Select a numeric field from `MACD` or `BBANDS` before comparing, offsetting, or binding its output.
+See the [indicator reference](indicators.md) for signatures, formulas, units, and first-ready rows. Select a numeric field from a record before comparing, offsetting, or binding its output.
 
 ## Unavailable and bounded computation
 
@@ -105,6 +105,9 @@ See the [indicator reference](indicators.md) for all ten signatures, formulas, u
 | Structural lookback | 100,000 observed bars |
 | Indicator period | 10,000 |
 | Timeframe duration | 7 days |
+| Distinct normalized `VPROFILE` calls | 4 |
+
+Volume Profile also bounds each window to 256 primary bars and admits up to 30 million work units per run. The estimate counts two updates per mapped positive-volume child per distinct profile and two visits per bin in each eligible window. See the [indicator reference](indicators.md) for the bin span limit and [paired candle inputs](candle-data.md#pair-candles-for-volume-profile) for alignment.
 
 ## Sizing and risk context types
 
