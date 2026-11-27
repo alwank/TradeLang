@@ -1,5 +1,5 @@
 // Normative TradeLang v1 grammar. Whitespace/indentation/newlines are insignificant.
-start: version? header market timeframe let_decl* entry exit risk? backtest
+start: version? header market? timeframe? let_decl* entry exit risk? backtest
 version: (_TRADELANG_VERSION_PREFIX | _K_DSL) _K_ONE
 header: _K_STRATEGY STRING
 market: _K_MARKET SYMBOL

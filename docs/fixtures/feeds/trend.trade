@@ -1,0 +1,20 @@
+tradelang 3
+strategy "Four-hour trend"
+market TESTUSDT
+timeframe 1h
+feed trend timeframe 4h max_age 8h
+let average = on(trend, EMA(2))
+let regime = align(average)
+entry:
+  when regime > 100 price
+  buy using 10% of equity
+exit:
+  when regime <= 100 price
+  sell all
+backtest:
+  from 2024-01-01 to 2024-01-01
+  capital 1000 USDT
+  fee 0 bps per side
+  slippage 0 bps per side
+  execute at next bar open
+  calendar 24x7

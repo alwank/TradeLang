@@ -6,7 +6,7 @@ from collections.abc import Callable, Mapping, MutableMapping, Sequence
 from dataclasses import dataclass, replace
 from typing import TYPE_CHECKING, Any, Literal
 
-from ..model import COUNT, PRICE, RATIO, UNITS, VOLUME, Expr, Type
+from ..model import COUNT, PRICE, RATIO, UNITS, VOLUME, Expr, Scale, Type
 
 if TYPE_CHECKING:
     from .profile import ProfileWindow
@@ -39,6 +39,7 @@ class Field:
     name: str
     readiness: Readiness | None = None
     unit: UnitRule | None = None
+    scale: Scale | None = None
 
 
 @dataclass(frozen=True)
@@ -48,6 +49,7 @@ class KernelContext:
     times: Any = None
     timeframe_seconds: int | None = None
     profile: ProfileWindow | None = None
+    session_ids: Any = None
 
 
 Kernel = Callable[[Sequence[Any], KernelContext], Any]
@@ -76,7 +78,11 @@ class Function:
     requires_profile: bool = False
 
     def bind(
-        self, arguments: Sequence[Argument], default_close: Callable[[], Expr]
+        self,
+        arguments: Sequence[Argument],
+        default_close: Callable[[], Expr],
+        *,
+        static_periods: bool = False,
     ) -> tuple[Expr, ...]:
         if any(arg.expression.account for arg in arguments):
             raise InvalidCall(
@@ -86,7 +92,15 @@ class Function:
             (s for s in self.signatures if len(s.roles) == len(arguments)), None
         )
         if signature is None:
-            raise InvalidCall("E203_TYPE", f"{self.name} has incorrect arity")
+            forms = [
+                f"{self.name}({', '.join(role.replace('_', ' ') for role in form.roles)})"
+                for form in self.signatures
+            ]
+            raise InvalidCall(
+                "E203_TYPE",
+                f"{self.name} received {len(arguments)} arguments. "
+                f"Use {' or '.join(forms)}.",
+            )
         normalized = [default_close()] if signature.implicit_close else []
         for index, (arg, role) in enumerate(
             zip(arguments, signature.roles, strict=True)
@@ -101,17 +115,35 @@ class Function:
                     "E203_TYPE", "Indicator requires a price, volume or ratio series"
                 )
             if role == "period":
-                if (
+                value = expr.constant
+                valid_static = (
+                    type(value) in (int, float)
+                    and expr.type.kind == "numeric"
+                    and not expr.type.series
+                    and expr.type.unit in (COUNT, RATIO)
+                    and 1 <= value <= 10000
+                    and float(value).is_integer()
+                )
+                valid_literal = not (
                     arg.bare_number is None
                     or not arg.bare_number.isdigit()
                     or not 1 <= expr.value <= 10000
-                ):
+                )
+                if not (valid_static if static_periods else valid_literal):
                     raise InvalidCall(
                         "E202_PERIOD",
-                        "Period must be an integer literal from 1 to 10000",
+                        "Period must be a constant integer from 1 to 10000"
+                        if static_periods
+                        else "Period must be an integer literal from 1 to 10000",
                         index,
                     )
-                expr = replace(expr, type=Type(unit=COUNT))
+                expr = replace(
+                    expr,
+                    op="literal",
+                    args=(),
+                    value=float(value if static_periods else expr.value),
+                    type=Type(unit=COUNT),
+                )
             if role == "multiplier" and (
                 arg.bare_number is None or not 0 < expr.value <= 10
             ):
@@ -131,10 +163,25 @@ class Function:
             self.validate(normalized)
         return tuple(normalized)
 
-    def output_type(self, arguments: Sequence[Expr]) -> Type:
+    def output_type(
+        self, arguments: Sequence[Expr], *, with_scale: bool = False
+    ) -> Type:
         def resolve(rule: UnitRule):
             return arguments[0].type.unit if rule == "source" else UNITS[rule]
 
+        def scale(rule, declared):
+            if with_scale:
+                return declared or (
+                    arguments[0].type.scale if rule == "source" else None
+                )
+            return None
+
+        field_scales = tuple(
+            (field.name, inferred)
+            for field in self.fields
+            if (inferred := scale(field.unit or self.unit, field.scale or self.scale))
+            is not None
+        )
         return Type(
             "record" if self.fields else "numeric",
             True,
@@ -145,6 +192,8 @@ class Function:
                 for field in self.fields
                 if field.unit is not None
             ),
+            scale(self.unit, self.scale) if not self.fields else None,
+            field_scales,
         )
 
     def field_ready(self, name: str, arguments: Sequence[Expr]) -> int:

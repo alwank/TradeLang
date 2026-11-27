@@ -62,3 +62,28 @@ jobs:
           path: |
             language-deep.log
             language-deep.xml
+  browser:
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+      - run: uv sync --locked --extra api
+      - run: npm ci --prefix apps/web
+      - name: Verify generated browser contracts
+        run: |
+          uv run --locked --extra api python scripts/web_contracts.py
+          npm --prefix apps/web run api:types
+          git diff --exit-code -- apps/web/api-schema.json apps/web/src/lib/schema.ts apps/web/src/lib/catalog.json
+      - run: npm --prefix apps/web run build
+      - name: Install browser
+        working-directory: apps/web
+        run: npx playwright install --with-deps --only-shell chromium
+      - name: Verify the local browser workflow
+        run: PATH="$PWD/.venv/bin:$PATH" npm --prefix apps/web test

@@ -1,0 +1,13 @@
+// Portfolio composition. Bind each alias to one complete single-market strategy and its inputs.
+start: "tradelang" "9" "portfolio" STRING asset+ capital max_positions
+asset: "asset" NAME
+capital: "capital" NUMBER CURRENCY
+max_positions: "max" "open" "positions" UINT
+NAME: /[a-z][a-z0-9_]{0,31}(?![a-zA-Z0-9_])/
+NUMBER: /(?:0|[1-9][0-9]*)(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?(?![a-zA-Z0-9_])/
+CURRENCY: /\b[A-Z][A-Z0-9]{1,11}\b/
+UINT: /(?:0|[1-9][0-9]*)(?![a-zA-Z0-9_])/
+%import common.ESCAPED_STRING -> STRING
+%import common.WS
+%ignore WS
+%ignore /#[^\r\n]*/

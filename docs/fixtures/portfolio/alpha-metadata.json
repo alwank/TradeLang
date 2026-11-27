@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "symbol": "ALPHA",
+  "quote_currency": "USD",
+  "timeframe": "1d",
+  "calendar": "24x7",
+  "timestamp_convention": "bar_open",
+  "volume_unit": "base_quantity",
+  "price_basis": "raw_spot"
+}

@@ -1,0 +1,21 @@
+tradelang 4
+strategy "Stop risk example"
+market TESTUSDT
+timeframe 1d
+param risk_fraction: ratio = 2%
+param allocation_limit: ratio = 50%
+entry:
+  when close >= 100 price
+  buy risking risk_fraction of equity max allocation allocation_limit of equity
+exit:
+  when false
+  sell all
+risk:
+  stop loss 10%
+backtest:
+  from 2024-01-01 to 2024-01-03
+  capital 1000 USDT
+  fee 100 bps per side
+  slippage 100 bps per side
+  execute at next bar open
+  calendar 24x7

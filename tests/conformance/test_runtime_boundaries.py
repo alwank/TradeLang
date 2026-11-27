@@ -56,7 +56,28 @@ def test_import_vs_prepare():
     strategy = compile_source(expression_text("SMA(8)"))
     with pytest.raises(Problem) as bounds:
         window(strategy, data)
-    assert bounds.value.diagnostic["code"] == "E_NO_EXECUTION_WINDOW"
+    diagnostic = bounds.value.diagnostic
+    assert diagnostic["code"] == "E_NO_EXECUTION_WINDOW"
+    assert diagnostic["details"]["first_eligible_close"] is None
+    assert diagnostic["details"]["observed_window_rows"] == 3
+    assert "6 more observed candles before the window" in diagnostic["suggestion"]
+
+    full = compile_source(strategy_text(lets="let value = SMA(8)", end="2024-01-08"))
+    with pytest.raises(Problem) as last_close:
+        window(full, data)
+    diagnostic = last_close.value.diagnostic
+    assert diagnostic["code"] == "E_NO_EXECUTION_WINDOW"
+    assert diagnostic["details"]["first_eligible_close"] == "2024-01-09T00:00:00Z"
+    assert diagnostic["details"]["next_grid_open"] == "2024-01-09T00:00:00Z"
+    assert "1 more observed candle before the window" in diagnostic["suggestion"]
+
+    outside = compile_source(strategy_text(end="2024-01-10"))
+    with pytest.raises(Problem) as missing:
+        window(outside, data)
+    diagnostic = missing.value.diagnostic
+    assert diagnostic["code"] == "E402_WINDOW"
+    assert diagnostic["details"]["required_last_open"] == "2024-01-10T00:00:00Z"
+    assert diagnostic["details"]["observed_last_open"] == "2024-01-08T00:00:00Z"
 
 
 def test_record_and_call_cache_accounting():
@@ -158,6 +179,69 @@ def test_evaluation_and_ledger_exclude_rows_after_execution_window(tmp_path):
     for result in (first_result, changed_result):
         result["equity"] = list(result["equity"])
     assert first_result == changed_result
+
+
+@pytest.mark.parametrize(
+    ("rows", "start", "end", "total_missing", "pre_window_missing", "window_missing"),
+    [
+        ((1, 2, 3, 6), 1, 3, 2, 0, 0),
+        ((1, 3, 5, 6, 8), 3, 6, 3, 1, 1),
+    ],
+)
+def test_gap_counts_follow_input_and_execution_scope(
+    tmp_path, rows, start, end, total_missing, pre_window_missing, window_missing
+):
+    original = (FIXTURES / "indicators.csv").read_text().splitlines()
+    candles = tmp_path / "gaps.csv"
+    candles.write_text(
+        "\n".join([original[0], *(original[row] for row in rows)]) + "\n"
+    )
+    data = load_dataset(candles, {**METADATA, "gap_policy": "allow"}, as_of_utc=CLOCK)
+    source = strategy_text(end=f"2024-01-{end:02d}").replace(
+        "from 2024-01-01", f"from 2024-01-{start:02d}"
+    )
+    output = tmp_path / "run"
+    summary = publish(compile_source(source), data, output)["summary"]
+    dataset = json.loads((output / "dataset-summary.json").read_text())
+    assert dataset["missing_bar_count"] == total_missing
+    assert dataset["pre_window_missing_bar_count"] == pre_window_missing
+    assert dataset["execution_window_missing_bar_count"] == window_missing
+    warnings = [w for w in summary["warnings"] if w["code"] == "W_MISSING_BARS"]
+    assert [w["details"]["count"] for w in warnings] == (
+        [window_missing] if window_missing else []
+    )
+    if window_missing:
+        assert summary["metrics"]["sharpe"] is None
+        assert any(
+            w["details"].get("reason") == "irregular_intervals"
+            for w in summary["warnings"]
+        )
+
+
+def test_unrepresentable_sharpe_does_not_prevent_bundle_publication(tmp_path):
+    prices = ("1", "1", "1e-200", "1e200", "1")
+    candles = tmp_path / "extreme.csv"
+    candles.write_text(
+        "timestamp,open,high,low,close,volume\n"
+        + "".join(
+            f"2024-01-{day:02d}T00:00:00Z,{price},{price},{price},{price},10\n"
+            for day, price in enumerate(prices, 1)
+        )
+    )
+    data = load_dataset(candles, METADATA, as_of_utc=CLOCK)
+    strategy = compile_source(strategy_text(exit="false", end="2024-01-05"))
+    output = tmp_path / "run"
+    result = publish(strategy, data, output)
+    assert result["summary"] == json.loads((output / "summary.json").read_text())
+    assert result["summary"]["final_equity"] == 1000
+    assert result["summary"]["metrics"]["sharpe"] is None
+    assert result["summary"]["benchmark"]["metrics"]["sharpe"] is None
+    assert {
+        w["details"]["account"]
+        for w in result["summary"]["warnings"]
+        if w["details"].get("metric") == "sharpe"
+        and w["details"].get("reason") == "numeric_range"
+    } == {"strategy", "benchmark"}
 
 
 def test_signed_zero_remains_a_finite_value():

@@ -11,11 +11,11 @@ import tempfile
 import tomllib
 import uuid
 import zipfile
+from dataclasses import asdict
 from datetime import UTC, datetime
 from importlib import metadata
 from pathlib import Path
 
-import numpy as np
 import pyarrow as pa
 import pyarrow.parquet as pq
 
@@ -26,12 +26,15 @@ from .data import (
     hash_json,
     instant,
     prepare_window,
-    validate_indicator_data,
 )
-from .engine import ARTIFACT_SCHEMA_VERSION, SEMANTICS_VERSION, execute_prepared
+from .decision import DECISION_FILE, DecisionLog
+from .engine import ARTIFACT_SCHEMA_VERSION, execute_prepared, semantics_version
+from .feeds import ALIGNMENT_POLICY
 from .model import UNITS, Problem
+from .run_config import configuration_view
 
 PROFILE_ARTIFACT_SCHEMA_VERSION = 3
+FEED_ARTIFACT_SCHEMA_VERSION = 4
 
 
 def projection(value):
@@ -54,16 +57,15 @@ def identity(s):
     )
 
 
-def resolved(s, d, *, profile=None, prepared=None):
+def resolved(s, d, *, profile=None, prepared=None, feeds=None):
     if prepared is None:
-        prepared = prepare_window(s, d, profile)
+        prepared = prepare_window(s, d, profile, feeds=feeds)
     a, j, k = prepared.first, prepared.first_signal, prepared.last
-    dt = s.seconds * 1000000
     return dict(
         first_open=instant(d.times[a]),
-        last_close_at=instant(d.times[k] + dt),
+        last_close_at=instant(d.close_at(k)),
         readiness_index=s.warmup,
-        first_signal_at=instant(d.times[j] + dt),
+        first_signal_at=instant(d.close_at(j)),
         first_execution_at=instant(d.times[j + 1]),
     )
 
@@ -76,13 +78,17 @@ def render(e):
                 return str(e.value).lower()
             unit = next(k for k, v in UNITS.items() if v == e.type.unit)
             return canonical(e.value) + (f" {unit}" if unit != "ratio" else "")
-        case "let" | "account" | "builtin":
+        case "let" | "account" | "builtin" | "parameter":
             return e.value
         case "field":
             return f"{args[0]}.{e.value}"
+        case "on_feed":
+            return f"on({e.value}, {args[0]})"
+        case "align":
+            return f"align({args[0]})"
         case "offset":
             return f"{args[0]}[{e.value}]"
-        case "call":
+        case "call" | "choice":
             arguments = [
                 canonical(c.value)
                 if c.op == "literal" and c.type.unit == "count"
@@ -97,38 +103,160 @@ def render(e):
             return f"({args[0]} {op} {args[1]})"
 
 
-def explain(s, d=None, *, profile=None):
+def explain(s, d=None, *, profile=None, prepared=None, feeds=None):
+    def exit_action(sale):
+        if sale is None:
+            return "all"
+        return render(sale.expression) + (
+            " of position" if sale.kind == "fraction" else " units"
+        )
+
+    symbol = d.meta.symbol if d is not None else s.symbol
+    duration = d.timeframe_seconds if d is not None else s.seconds
+    market = symbol or "Market from selected dataset"
+    clock = (
+        f"{duration} nominal seconds per session candle"
+        if duration is not None and s.config.calendar == "session"
+        else f"{duration} seconds per UTC bar"
+        if duration is not None
+        else "timeframe from selected dataset"
+    )
     lines = [
         s.name,
-        f"{s.symbol}, {s.seconds} seconds per UTC bar, {s.config.from_date} through {s.config.to_date} inclusive.",
+        f"{market}, {clock}, {s.config.from_date} through {s.config.to_date} inclusive.",
         f"Start with {canonical(s.config.capital)} {s.config.currency}.",
     ]
+    if s.version >= 2:
+        lines.extend(
+            f"Parameter {parameter.name} = {canonical(parameter.value)} ({parameter.kind})."
+            for parameter in s.parameters
+        )
+        for name, expression, _ in s.bindings:
+            if expression.field_ready:
+                fields = ", ".join(
+                    f"{field} at {row}" for field, row in expression.field_ready
+                )
+                lines.append(f"{name} field readiness · {fields}.")
     lines.extend(f"let {n} = {render(e)}" for n, e, _ in s.bindings)
+    sizing = (
+        f"At next open, allocate {render(s.sizing)} "
+        + (s.config.currency if s.fixed else "of equity")
+        + " including entry fee."
+    )
+    if s.stop_risk:
+        cap = render(s.allocation_cap) if s.allocation_cap is not None else "100%"
+        sizing = (
+            f"At next open, risk {render(s.sizing)} of equity at the modeled stop touch. "
+            f"Cap the fee-inclusive entry debit at {cap} of equity and available cash. "
+            "The model includes fees and adverse slippage on both sides. "
+            "An opening gap can exceed the modeled loss."
+        )
+    if s.short_margin is not None:
+        margin = s.short_margin
+        sizing = (
+            f"At next open, reserve {render(s.sizing)} "
+            + (s.config.currency if s.fixed else "of equity")
+            + " for the short's initial margin and entry fee."
+        )
+        lines.append(
+            f"Borrowed-asset short with {canonical(margin.initial_rate * 100)}% initial margin, "
+            f"{canonical(margin.maintenance_rate * 100)}% maintenance margin, "
+            f"and {canonical(margin.borrow_rate_per_day * 10000)} bps of borrow per day."
+        )
+    exit_verb = "cover" if s.short_margin is not None else "sell"
     lines.extend(
         [
             f"At close, enter when {render(s.entry)}.",
-            f"At next open, allocate {render(s.sizing)} "
-            + (s.config.currency if s.fixed else "of equity")
-            + " including entry fee.",
-            f"Exit all at the next open after {render(s.exit)}.",
+            sizing,
         ]
     )
+    if s.exit is not None:
+        lines.append(
+            f"Exit {exit_action(s.sale)} at the next open after {render(s.exit)}."
+        )
+    else:
+        if any(rule.sale is not None for rule in s.exit_rules):
+            lines.append(
+                "Execute the first true exit rule at the next open. Skip unavailable predicates."
+            )
+        else:
+            lines.append(
+                "Exit all at the next open after the first true rule in source order. Skip unavailable predicates."
+            )
+        for rule in s.exit_rules:
+            criterion = (
+                f"when {render(rule.condition)}"
+                if rule.condition is not None
+                else f"after {rule.after_bars} completed holding candles"
+            )
+            action = (
+                f" {exit_verb} {exit_action(rule.sale)}"
+                if rule.sale is not None
+                else ""
+            )
+            lines.append(f"Exit rule {rule.name} {criterion}{action}.")
+    if s.scale is not None:
+        unit = s.config.currency if s.scale.fixed else "of available cash"
+        lines.append(
+            f"While holding, add {render(s.scale.sizing)} {unit} at the next open "
+            f"when {render(s.scale.condition)}. A matching exit takes priority."
+        )
+    if s.quantity_step is not None:
+        lines.append(
+            f"Round purchases and partial exits down to {canonical(s.quantity_step)}-unit steps."
+        )
     for key, e in (("Stop", s.stop), ("Target", s.target)):
         if e:
-            lines.append(
-                f"{key} distance {render(e)} ({'price' if e.type.unit == (1, -1) else 'fraction of fill'}), sampled at signal and frozen at entry."
+            update = (
+                "frozen at entry"
+                if key != "Stop" or s.trail is None
+                else "anchored to the entry fill"
             )
+            lines.append(
+                f"{key} distance {render(e)} ({'price' if e.type.unit == (1, -1) else 'fraction of fill'}), sampled at signal and {update}."
+            )
+    if s.trail is not None:
+        direction = "lower" if s.short_margin is not None else "higher"
+        lines.append(
+            f"Trailing distance {render(s.trail)} uses the completed close. A {direction} valid trigger activates at the next observed open."
+        )
+    if s.order_max_age_seconds:
+        lines.append(
+            f"Queued orders expire at an open at least {s.order_max_age_seconds} seconds after their signal close. Open protection acts first."
+        )
     lines.append(
         f"Warmup index {s.warmup}. Protection at open precedes signal exits. Stop wins simultaneous intrabar touches. Final holdings marked at close."
     )
+    if s.version >= 2 and s.warmup:
+        lines.append(f"Warmup requires {s.warmup} earlier observed candles.")
+        for label, expression in s.named_roots(warmup=True):
+            if expression is not None and expression.ready == s.warmup:
+                origin = expression.span
+                lines.append(
+                    f"Warmup driver · {label}, line {origin.start_line}, "
+                    f"column {origin.start_column}: {render(expression)}."
+                )
     lines.append(
         f"Fee {canonical(s.config.fee_rate * 10000)} bps and adverse slippage {canonical(s.config.slippage_rate * 10000)} bps per side. Buy-and-hold enters at the first executable open."
     )
-    win = resolved(s, d, profile=profile) if d is not None else None
+    win = (
+        resolved(s, d, profile=profile, prepared=prepared, feeds=feeds)
+        if d is not None
+        else None
+    )
     if win is not None:
         lines.append(
             f"Dataset {d.dataset_hash}. Gap policy {d.meta.gap_policy}. First eligible close {win['first_signal_at']}, first executable open {win['first_execution_at']}."
         )
+        if s.version >= 2:
+            window = (
+                prepared
+                if prepared is not None
+                else prepare_window(s, d, profile, feeds=feeds)
+            )
+            lines.append(
+                f"Dataset supplied {window.first} observed pre-window candles."
+            )
     else:
         lines.append(
             "Select a dataset to resolve bar coverage and execution timestamps."
@@ -137,11 +265,24 @@ def explain(s, d=None, *, profile=None):
             lines.append("Volume Profile requires an aligned lower-timeframe dataset.")
     if profile is not None:
         lines.append(f"Volume Profile dataset {profile.dataset_hash}.")
+    if s.feed is not None:
+        feed = s.feed
+        lines.append(
+            f"Feed {feed.name} uses {feed.seconds}-second candles. Align selects completed closes at or before the primary close. Maximum age is {feed.max_age_seconds} seconds."
+        )
+        if prepared is not None and feed.name in prepared.feeds:
+            aligned = prepared.feeds[feed.name]
+            lines.append(f"Feed {feed.name} dataset {aligned.dataset.dataset_hash}.")
+    if d is not None and d.grid is not None:
+        schedule = d.grid.schedule
+        lines.append(
+            f"Session schedule {schedule.market} {schedule.version} in {schedule.timezone}. Price basis {d.meta.price_basis}."
+        )
     return dict(
         **identity(s),
         text="\n".join(lines),
         assumptions=dict(
-            calendar="24x7",
+            calendar=s.config.calendar,
             gap_policy=d.meta.gap_policy if d else None,
             terminal="mark_to_market",
             benchmark="warmup_aligned_hold",
@@ -181,6 +322,7 @@ TRADE_FIELDS = [
     "exit_rationale",
     "protection",
 ]
+SHORT_TRADE_FIELDS = ["initial_collateral", "borrow_cost"]
 
 
 def write_json(path, obj):
@@ -262,28 +404,134 @@ def environment_snapshot(stage):
     )
 
 
-def publish(s, d, out, *, profile=None):
+def run_identity(s, d, prepared, profile, environment):
+    policy = dict(
+        schema_version=1,
+        gap_policy=d.meta.gap_policy,
+        benchmark="warmup_aligned_hold",
+        terminal="mark_to_market",
+        intrabar="stop_first",
+        exit_priority="gap_then_signal_then_intrabar",
+        numeric="binary64_v1",
+        max_rows=1000000,
+    )
+    if s.order_max_age_seconds is not None:
+        policy["order_max_age_seconds"] = s.order_max_age_seconds
+    if s.manages_quantity:
+        policy["position_basis"] = "weighted_average"
+        policy["quantity_step"] = s.quantity_step
+    if s.short_margin is not None:
+        policy["short_margin"] = {
+            "model": "borrowed_asset_v1",
+            **asdict(s.short_margin),
+        }
+    if d.grid is not None:
+        policy["session_calendar"] = {
+            "market": d.grid.schedule.market,
+            "version": d.grid.schedule.version,
+            "timezone": d.grid.schedule.timezone,
+        }
+        policy["price_basis"] = d.meta.price_basis
+    win = resolved(s, d, prepared=prepared)
+    ids = identity(s)
+    configuration = dict(
+        policy=policy,
+        window=win,
+        backtest=asdict(s.config),
+        dataset_hash=d.dataset_hash,
+    )
+    if profile is not None:
+        configuration["profile_dataset"] = dict(
+            role="volume_profile",
+            dataset_hash=profile.dataset_hash,
+            gap_policy=profile.meta.gap_policy,
+        )
+    secondary = [
+        dict(
+            name=name,
+            role="higher_timeframe",
+            policy=ALIGNMENT_POLICY,
+            timeframe_seconds=alignment.dataset.timeframe_seconds,
+            max_age_seconds=s.feed.max_age_seconds,
+            dataset_hash=alignment.dataset.dataset_hash,
+            gap_policy=alignment.dataset.meta.gap_policy,
+        )
+        for name, alignment in sorted(prepared.feeds.items())
+    ]
+    if secondary:
+        configuration["feeds"] = secondary
+    signature = dict(
+        dsl_version=s.version,
+        semantics_version=semantics_version(s.version),
+        spec_hash=ids["spec_hash"],
+        dataset_hash=d.dataset_hash,
+        environment_hash=hash_json(environment),
+        config_hash=hash_json(configuration),
+    )
+    if profile is not None:
+        signature["profile_dataset"] = dict(
+            role="volume_profile",
+            dataset_hash=profile.dataset_hash,
+        )
+    if secondary:
+        signature["feeds"] = secondary
+    return policy, win, ids, signature
+
+
+def publish(
+    s,
+    d,
+    out,
+    *,
+    profile=None,
+    progress=None,
+    expected_fingerprint=None,
+    run_id=None,
+    feeds=None,
+):
     out = Path(out)
     if out.exists() and (not out.is_dir() or any(out.iterdir())):
         raise FileExistsError("Output directory must be new or empty")
-    paired = profile is not None or next(s.calls("VPROFILE"), None) is not None
-    prepared = prepare_window(s, d, profile) if paired else None
-    if not paired:
-        validate_indicator_data(s)
+    paired = (
+        profile is not None
+        or next(s.calls("VPROFILE"), None) is not None
+        or s.requires_feed
+        or feeds
+    )
+    prepared = prepare_window(s, d, profile, feeds=feeds) if paired else None
     out.parent.mkdir(parents=True, exist_ok=True)
     stage = Path(tempfile.mkdtemp(prefix="." + out.name + "-", dir=out.parent))
     started = now()
     try:
         if prepared is None:
             prepared = prepare_window(s, d)
-        result = execute_prepared(s, d, prepared)
+        env = environment_snapshot(stage)
+        policy, win, ids, signature = run_identity(s, d, prepared, profile, env)
+        fingerprint = hash_json(signature)
+        if expected_fingerprint is not None and fingerprint != expected_fingerprint:
+            raise Problem(
+                "E_ENV_CHANGED", "Run environment or snapshot changed after submission"
+            )
+        decisions = DecisionLog(
+            prepared.first,
+            prepared.last,
+            ordered_exits=bool(s.exit_rules),
+            closes=d.session_rows.close if d.session_rows is not None else None,
+            split_factors=d.split_factors,
+        )
+        result = execute_prepared(
+            s, d, prepared, progress=progress, decisions=decisions
+        )
         summary = result["summary"]
         eq = result["equity"]
         write_json(stage / "summary.json", summary)
         write_json(stage / "strategy-spec.json", s.public())
         write_json(stage / "diagnostics.json", result["diagnostics"])
         (stage / "source.trade").write_bytes(s.source)
-        write_csv(stage / "trades.csv", TRADE_FIELDS, result["trades"])
+        trade_fields = (
+            TRADE_FIELDS + SHORT_TRADE_FIELDS if s.short_margin else TRADE_FIELDS
+        )
+        write_csv(stage / "trades.csv", trade_fields, result["trades"])
         write_csv(stage / "equity.csv", list(eq[0]), eq)
         with pq.ParquetWriter(
             stage / "equity.parquet", pa.Table.from_pylist(eq[:2]).schema
@@ -292,15 +540,18 @@ def publish(s, d, out, *, profile=None):
                 writer.write_table(
                     pa.Table.from_pylist(eq[start : start + 8192], schema=writer.schema)
                 )
-        with (stage / "events.jsonl").open("w") as f:
+        offsets = [0]
+        with (stage / "events.jsonl").open("wb") as f:
             for event in result["events"]:
-                f.write(canonical(event) + "\n")
+                offsets.append(
+                    offsets[-1] + f.write((canonical(event) + "\n").encode("utf-8"))
+                )
+        decisions.write(stage / DECISION_FILE, d.times, offsets)
         copied = stage / ("input" + d.path.suffix.lower())
         shutil.copyfile(d.path, copied)
         if digest(copied.read_bytes()) != d.source_hash:
             raise Problem("E401_DATA", "Dataset changed after loading")
         write_json(stage / "metadata.json", d.meta.model_dump())
-        profile_identity = None
         profile_manifest = {}
         if profile is not None:
             data_file = "profile-input" + profile.path.suffix.lower()
@@ -314,28 +565,69 @@ def publish(s, d, out, *, profile=None):
                 ):
                     raise Problem("E401_DATA", "Profile dataset changed after loading")
             write_json(stage / metadata_file, profile.meta.model_dump())
-            profile_identity = dict(
-                role="volume_profile", dataset_hash=profile.dataset_hash
-            )
             profile_manifest["profile_input"] = dict(
-                **profile_identity,
+                role="volume_profile",
+                dataset_hash=profile.dataset_hash,
                 source_hash=profile.source_hash,
                 gap_policy=profile.meta.gap_policy,
                 data_file=data_file,
                 metadata_file=metadata_file,
             )
-        gap_sizes = np.diff(d.times) // 1000000
+        feed_files = {}
+        recorded_feeds = []
+        for feed in signature.get("feeds", ()):
+            name = feed["name"]
+            dataset = prepared.feeds[name].dataset
+            data_file = f"feed-{name}-input{dataset.path.suffix.lower()}"
+            metadata_file = f"feed-{name}-metadata.json"
+            shutil.copyfile(dataset.path, stage / data_file)
+            with (stage / data_file).open("rb") as stream:
+                if (
+                    hashlib.file_digest(stream, "sha256").hexdigest()
+                    != dataset.source_hash
+                ):
+                    raise Problem("E401_DATA", f"Feed {name} changed after loading")
+            write_json(stage / metadata_file, dataset.meta.model_dump())
+            feed_files[name] = {"data": data_file, "metadata": metadata_file}
+            recorded_feeds.append(
+                {**feed, **feed_files[name], "source_hash": dataset.source_hash}
+            )
+        if (
+            s.run_settings is not None
+            or s.parameter_overrides
+            or feed_files
+            or d.grid is not None
+            or s.short_margin is not None
+        ):
+            replay = dict(
+                schema_version=1,
+                settings=s.run_settings
+                if s.run_settings is not None
+                else {"parameters": dict(s.parameter_overrides)},
+                data=copied.name,
+                metadata="metadata.json",
+            )
+            if profile_manifest:
+                replay.update(
+                    profile_data=profile_manifest["profile_input"]["data_file"],
+                    profile_metadata=profile_manifest["profile_input"]["metadata_file"],
+                )
+            if feed_files:
+                replay["feeds"] = feed_files
+            write_json(stage / "run-config.json", replay)
         write_json(
             stage / "dataset-summary.json",
             dict(
                 row_count=len(d.times),
                 first_open=instant(d.times[0]),
                 last_open=instant(d.times[-1]),
-                last_close_at=instant(d.times[-1] + s.seconds * 1000000),
+                last_close_at=instant(d.close_at(-1)),
                 missing_bar_count=d.missing,
-                largest_gap_seconds=int(gap_sizes.max())
-                if len(gap_sizes) and d.missing
-                else 0,
+                pre_window_missing_bar_count=d.missing_between(0, prepared.first),
+                execution_window_missing_bar_count=d.missing_between(
+                    prepared.first, prepared.last
+                ),
+                largest_gap_seconds=d.largest_gap_seconds(),
                 zero_volume_count=int((d.values[:, 4] == 0).sum()),
                 minimum=dict(zip(COLUMNS[1:], d.values.min(axis=0).tolist())),
                 maximum=dict(zip(COLUMNS[1:], d.values.max(axis=0).tolist())),
@@ -344,42 +636,7 @@ def publish(s, d, out, *, profile=None):
                 filename=d.path.name,
             ),
         )
-        env = environment_snapshot(stage)
         write_json(stage / "environment.json", env)
-        policy = dict(
-            schema_version=1,
-            gap_policy=d.meta.gap_policy,
-            benchmark="warmup_aligned_hold",
-            terminal="mark_to_market",
-            intrabar="stop_first",
-            exit_priority="gap_then_signal_then_intrabar",
-            numeric="binary64_v1",
-            max_rows=1000000,
-        )
-        win = resolved(s, d, prepared=prepared)
-        ids = identity(s)
-        configuration = dict(
-            policy=policy,
-            window=win,
-            backtest=projection(s.public()["backtest"]),
-            dataset_hash=d.dataset_hash,
-        )
-        if profile is not None:
-            configuration["profile_dataset"] = dict(
-                role="volume_profile",
-                dataset_hash=profile.dataset_hash,
-                gap_policy=profile.meta.gap_policy,
-            )
-        signature = dict(
-            dsl_version=1,
-            semantics_version=SEMANTICS_VERSION,
-            spec_hash=ids["spec_hash"],
-            dataset_hash=d.dataset_hash,
-            environment_hash=hash_json(env),
-            config_hash=hash_json(configuration),
-        )
-        if profile_identity is not None:
-            signature["profile_dataset"] = profile_identity
         logical = hashlib.sha256()
         for key in ("summary", "trades", "equity", "events", "diagnostics"):
             items = [result[key]] if key == "summary" else result[key]
@@ -398,18 +655,50 @@ def publish(s, d, out, *, profile=None):
                 logical.update(canonical(item).encode() + b"\n")
         manifest = dict(
             schema_version=(
-                ARTIFACT_SCHEMA_VERSION
+                FEED_ARTIFACT_SCHEMA_VERSION
+                if recorded_feeds
+                else ARTIFACT_SCHEMA_VERSION
                 if profile is None
                 else PROFILE_ARTIFACT_SCHEMA_VERSION
             ),
             engine_name="bar-event-v1",
-            run_id=str(uuid.uuid4()),
+            decision_inspection={
+                "schema_version": decisions.version,
+                "artifact": DECISION_FILE,
+            },
+            decision_counts=decisions.counts(),
+            **(
+                {
+                    "position_ledger": {
+                        "schema_version": 2 if s.short_margin else 1,
+                        "artifact": "events.jsonl",
+                    }
+                }
+                if s.manages_quantity
+                else {}
+            ),
+            workload=prepared.workload,
+            **(
+                dict(parameter_overrides=dict(s.parameter_overrides))
+                if s.version >= 2
+                else {}
+            ),
+            **(
+                dict(
+                    run_settings=s.run_settings,
+                    effective_configuration=configuration_view(s, d, profile),
+                )
+                if s.run_settings is not None
+                else {}
+            ),
+            run_id=run_id if run_id is not None else str(uuid.uuid4()),
             **signature,
             source_hash=ids["source_hash"],
-            run_fingerprint=hash_json(signature),
+            run_fingerprint=fingerprint,
             result_digest=logical.hexdigest(),
             **env,
             **profile_manifest,
+            **(dict(feed_inputs=recorded_feeds) if recorded_feeds else {}),
             resolved_policy=policy,
             dataset_metadata=d.meta.model_dump(),
             requested_window={"from": s.config.from_date, "to": s.config.to_date},

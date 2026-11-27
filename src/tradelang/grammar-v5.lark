@@ -1,0 +1,15 @@
+// Overlay on grammars 1–4. Ordered exits, trailing stops, and expiring signal orders.
+%override version: _TRADELANG_VERSION_PREFIX _K_FIVE
+%override exit: _K_EXIT ":" (_K_WHEN expr _K_SELL _K_ALL | exit_rule+)
+exit_rule: _K_RULE NAME _K_WHEN expr _K_SELL _K_ALL -> market_exit
+         | _K_RULE NAME _K_AFTER expr _K_BARS _K_SELL _K_ALL -> timed_exit
+%override risk: _K_RISK ":" stop? trail? target? max_positions?
+trail: _K_TRAILING _K_STOP expr
+%override execution: _K_EXECUTE _K_AT _K_NEXT _K_BAR _K_OPEN expiry?
+expiry: _K_EXPIRE _K_AFTER TIMEFRAME
+_K_FIVE.2: /\b5\b/
+_K_RULE.2: /\brule\b/
+_K_AFTER.2: /\bafter\b/
+_K_BARS.2: /\bbars\b/
+_K_TRAILING.2: /\btrailing\b/
+_K_EXPIRE.2: /\bexpire\b/

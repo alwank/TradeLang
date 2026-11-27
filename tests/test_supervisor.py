@@ -3,9 +3,13 @@ import os
 import re
 import signal
 import subprocess
+import threading
 import time
 from contextlib import contextmanager
+from dataclasses import dataclass
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.error import HTTPError, URLError
+from urllib.parse import urlsplit
 from urllib.request import Request, urlopen
 
 import pytest
@@ -48,31 +52,71 @@ def test_health_contract_and_stale_heartbeat():
     assert {"200", "403", "503"} == set(response_schema)
 
 
-def poll_health(status, process):
+@dataclass(frozen=True)
+class LocalService:
+    process: subprocess.Popen
+    url: str
+    instance_id: str
+
+
+def poll_health(status, service):
     deadline = time.monotonic() + 20
-    while time.monotonic() < deadline and process.poll() is None:
+    while time.monotonic() < deadline and service.process.poll() is None:
         try:
-            with urlopen("http://127.0.0.1:8000/health", timeout=1) as response:
-                if response.status == status:
-                    return json.load(response)
+            response = urlopen(service.url + "/health", timeout=1)
         except HTTPError as exc:
-            with exc:
-                if exc.code == status:
-                    return json.load(exc)
+            response = exc
         except (URLError, TimeoutError):
-            pass
+            time.sleep(0.05)
+            continue
+        with response:
+            assert response.headers.get("TradeLang-Instance") == service.instance_id
+            if response.status == status:
+                return json.load(response)
         time.sleep(0.05)
-    pytest.fail(f"Expected local health status {status}, process exit {process.poll()}")
+    pytest.fail(
+        f"Expected local health status {status}, process exit {service.process.poll()}"
+    )
 
 
 @contextmanager
-def local_app(root, output):
+def local_app(root, output, *, api_port=0):
+    ready = output.with_suffix(".ready.json")
     with output.open("w") as log:
         process = subprocess.Popen(
-            ["tradelang-local", "--data-root", str(root)], stdout=log, stderr=log
+            [
+                "tradelang-local",
+                "--data-root",
+                str(root),
+                "--api-port",
+                str(api_port),
+                "--ready-file",
+                str(ready),
+            ],
+            stdout=log,
+            stderr=log,
         )
         try:
-            yield process
+            deadline = time.monotonic() + 20
+            while (
+                not ready.is_file()
+                and process.poll() is None
+                and time.monotonic() < deadline
+            ):
+                time.sleep(0.05)
+            if not ready.is_file() or process.poll() is not None:
+                raise RuntimeError(
+                    f"Test supervisor did not start. {output.read_text()}"
+                )
+            startup = json.loads(ready.read_text())
+            assert startup["pid"] == process.pid
+            assert startup["data_root"] == str(root.resolve())
+            address = urlsplit(startup["url"])
+            assert address.scheme == "http" and address.hostname == "127.0.0.1"
+            assert address.port
+            service = LocalService(process, startup["url"], startup["instance_id"])
+            poll_health(200, service)
+            yield service
         finally:
             if process.poll() is None:
                 process.send_signal(signal.SIGTERM)
@@ -88,17 +132,23 @@ def local_app(root, output):
 def test_installed_supervisor_lifecycle(tmp_path):
     root = tmp_path / "data"
     log = tmp_path / "supervisor.log"
-    with local_app(root, log) as process:
-        assert poll_health(200, process)["worker_available"]
+    with local_app(root, log) as service:
+        assert poll_health(200, service)["worker_available"]
         duplicate = subprocess.run(
-            ["tradelang-local", "--data-root", str(root)],
+            ["tradelang-local", "--data-root", str(root), "--api-port", "0"],
             capture_output=True,
             text=True,
             timeout=4,
         )
         assert duplicate.returncode != 0 and "active runner" in duplicate.stderr
         busy_port = subprocess.run(
-            ["tradelang-local", "--data-root", str(tmp_path / "other")],
+            [
+                "tradelang-local",
+                "--data-root",
+                str(tmp_path / "other"),
+                "--api-port",
+                str(urlsplit(service.url).port),
+            ],
             capture_output=True,
             text=True,
             timeout=4,
@@ -107,11 +157,11 @@ def test_installed_supervisor_lifecycle(tmp_path):
         worker = int(re.search(r"worker started \(PID (\d+)\)", log.read_text())[1])
         api = int(re.search(r"Started server process \[(\d+)\]", log.read_text())[1])
         os.kill(worker, signal.SIGTERM)
-        assert not poll_health(503, process)["worker_available"]
+        assert not poll_health(503, service)["worker_available"]
         with open("docs/fixtures/core.trade") as strategy:
             source = strategy.read()
         request = Request(
-            "http://127.0.0.1:8000/api/v1/strategies/validate",
+            service.url + "/api/v1/strategies/validate",
             data=json.dumps({"source": source}).encode(),
             headers={
                 "Content-Type": "application/json",
@@ -120,9 +170,47 @@ def test_installed_supervisor_lifecycle(tmp_path):
         )
         with urlopen(request, timeout=2) as response:
             assert json.load(response)["valid"]
-    assert process.returncode == 0
+    assert service.process.returncode == 0
     for pid in (worker, api):
         with pytest.raises(ProcessLookupError):
             os.kill(pid, 0)
     with local_app(root, tmp_path / "restart.log") as restarted:
         assert poll_health(200, restarted)["worker_available"]
+        assert restarted.instance_id != service.instance_id
+
+
+def test_local_app_rejects_a_healthy_decoy_on_the_requested_port(tmp_path):
+    requests = []
+
+    class Decoy(BaseHTTPRequestHandler):
+        def do_GET(self):
+            requests.append(self.command)
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(b'{"worker_available":true}')
+
+        do_POST = do_GET
+
+    with ThreadingHTTPServer(("127.0.0.1", 0), Decoy) as decoy:
+        thread = threading.Thread(target=decoy.serve_forever)
+        thread.start()
+        try:
+            port = decoy.server_address[1]
+            with urlopen(f"http://127.0.0.1:{port}/health", timeout=1) as response:
+                assert json.load(response)["worker_available"]
+            requests.clear()
+            with pytest.raises(RuntimeError, match="startup failed"):
+                with local_app(
+                    tmp_path / "decoy", tmp_path / "decoy.log", api_port=port
+                ):
+                    pytest.fail("A decoy endpoint was accepted as the test supervisor")
+            with (
+                local_app(tmp_path / "left", tmp_path / "left.log") as left,
+                local_app(tmp_path / "right", tmp_path / "right.log") as right,
+            ):
+                assert len({urlsplit(s.url).port for s in (left, right)} | {port}) == 3
+                assert left.instance_id != right.instance_id
+            assert requests == []
+        finally:
+            decoy.shutdown()
+            thread.join()

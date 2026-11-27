@@ -93,7 +93,9 @@ def vwap(_args, context):
         context.columns[name] for name in ("high", "low", "close", "volume")
     )
     typical = typical_price(high, low, close)
-    days = context.times // DAY_US
+    days = (
+        context.times // DAY_US if context.session_ids is None else context.session_ids
+    )
     valid = np.isfinite(typical) & np.isfinite(volume)
     values = np.full(len(close), np.nan)
     active_day = None

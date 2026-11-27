@@ -120,6 +120,8 @@ class Library:
         self.revisions = sa.Table("strategy_revisions", meta, autoload_with=self.db)
         self.contents = sa.Table("dataset_contents", meta, autoload_with=self.db)
         self.imports = sa.Table("dataset_imports", meta, autoload_with=self.db)
+        self.runs = sa.Table("runs", meta, autoload_with=self.db)
+        self.run_presets = sa.Table("run_presets", meta, autoload_with=self.db)
 
     @contextmanager
     def writer(self):
@@ -129,8 +131,20 @@ class Library:
 
     def strategy_query(self):
         st, rev = self.strategies, self.revisions
+        latest = (
+            sa.select(self.runs.c.status)
+            .where(self.runs.c.strategy_id == st.c.id)
+            .order_by(self.runs.c.created_at.desc(), self.runs.c.id)
+            .limit(1)
+            .scalar_subquery()
+        )
         return (
-            sa.select(st, rev.c.source.label("current_source"), rev.c.source_hash)
+            sa.select(
+                st,
+                rev.c.source.label("current_source"),
+                rev.c.source_hash,
+                latest.label("last_run_status"),
+            )
             .join(
                 rev,
                 sa.and_(
@@ -479,11 +493,12 @@ class Library:
     def stage_content(data, staged, as_of):
         metadata = data.meta.model_dump(exclude={"schema_version", "gap_policy"})
         metadata["timeframe"] = seconds(data.meta.timeframe)
+        stored = data.raw_values if data.raw_values is not None else data.values
         pq.write_table(
             pa.table(
                 {
                     "timestamp": pa.array(data.times, type=pa.timestamp("us", "UTC")),
-                    **{key: data.column(key) for key in COLUMNS[1:]},
+                    **{key: stored[:, index] for index, key in enumerate(COLUMNS[1:])},
                 }
             ),
             staged,
@@ -508,12 +523,8 @@ class Library:
         quality = dict(
             zero_volume_count=int(np.count_nonzero(data.column("volume") == 0)),
             missing_bar_count=data.missing,
-            largest_gap_seconds=int(np.diff(data.times).max() // 1000000)
-            if data.missing
-            else 0,
-            last_close_at=instant(
-                int(data.times[-1]) + metadata["timeframe"] * 1000000
-            ),
+            largest_gap_seconds=data.largest_gap_seconds(),
+            last_close_at=instant(data.close_at(-1)),
         )
         return dict(
             dataset_hash=data.dataset_hash,

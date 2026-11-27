@@ -1,0 +1,23 @@
+tradelang 5
+strategy "Ordered exit and trailing stop"
+market TESTUSDT
+timeframe 1d
+param hold_bars: count = 2
+entry:
+  when close >= 100 price
+  buy using 50% of equity
+exit:
+  rule slow_confirmation when SMA(20) > 200 price sell all
+  rule profit when close >= 120 price sell all
+  rule timeout after hold_bars bars sell all
+risk:
+  stop loss 10%
+  trailing stop 5 price
+  take profit 50%
+backtest:
+  from 2024-01-01 to 2024-01-04
+  capital 1000 USDT
+  fee 0 bps per side
+  slippage 0 bps per side
+  execute at next bar open expire after 1d
+  calendar 24x7

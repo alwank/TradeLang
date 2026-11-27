@@ -1,0 +1,9 @@
+// Overlay on grammars 1–3. Size a long by modeled stop-touch loss.
+%override version: _TRADELANG_VERSION_PREFIX _K_FOUR
+%override entry: _K_ENTRY ":" _K_WHEN expr _K_BUY entry_sizing
+?entry_sizing: _K_USING sizing
+             | _K_RISKING expr _K_OF _K_EQUITY allocation_cap? -> stop_risk
+allocation_cap: _K_MAX _K_ALLOCATION expr _K_OF _K_EQUITY
+_K_FOUR.2: /\b4\b/
+_K_RISKING.2: /\brisking\b/
+_K_ALLOCATION.2: /\ballocation\b/

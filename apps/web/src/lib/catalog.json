@@ -1,0 +1,1364 @@
+{
+  "keywords": [
+    "24x7",
+    "above",
+    "all",
+    "and",
+    "at",
+    "backtest",
+    "bar",
+    "below",
+    "bps",
+    "buy",
+    "calendar",
+    "capital",
+    "crosses",
+    "dsl",
+    "entry",
+    "equity",
+    "execute",
+    "exit",
+    "false",
+    "fee",
+    "from",
+    "is",
+    "let",
+    "loss",
+    "market",
+    "max",
+    "next",
+    "not",
+    "of",
+    "one",
+    "open",
+    "or",
+    "per",
+    "positions",
+    "profit",
+    "risk",
+    "sell",
+    "side",
+    "slippage",
+    "stop",
+    "strategy",
+    "take",
+    "timeframe",
+    "to",
+    "true",
+    "using",
+    "when"
+  ],
+  "version2_keywords": [
+    "param",
+    "range"
+  ],
+  "choice_functions": {
+    "available": "(value)",
+    "coalesce": "(value, fallback)",
+    "choose": "(condition, when_true, when_false)"
+  },
+  "functions": [
+    {
+      "name": "ADL",
+      "fields": [],
+      "scale": null,
+      "field_scales": {},
+      "signatures": [
+        {
+          "arguments": [],
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    {
+      "name": "ALMA",
+      "fields": [],
+      "scale": null,
+      "field_scales": {},
+      "signatures": [
+        {
+          "arguments": [
+            {
+              "name": "period",
+              "constraint": "1\u201310,000 bars"
+            },
+            {
+              "name": "offset",
+              "constraint": "unsuffixed ratio from 0 through 1"
+            },
+            {
+              "name": "sigma",
+              "constraint": "unsuffixed ratio greater than 0 and at most 100"
+            }
+          ],
+          "default": "source defaults to close",
+          "relationship": null
+        },
+        {
+          "arguments": [
+            {
+              "name": "source",
+              "constraint": "price, volume, or ratio series"
+            },
+            {
+              "name": "period",
+              "constraint": "1\u201310,000 bars"
+            },
+            {
+              "name": "offset",
+              "constraint": "unsuffixed ratio from 0 through 1"
+            },
+            {
+              "name": "sigma",
+              "constraint": "unsuffixed ratio greater than 0 and at most 100"
+            }
+          ],
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    {
+      "name": "AO",
+      "fields": [],
+      "scale": null,
+      "field_scales": {},
+      "signatures": [
+        {
+          "arguments": [
+            {
+              "name": "fast",
+              "constraint": "1\u201310,000 bars"
+            },
+            {
+              "name": "slow",
+              "constraint": "1\u201310,000 bars"
+            }
+          ],
+          "default": null,
+          "relationship": "Fast < slow"
+        }
+      ]
+    },
+    {
+      "name": "AROON",
+      "fields": [
+        "up",
+        "down",
+        "oscillator"
+      ],
+      "scale": "points",
+      "field_scales": {
+        "up": "points",
+        "down": "points",
+        "oscillator": "points"
+      },
+      "signatures": [
+        {
+          "arguments": [
+            {
+              "name": "period",
+              "constraint": "1\u201310,000 bars"
+            }
+          ],
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    {
+      "name": "ATR",
+      "fields": [],
+      "scale": null,
+      "field_scales": {},
+      "signatures": [
+        {
+          "arguments": [
+            {
+              "name": "period",
+              "constraint": "1\u201310,000 bars"
+            }
+          ],
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    {
+      "name": "BBANDS",
+      "fields": [
+        "upper",
+        "middle",
+        "lower"
+      ],
+      "scale": null,
+      "field_scales": {},
+      "signatures": [
+        {
+          "arguments": [
+            {
+              "name": "source",
+              "constraint": "price, volume, or ratio series"
+            },
+            {
+              "name": "period",
+              "constraint": "1\u201310,000 bars"
+            },
+            {
+              "name": "multiplier",
+              "constraint": "unsuffixed factor greater than 0 and at most 10"
+            }
+          ],
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    {
+      "name": "BBPCTB",
+      "fields": [],
+      "scale": "fraction",
+      "field_scales": {},
+      "signatures": [
+        {
+          "arguments": [
+            {
+              "name": "source",
+              "constraint": "price, volume, or ratio series"
+            },
+            {
+              "name": "period",
+              "constraint": "1\u201310,000 bars"
+            },
+            {
+              "name": "multiplier",
+              "constraint": "unsuffixed factor greater than 0 and at most 10"
+            }
+          ],
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    {
+      "name": "BBWIDTH",
+      "fields": [],
+      "scale": "fraction",
+      "field_scales": {},
+      "signatures": [
+        {
+          "arguments": [
+            {
+              "name": "source",
+              "constraint": "price, volume, or ratio series"
+            },
+            {
+              "name": "period",
+              "constraint": "1\u201310,000 bars"
+            },
+            {
+              "name": "multiplier",
+              "constraint": "unsuffixed factor greater than 0 and at most 10"
+            }
+          ],
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    {
+      "name": "CCI",
+      "fields": [],
+      "scale": "points",
+      "field_scales": {},
+      "signatures": [
+        {
+          "arguments": [
+            {
+              "name": "period",
+              "constraint": "1\u201310,000 bars"
+            }
+          ],
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    {
+      "name": "CHANDELIER",
+      "fields": [
+        "long_exit",
+        "short_exit"
+      ],
+      "scale": null,
+      "field_scales": {},
+      "signatures": [
+        {
+          "arguments": [
+            {
+              "name": "period",
+              "constraint": "1\u201310,000 bars"
+            },
+            {
+              "name": "atr_period",
+              "constraint": "1\u201310,000 bars"
+            },
+            {
+              "name": "factor",
+              "constraint": "unsuffixed factor greater than 0 and at most 10"
+            }
+          ],
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    {
+      "name": "CHOP",
+      "fields": [],
+      "scale": "points",
+      "field_scales": {},
+      "signatures": [
+        {
+          "arguments": [
+            {
+              "name": "period",
+              "constraint": "2\u201310,000 bars"
+            }
+          ],
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    {
+      "name": "CMF",
+      "fields": [],
+      "scale": "fraction",
+      "field_scales": {},
+      "signatures": [
+        {
+          "arguments": [
+            {
+              "name": "period",
+              "constraint": "1\u201310,000 bars"
+            }
+          ],
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    {
+      "name": "DEMA",
+      "fields": [],
+      "scale": null,
+      "field_scales": {},
+      "signatures": [
+        {
+          "arguments": [
+            {
+              "name": "period",
+              "constraint": "1\u201310,000 bars"
+            }
+          ],
+          "default": "source defaults to close",
+          "relationship": null
+        },
+        {
+          "arguments": [
+            {
+              "name": "source",
+              "constraint": "price, volume, or ratio series"
+            },
+            {
+              "name": "period",
+              "constraint": "1\u201310,000 bars"
+            }
+          ],
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    {
+      "name": "DMI",
+      "fields": [
+        "plus_di",
+        "minus_di",
+        "adx"
+      ],
+      "scale": "points",
+      "field_scales": {
+        "plus_di": "points",
+        "minus_di": "points",
+        "adx": "points"
+      },
+      "signatures": [
+        {
+          "arguments": [
+            {
+              "name": "di_period",
+              "constraint": "1\u201310,000 bars"
+            },
+            {
+              "name": "adx_period",
+              "constraint": "1\u201310,000 bars"
+            }
+          ],
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    {
+      "name": "DONCHIAN",
+      "fields": [
+        "upper",
+        "middle",
+        "lower"
+      ],
+      "scale": null,
+      "field_scales": {},
+      "signatures": [
+        {
+          "arguments": [
+            {
+              "name": "period",
+              "constraint": "1\u201310,000 bars"
+            }
+          ],
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    {
+      "name": "EMA",
+      "fields": [],
+      "scale": null,
+      "field_scales": {},
+      "signatures": [
+        {
+          "arguments": [
+            {
+              "name": "period",
+              "constraint": "1\u201310,000 bars"
+            }
+          ],
+          "default": "source defaults to close",
+          "relationship": null
+        },
+        {
+          "arguments": [
+            {
+              "name": "source",
+              "constraint": "price, volume, or ratio series"
+            },
+            {
+              "name": "period",
+              "constraint": "1\u201310,000 bars"
+            }
+          ],
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    {
+      "name": "HIGHEST",
+      "fields": [],
+      "scale": null,
+      "field_scales": {},
+      "signatures": [
+        {
+          "arguments": [
+            {
+              "name": "source",
+              "constraint": "price, volume, or ratio series"
+            },
+            {
+              "name": "period",
+              "constraint": "1\u201310,000 bars"
+            }
+          ],
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    {
+      "name": "HMA",
+      "fields": [],
+      "scale": null,
+      "field_scales": {},
+      "signatures": [
+        {
+          "arguments": [
+            {
+              "name": "period",
+              "constraint": "1\u201310,000 bars"
+            }
+          ],
+          "default": "source defaults to close",
+          "relationship": null
+        },
+        {
+          "arguments": [
+            {
+              "name": "source",
+              "constraint": "price, volume, or ratio series"
+            },
+            {
+              "name": "period",
+              "constraint": "1\u201310,000 bars"
+            }
+          ],
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    {
+      "name": "ICHIMOKU",
+      "fields": [
+        "conversion",
+        "base",
+        "span_a",
+        "span_b"
+      ],
+      "scale": null,
+      "field_scales": {},
+      "signatures": [
+        {
+          "arguments": [
+            {
+              "name": "conversion",
+              "constraint": "1\u201310,000 bars"
+            },
+            {
+              "name": "base",
+              "constraint": "1\u201310,000 bars"
+            },
+            {
+              "name": "span_b",
+              "constraint": "1\u201310,000 bars"
+            }
+          ],
+          "default": null,
+          "relationship": "Conversion \u2264 base \u2264 span B"
+        }
+      ]
+    },
+    {
+      "name": "KAMA",
+      "fields": [],
+      "scale": null,
+      "field_scales": {},
+      "signatures": [
+        {
+          "arguments": [
+            {
+              "name": "period",
+              "constraint": "1\u201310,000 bars"
+            },
+            {
+              "name": "fast",
+              "constraint": "1\u201310,000 bars"
+            },
+            {
+              "name": "slow",
+              "constraint": "1\u201310,000 bars"
+            }
+          ],
+          "default": "source defaults to close",
+          "relationship": "Fast < slow"
+        },
+        {
+          "arguments": [
+            {
+              "name": "source",
+              "constraint": "price, volume, or ratio series"
+            },
+            {
+              "name": "period",
+              "constraint": "1\u201310,000 bars"
+            },
+            {
+              "name": "fast",
+              "constraint": "1\u201310,000 bars"
+            },
+            {
+              "name": "slow",
+              "constraint": "1\u201310,000 bars"
+            }
+          ],
+          "default": null,
+          "relationship": "Fast < slow"
+        }
+      ]
+    },
+    {
+      "name": "KELTNER",
+      "fields": [
+        "upper",
+        "middle",
+        "lower"
+      ],
+      "scale": null,
+      "field_scales": {},
+      "signatures": [
+        {
+          "arguments": [
+            {
+              "name": "ema_period",
+              "constraint": "1\u201310,000 bars"
+            },
+            {
+              "name": "atr_period",
+              "constraint": "1\u201310,000 bars"
+            },
+            {
+              "name": "factor",
+              "constraint": "unsuffixed factor greater than 0 and at most 10"
+            }
+          ],
+          "default": "source defaults to close",
+          "relationship": null
+        },
+        {
+          "arguments": [
+            {
+              "name": "source",
+              "constraint": "price series"
+            },
+            {
+              "name": "ema_period",
+              "constraint": "1\u201310,000 bars"
+            },
+            {
+              "name": "atr_period",
+              "constraint": "1\u201310,000 bars"
+            },
+            {
+              "name": "factor",
+              "constraint": "unsuffixed factor greater than 0 and at most 10"
+            }
+          ],
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    {
+      "name": "LOWEST",
+      "fields": [],
+      "scale": null,
+      "field_scales": {},
+      "signatures": [
+        {
+          "arguments": [
+            {
+              "name": "source",
+              "constraint": "price, volume, or ratio series"
+            },
+            {
+              "name": "period",
+              "constraint": "1\u201310,000 bars"
+            }
+          ],
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    {
+      "name": "LSMA",
+      "fields": [],
+      "scale": null,
+      "field_scales": {},
+      "signatures": [
+        {
+          "arguments": [
+            {
+              "name": "period",
+              "constraint": "2\u201310,000 bars"
+            }
+          ],
+          "default": "source defaults to close",
+          "relationship": null
+        },
+        {
+          "arguments": [
+            {
+              "name": "source",
+              "constraint": "price, volume, or ratio series"
+            },
+            {
+              "name": "period",
+              "constraint": "2\u201310,000 bars"
+            }
+          ],
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    {
+      "name": "MACD",
+      "fields": [
+        "line",
+        "signal",
+        "histogram"
+      ],
+      "scale": null,
+      "field_scales": {},
+      "signatures": [
+        {
+          "arguments": [
+            {
+              "name": "fast",
+              "constraint": "1\u201310,000 bars"
+            },
+            {
+              "name": "slow",
+              "constraint": "1\u201310,000 bars"
+            },
+            {
+              "name": "signal",
+              "constraint": "1\u201310,000 bars"
+            }
+          ],
+          "default": "source defaults to close",
+          "relationship": "Fast < slow"
+        }
+      ]
+    },
+    {
+      "name": "MFI",
+      "fields": [],
+      "scale": "points",
+      "field_scales": {},
+      "signatures": [
+        {
+          "arguments": [
+            {
+              "name": "period",
+              "constraint": "1\u201310,000 bars"
+            }
+          ],
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    {
+      "name": "MOM",
+      "fields": [],
+      "scale": null,
+      "field_scales": {},
+      "signatures": [
+        {
+          "arguments": [
+            {
+              "name": "period",
+              "constraint": "1\u201310,000 bars"
+            }
+          ],
+          "default": "source defaults to close",
+          "relationship": null
+        },
+        {
+          "arguments": [
+            {
+              "name": "source",
+              "constraint": "price, volume, or ratio series"
+            },
+            {
+              "name": "period",
+              "constraint": "1\u201310,000 bars"
+            }
+          ],
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    {
+      "name": "NATR",
+      "fields": [],
+      "scale": "fraction",
+      "field_scales": {},
+      "signatures": [
+        {
+          "arguments": [
+            {
+              "name": "period",
+              "constraint": "1\u201310,000 bars"
+            }
+          ],
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    {
+      "name": "OBV",
+      "fields": [],
+      "scale": null,
+      "field_scales": {},
+      "signatures": [
+        {
+          "arguments": [],
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    {
+      "name": "RMA",
+      "fields": [],
+      "scale": null,
+      "field_scales": {},
+      "signatures": [
+        {
+          "arguments": [
+            {
+              "name": "period",
+              "constraint": "1\u201310,000 bars"
+            }
+          ],
+          "default": "source defaults to close",
+          "relationship": null
+        },
+        {
+          "arguments": [
+            {
+              "name": "source",
+              "constraint": "price, volume, or ratio series"
+            },
+            {
+              "name": "period",
+              "constraint": "1\u201310,000 bars"
+            }
+          ],
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    {
+      "name": "ROC",
+      "fields": [],
+      "scale": "fraction",
+      "field_scales": {},
+      "signatures": [
+        {
+          "arguments": [
+            {
+              "name": "source",
+              "constraint": "price, volume, or ratio series"
+            },
+            {
+              "name": "period",
+              "constraint": "1\u201310,000 bars"
+            }
+          ],
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    {
+      "name": "RSI",
+      "fields": [],
+      "scale": "points",
+      "field_scales": {},
+      "signatures": [
+        {
+          "arguments": [
+            {
+              "name": "period",
+              "constraint": "1\u201310,000 bars"
+            }
+          ],
+          "default": "source defaults to close",
+          "relationship": null
+        }
+      ]
+    },
+    {
+      "name": "RVOL",
+      "fields": [],
+      "scale": "fraction",
+      "field_scales": {},
+      "signatures": [
+        {
+          "arguments": [
+            {
+              "name": "period",
+              "constraint": "1\u201310,000 bars"
+            }
+          ],
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    {
+      "name": "SAR",
+      "fields": [],
+      "scale": null,
+      "field_scales": {},
+      "signatures": [
+        {
+          "arguments": [
+            {
+              "name": "step",
+              "constraint": "unsuffixed numeric literal"
+            },
+            {
+              "name": "maximum",
+              "constraint": "unsuffixed numeric literal"
+            }
+          ],
+          "default": null,
+          "relationship": "0 < step \u2264 maximum \u2264 1"
+        }
+      ]
+    },
+    {
+      "name": "SMA",
+      "fields": [],
+      "scale": null,
+      "field_scales": {},
+      "signatures": [
+        {
+          "arguments": [
+            {
+              "name": "period",
+              "constraint": "1\u201310,000 bars"
+            }
+          ],
+          "default": "source defaults to close",
+          "relationship": null
+        },
+        {
+          "arguments": [
+            {
+              "name": "source",
+              "constraint": "price, volume, or ratio series"
+            },
+            {
+              "name": "period",
+              "constraint": "1\u201310,000 bars"
+            }
+          ],
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    {
+      "name": "STDDEV",
+      "fields": [],
+      "scale": null,
+      "field_scales": {},
+      "signatures": [
+        {
+          "arguments": [
+            {
+              "name": "source",
+              "constraint": "price, volume, or ratio series"
+            },
+            {
+              "name": "period",
+              "constraint": "1\u201310,000 bars"
+            }
+          ],
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    {
+      "name": "STOCH",
+      "fields": [
+        "k",
+        "d"
+      ],
+      "scale": "points",
+      "field_scales": {
+        "k": "points",
+        "d": "points"
+      },
+      "signatures": [
+        {
+          "arguments": [
+            {
+              "name": "period",
+              "constraint": "1\u201310,000 bars"
+            },
+            {
+              "name": "k_period",
+              "constraint": "1\u201310,000 bars"
+            },
+            {
+              "name": "d_period",
+              "constraint": "1\u201310,000 bars"
+            }
+          ],
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    {
+      "name": "STOCHRSI",
+      "fields": [
+        "k",
+        "d"
+      ],
+      "scale": "points",
+      "field_scales": {
+        "k": "points",
+        "d": "points"
+      },
+      "signatures": [
+        {
+          "arguments": [
+            {
+              "name": "rsi_period",
+              "constraint": "1\u201310,000 bars"
+            },
+            {
+              "name": "stoch_period",
+              "constraint": "1\u201310,000 bars"
+            },
+            {
+              "name": "k_period",
+              "constraint": "1\u201310,000 bars"
+            },
+            {
+              "name": "d_period",
+              "constraint": "1\u201310,000 bars"
+            }
+          ],
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    {
+      "name": "SUPERTREND",
+      "fields": [
+        "line",
+        "direction"
+      ],
+      "scale": null,
+      "field_scales": {},
+      "signatures": [
+        {
+          "arguments": [
+            {
+              "name": "period",
+              "constraint": "1\u201310,000 bars"
+            },
+            {
+              "name": "multiplier",
+              "constraint": "unsuffixed factor greater than 0 and at most 10"
+            }
+          ],
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    {
+      "name": "TEMA",
+      "fields": [],
+      "scale": null,
+      "field_scales": {},
+      "signatures": [
+        {
+          "arguments": [
+            {
+              "name": "period",
+              "constraint": "1\u201310,000 bars"
+            }
+          ],
+          "default": "source defaults to close",
+          "relationship": null
+        },
+        {
+          "arguments": [
+            {
+              "name": "source",
+              "constraint": "price, volume, or ratio series"
+            },
+            {
+              "name": "period",
+              "constraint": "1\u201310,000 bars"
+            }
+          ],
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    {
+      "name": "TRANGE",
+      "fields": [],
+      "scale": null,
+      "field_scales": {},
+      "signatures": [
+        {
+          "arguments": [],
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    {
+      "name": "TSI",
+      "fields": [],
+      "scale": "points",
+      "field_scales": {},
+      "signatures": [
+        {
+          "arguments": [
+            {
+              "name": "slow",
+              "constraint": "1\u201310,000 bars"
+            },
+            {
+              "name": "fast",
+              "constraint": "1\u201310,000 bars"
+            }
+          ],
+          "default": "source defaults to close",
+          "relationship": "Fast < slow"
+        },
+        {
+          "arguments": [
+            {
+              "name": "source",
+              "constraint": "price, volume, or ratio series"
+            },
+            {
+              "name": "slow",
+              "constraint": "1\u201310,000 bars"
+            },
+            {
+              "name": "fast",
+              "constraint": "1\u201310,000 bars"
+            }
+          ],
+          "default": null,
+          "relationship": "Fast < slow"
+        }
+      ]
+    },
+    {
+      "name": "ULTOSC",
+      "fields": [],
+      "scale": "points",
+      "field_scales": {},
+      "signatures": [
+        {
+          "arguments": [
+            {
+              "name": "short",
+              "constraint": "1\u201310,000 bars"
+            },
+            {
+              "name": "medium",
+              "constraint": "1\u201310,000 bars"
+            },
+            {
+              "name": "long",
+              "constraint": "1\u201310,000 bars"
+            }
+          ],
+          "default": null,
+          "relationship": "Short < medium < long"
+        }
+      ]
+    },
+    {
+      "name": "VPROFILE",
+      "fields": [
+        "poc",
+        "vah",
+        "val"
+      ],
+      "scale": null,
+      "field_scales": {},
+      "signatures": [
+        {
+          "arguments": [
+            {
+              "name": "period",
+              "constraint": "1\u2013256 bars"
+            },
+            {
+              "name": "bin_width",
+              "constraint": "positive price literal"
+            },
+            {
+              "name": "value_area",
+              "constraint": "unsuffixed ratio greater than 0 and at most 1"
+            }
+          ],
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    {
+      "name": "VWAP",
+      "fields": [],
+      "scale": null,
+      "field_scales": {},
+      "signatures": [
+        {
+          "arguments": [],
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    {
+      "name": "VWMA",
+      "fields": [],
+      "scale": null,
+      "field_scales": {},
+      "signatures": [
+        {
+          "arguments": [
+            {
+              "name": "period",
+              "constraint": "1\u201310,000 bars"
+            }
+          ],
+          "default": "source defaults to close",
+          "relationship": null
+        },
+        {
+          "arguments": [
+            {
+              "name": "source",
+              "constraint": "price, volume, or ratio series"
+            },
+            {
+              "name": "period",
+              "constraint": "1\u201310,000 bars"
+            }
+          ],
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    {
+      "name": "WILLR",
+      "fields": [],
+      "scale": "points",
+      "field_scales": {},
+      "signatures": [
+        {
+          "arguments": [
+            {
+              "name": "period",
+              "constraint": "1\u201310,000 bars"
+            }
+          ],
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    {
+      "name": "WMA",
+      "fields": [],
+      "scale": null,
+      "field_scales": {},
+      "signatures": [
+        {
+          "arguments": [
+            {
+              "name": "period",
+              "constraint": "1\u201310,000 bars"
+            }
+          ],
+          "default": "source defaults to close",
+          "relationship": null
+        },
+        {
+          "arguments": [
+            {
+              "name": "source",
+              "constraint": "price, volume, or ratio series"
+            },
+            {
+              "name": "period",
+              "constraint": "1\u201310,000 bars"
+            }
+          ],
+          "default": null,
+          "relationship": null
+        }
+      ]
+    },
+    {
+      "name": "ZIGZAG",
+      "fields": [
+        "pivot",
+        "last_high",
+        "last_low",
+        "direction"
+      ],
+      "scale": null,
+      "field_scales": {},
+      "signatures": [
+        {
+          "arguments": [
+            {
+              "name": "left",
+              "constraint": "1\u20131,000 bars"
+            },
+            {
+              "name": "right",
+              "constraint": "1\u20131,000 bars"
+            },
+            {
+              "name": "reversal",
+              "constraint": "unsuffixed ratio greater than 0 and at most 1"
+            }
+          ],
+          "default": null,
+          "relationship": null
+        }
+      ]
+    }
+  ],
+  "examples": [
+    {
+      "name": "RSI Trend Recovery",
+      "source": "tradelang 1\nstrategy \"RSI Trend Recovery\"\nentry:\n  when RSI(14) crosses above 30 and close is above SMA(200)\n  buy using 20% of equity\nexit:\n  when RSI(14) crosses above 70\n  sell all\nrisk:\n  stop loss 3%\n  take profit 6%\n  max open positions 1\nbacktest:\n  from 2022-01-01 to 2025-12-31\n  capital 10000 USDT\n  fee 10 bps per side\n  slippage 5 bps per side\n  execute at next bar open\n  calendar 24x7\n"
+    },
+    {
+      "name": "EMA Crossover",
+      "source": "strategy \"EMA Crossover\"\nentry:\n  when EMA(20) crosses above EMA(50)\n  buy using (10% + 10%) of equity\nexit:\n  when EMA(20) crosses below EMA(50)\n  sell all\nbacktest:\n  from 2022-01-01 to 2025-12-31\n  capital 10000 USDT\n  fee 10 bps per side\n  slippage 5 bps per side\n  execute at next bar open\n  calendar 24x7\n"
+    },
+    {
+      "name": "Previous High Breakout",
+      "source": "strategy \"Previous High Breakout\"\nlet boundary = HIGHEST(high, 20)[1]\nentry:\n  when close crosses above boundary\n  buy using (2 * 500) USDT\nexit:\n  when close < EMA(20)\n  sell all\nrisk:\n  stop loss 2 * ATR(14)\n  take profit 4 * ATR(14)\nbacktest:\n  from 2022-01-01 to 2025-12-31\n  capital 10000 USDT\n  fee 10 bps per side\n  slippage 5 bps per side\n  execute at next bar open\n  calendar 24x7\n"
+    },
+    {
+      "name": "Arithmetic Volatility Deviation",
+      "source": "strategy \"Arithmetic Volatility Deviation\"\nlet fast = EMA(12)\nlet slow = EMA(26)\nlet spread = fast - slow\nlet deviation = (close - SMA(20)) / SMA(20)\nlet volume_confirmed = volume > 1.5 * SMA(volume, 20)\nlet entry_ready = deviation > 2%\n  and volume_confirmed\n  and spread crosses above 0\nlet exit_ready = close < EMA(20) - 0.5 * ATR(14)\nentry:\n  when entry_ready\n  buy using (10% + 5% * (close / SMA(20))) of equity\nexit:\n  when exit_ready\n  sell all\nrisk:\n  stop loss 2 * ATR(14)\n  take profit 4 * ATR(14)\nbacktest:\n  from 2022-01-01 to 2025-12-31\n  capital 10000 USDT\n  fee 10 bps per side\n  slippage 5 bps per side\n  execute at next bar open\n  calendar 24x7\n"
+    }
+  ]
+}

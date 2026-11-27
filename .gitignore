@@ -6,8 +6,15 @@ __pycache__/
 .mypy_cache/
 dist/
 runs/
+!/apps/web/src/app/runs/
 /site/
 /release-evidence/
+/apps/web/node_modules/
+/apps/web/.next/
+/apps/web/next-env.d.ts
+/apps/web/*.tsbuildinfo
+/apps/web/playwright-report/
+/apps/web/test-results/
 
 # Local configuration and data
 .DS_Store

@@ -1,6 +1,6 @@
 # Execution semantics 1.1.0
 
-TradeLang models a single long spot position and one cash balance in the quote currency. It uses fractional quantity and a fixed UTC candle grid. The model omits borrowing, shorting, scaling into positions, partial fills, lot sizes, market impact, and corporate actions. Volume is observational. A fill on a zero-volume candle can emit `W_ZERO_VOLUME_FILL`.
+The 1.1.0 baseline models one long spot position and a quote-currency cash balance with fractional quantity on a fixed UTC grid. The versioned sections below describe changes to execution, accounting, and the clock. Volume is observational. A fill on a zero-volume candle can emit `W_ZERO_VOLUME_FILL`.
 
 ## Clock, window and readiness
 
@@ -65,6 +65,49 @@ At the signal close (phase 7), TradeLang samples each configured protection expr
 At the next open (phase 3), a sampled ratio becomes a distance relative to the proposed entry fill. A sampled price value is already an absolute distance. For a buy at `p`, the stop is `p - distance` and the target is `p + distance`. The entry is rejected if the resulting level is nonfinite, if a stop is outside `(0, p)`, or if a target is at or below `p`.
 
 For example, with a fill at 100 and a sampled ATR of 2, `stop loss 2 * ATR(14)` gives a stop at 96. With the same fill, `take profit 8%` gives a target at 108. Those levels remain fixed until exit.
+
+## Stop-based sizing in semantics 4.0.0
+
+With DSL 4, `buy risking` samples market-only risk and allocation ratios at phase 7. An unavailable ratio or a ratio outside `(0, 1]` rejects the order. When a ratio uses account equity, TradeLang resolves it at phase 3 using the flat account's cash and the signal bar's market values. It derives the proposed protection levels before changing the ledger.
+
+In phase 3, the position size takes the smallest quantity allowed by the stop-touch risk budget, cash, and allocation limit. Ties prioritize the risk budget, then cash, then allocation. The quantity may move down by up to four representable steps to keep the rounded debit and modeled loss within their limits. Invalid arithmetic or an unavailable positive quantity rejects the order. Accepted orders record `trace.risk_sizing` on the buy fill. Existing open and intrabar protection phases still determine the actual sale. [Sizing equations and example](language-v4.md#size-a-long-by-stop-loss)
+
+## Exit and protection priority in semantics 5.0.0
+
+The phase order still applies to DSL 5. The following steps specify where active trails and expiring signal orders fit in that order.
+
+| Phase | DSL 5 behavior |
+| --- | --- |
+| 1 | Activate the previous close's queued trail. Test open protection against the active stop and target. A protective fill cancels a queued sell. |
+| 2 | Check a queued sell's age limit, when present. Expire it at the limit or fill it at the executable open. |
+| 3 | Check a queued buy's age limit, when present. Validate and fill an eligible order with its initial protection. |
+| 4–5 | Check entry-open and intrabar touches of active protection. The stop wins a dual touch. |
+| 6–7 | Mark equity. For a surviving position, evaluate its trailing distance using the completed close and schedule a higher valid trigger for the next open. Check exits in source order and queue the first true rule. |
+| 8 | Expire a final-candle signal with no in-window fill open. |
+
+The event log records a trail proposal as `trail_queued` and its effective open as `trail_activated`. An age-based expiry records `order_expired_stale` with age and limit in seconds. Later gap protection still applies after a signal sell expires. [Ordered exit examples](language-v5.md)
+
+## Position accounting in semantics 6.0.0
+
+A position cycle starts at the first buy and ends when quantity reaches zero. Each fill has a run-wide fill ID and a leg number within its cycle. A partial sale adds realized P&L to the open cycle. Only a cycle that reaches zero counts as a closed trade.
+
+The ledger tracks remaining gross cost basis and entry fees separately. An add increases each balance by its fill notional and fee. A sale releases the same proportion of each balance as the proportion of quantity sold. The final sale releases the remaining balances. Realized net P&L on a sale equals gross proceeds minus the released gross basis, released entry fees, and sale fee.
+
+At the open, active protection can close the position before a queued sell or add. If a signal sale leaves quantity, active protection continues through the intrabar phase. A surviving position can queue a new action at the close. Exit rules take priority over an add within that close decision. A full exit suppresses new signals on its candle under the existing phase rules.
+
+The closed-trade row rolls up the cycle using quantity-weighted fill prices and totals across its fill legs. Its quantity is cumulative bought quantity. Its times run from the first entry to the last exit. The position mark uses the closing price, remaining gross basis, and retained entry fees. [Quantity-changing orders](language-v6.md)
+
+## Exchange sessions in semantics 7.0.0
+
+With `calendar session`, a completed candle can queue an order before a closure. The normal phases resume at the next observed candle's open. Order age includes the elapsed time during the closure. The engine checks an explicit age limit before filling the queued signal. Lookbacks and holding periods count observed candles.
+
+Scheduled ordinals determine gaps. CAGR uses elapsed calendar time and exposure counts observed candles. Session runs report Sharpe unavailable with reason `session_intervals`. [Session metadata and split-reference units](language-v7.md)
+
+## Short accounts in semantics 8.0.0
+
+A borrowed-asset short carries negative quantity and reserves its sale proceeds and initial margin. Borrow is debited on elapsed time at the open before assessing margin and at the close before marking a surviving position. An observed open can liquidate before gap protection or a queued cover. A close liquidation uses the observed close and is recorded before the equity mark.
+
+A gap can leave a deficit after liquidation. Drawdown can exceed 100%. A terminal deficit makes CAGR unavailable. A continuous curve with nonpositive equity also makes Sharpe unavailable. [Collateral, financing, and liquidation rules](language-v8.md)
 
 ## Numerical policy
 

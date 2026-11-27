@@ -1,0 +1,5 @@
+// Overlay on grammars 1–6. Execution on recorded exchange sessions.
+%override version: _TRADELANG_VERSION_PREFIX _K_SEVEN
+%override calendar: _K_CALENDAR (_K_24X7 | SESSION)
+_K_SEVEN.2: /\b7\b/
+SESSION.2: /\bsession\b/

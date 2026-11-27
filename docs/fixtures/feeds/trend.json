@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "symbol": "TESTUSDT",
+  "quote_currency": "USDT",
+  "timeframe": "4h",
+  "calendar": "24x7",
+  "timestamp_convention": "bar_open",
+  "volume_unit": "base_quantity",
+  "price_basis": "raw_spot",
+  "gap_policy": "reject"
+}

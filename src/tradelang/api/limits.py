@@ -10,6 +10,8 @@ from uuid import uuid4
 from starlette.datastructures import Headers
 from starlette.responses import JSONResponse
 
+from ..data import unique_json_members
+
 MAX_BODY = 128 * 1024
 ORIGIN = "http://127.0.0.1:3000"
 HOST = "127.0.0.1:8000"
@@ -37,9 +39,11 @@ def failure(status, code, message, headers=None, *, diagnostics=None):
 
 
 class EditorLimits:
-    def __init__(self, app):
+    def __init__(self, app, *, host: str = HOST, origin: str = ORIGIN):
         self.app = app
-        self.history: dict[str, deque[float]] = {}
+        self.host = host
+        self.origin = origin
+        self.history: dict[tuple[str, bool], deque[float]] = {}
         self.active = 0
 
     async def __call__(self, scope, receive, send):
@@ -51,14 +55,14 @@ class EditorLimits:
             local = peer and ipaddress.ip_address(peer[0]).is_loopback
         except ValueError:
             local = False
-        if not local or headers.getlist("host") != [HOST]:
+        if not local or headers.getlist("host") != [self.host]:
             return await failure(
                 403, "E_LOCAL_ONLY", "Loopback client and configured Host required"
             )(scope, receive, send)
         method = scope["method"]
         if method not in {"POST", "PUT", "DELETE"}:
             return await self.app(scope, receive, send)
-        if headers.getlist("origin") != [ORIGIN]:
+        if headers.getlist("origin") != [self.origin]:
             return await failure(403, "E_ORIGIN", "Unrecognized request origin")(
                 scope, receive, send
             )
@@ -72,7 +76,11 @@ class EditorLimits:
             return await failure(415, "E_CONTENT_TYPE", "Expected application/json")(
                 scope, receive, send
             )
-        editor = path in {"/api/v1/strategies/validate", "/api/v1/strategies/explain"}
+        draft = path == "/api/v1/strategies/draft-check"
+        editor = draft or path in {
+            "/api/v1/strategies/validate",
+            "/api/v1/strategies/explain",
+        }
         if editor:
             now = time.monotonic()
             for key, history in list(self.history.items()):
@@ -80,11 +88,12 @@ class EditorLimits:
                     history.popleft()
                 if not history:
                     del self.history[key]
-            history = self.history.setdefault(peer[0], deque())
-            if len(history) >= 30 or self.active >= 4:
+            history = self.history.setdefault((peer[0], draft), deque())
+            maximum = 60 if draft else 30
+            if len(history) >= maximum or self.active >= 4:
                 retry = (
                     max(1, math.ceil(60 - (now - history[0])))
-                    if len(history) >= 30
+                    if len(history) >= maximum
                     else 1
                 )
                 return await failure(
@@ -111,8 +120,13 @@ class EditorLimits:
                     break
             # The framework's decoder also accepts UTF-16 and NaN.
             # Check the bounded wire body against our UTF-8 JSON contract.
+            # Repeated names make parameters and configuration ambiguous.
             try:
-                json.loads(body.decode("utf-8"), parse_constant=reject_non_json_number)
+                json.loads(
+                    body.decode("utf-8"),
+                    parse_constant=reject_non_json_number,
+                    object_pairs_hook=unique_json_members,
+                )
             except (ValueError, RecursionError):
                 return await failure(400, "E_JSON", "Malformed UTF-8 JSON")(
                     scope, receive, send

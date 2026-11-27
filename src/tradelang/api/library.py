@@ -16,6 +16,7 @@ from starlette.responses import JSONResponse
 from ..data import Metadata
 from ..model import Problem
 from ..persistence import Library, LibraryError, protected
+from ..persistence.runs import RunStatus
 from .contracts import Closed, Diagnostic, ErrorEnvelope, Hash, UuidText
 from .limits import failure
 from .upload import TOTAL_SECONDS, receive_upload
@@ -33,16 +34,19 @@ class Page(Closed, Generic[T]):
     snapshot: str
 
 
-class StrategyCreate(Closed):
+class DisplayName(Closed):
     name: Annotated[str, Field(min_length=1, max_length=120)]
-    source: str
 
     @field_validator("name")
     @classmethod
     def visible_name(cls, value):
         if not value.strip() or not value.isprintable():
-            raise ValueError("Expected a visible strategy name")
+            raise ValueError("Expected a visible name")
         return value
+
+
+class StrategyCreate(DisplayName):
+    source: str
 
 
 class StrategyUpdate(StrategyCreate):
@@ -59,6 +63,7 @@ class StrategyRecord(Closed):
     updated_at: str
     etag: str
     deleted_at: str | None
+    last_run_status: RunStatus | None
 
 
 class Revision(Closed):

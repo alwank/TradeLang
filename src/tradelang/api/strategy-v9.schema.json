@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tradelang.local/schemas/strategy-v9.json",
+  "title": "TradeLang typed portfolio v9",
+  "type": "object",
+  "properties": {
+    "schema_version": { "const": 9 },
+    "dsl_version": { "const": 9 },
+    "kind": { "const": "portfolio" },
+    "name": { "type": "string", "minLength": 1, "maxLength": 120 },
+    "assets": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,31}$" },
+      "uniqueItems": true,
+      "minItems": 2,
+      "maxItems": 8
+    },
+    "capital": { "type": "number", "exclusiveMinimum": 0 },
+    "currency": { "type": "string", "pattern": "^[A-Z][A-Z0-9]{1,11}$" },
+    "max_positions": { "type": "integer", "minimum": 1, "maximum": 8 }
+  },
+  "required": ["schema_version", "dsl_version", "kind", "name", "assets", "capital", "currency", "max_positions"],
+  "additionalProperties": false
+}

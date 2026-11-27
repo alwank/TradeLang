@@ -1,0 +1,18 @@
+// Overlay on grammar-v1.lark. DSL 2 requires an explicit version directive.
+%override start: version header market? timeframe? param_decl* let_decl* entry exit risk? backtest
+%override version: _TRADELANG_VERSION_PREFIX _K_TWO
+
+param_decl: _K_PARAM NAME ":" PARAM_TYPE "=" expr param_bounds?
+param_bounds: _K_RANGE "[" expr "," expr "]"
+
+%extend atom: _K_AVAILABLE "(" expr ")" -> available
+            | _K_COALESCE "(" expr "," expr ")" -> coalesce
+            | _K_CHOOSE "(" expr "," expr "," expr ")" -> choose
+
+_K_TWO.2: /\b2\b/
+_K_PARAM.2: /\bparam\b/
+_K_RANGE.2: /\brange\b/
+_K_AVAILABLE.2: /\bavailable\b/
+_K_COALESCE.2: /\bcoalesce\b/
+_K_CHOOSE.2: /\bchoose\b/
+PARAM_TYPE.2: /\b(?:count|ratio|price|bool)\b/

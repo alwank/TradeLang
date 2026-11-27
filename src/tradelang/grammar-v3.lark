@@ -1,0 +1,11 @@
+// Overlay on grammars 1 and 2. Named higher-timeframe feeds are read-only.
+%override start: version header market? timeframe? feed_decl? param_decl* let_decl* entry exit risk? backtest
+%override version: _TRADELANG_VERSION_PREFIX _K_THREE
+feed_decl: _K_FEED NAME _K_TIMEFRAME TIMEFRAME _K_MAXAGE TIMEFRAME
+%extend atom: _K_ON "(" NAME "," expr ")" -> on_feed
+            | _K_ALIGN "(" expr ")" -> align
+_K_THREE.2: /\b3\b/
+_K_FEED.2: /\bfeed\b/
+_K_MAXAGE.2: /\bmax_age\b/
+_K_ON.2: /\bon\b/
+_K_ALIGN.2: /\balign\b/

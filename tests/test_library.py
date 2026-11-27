@@ -149,7 +149,7 @@ def test_strategy_revisions_soft_delete_and_reopen(library):
         assert conn.exec_driver_sql("PRAGMA journal_mode").scalar_one() == "wal"
         assert (
             conn.exec_driver_sql("SELECT version_num FROM alembic_version").scalar_one()
-            == "001_library"
+            == "003_run_presets"
         )
 
 

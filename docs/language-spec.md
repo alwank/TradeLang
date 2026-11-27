@@ -4,6 +4,8 @@
 
 This is the normative TradeLang DSL version 1 specification. The packaged grammar governs syntax, this reference and its linked contracts govern semantics, and the typed strategy JSON Schema governs wire structure. See the [Lark grammar](grammar-v1.lark), [typed strategy JSON Schema](schemas/strategy.schema.json), and [execution semantics](execution-semantics.md). The [typed strategy example](schemas/strategy.example.json) illustrates the structure for the [quickstart fixture](fixtures/core.trade). Semantic validation applies additional constraints beyond JSON Schema.
 
+For named parameters, record bindings, and Boolean history, see [TradeLang strategy language v2](language-v2.md).
+
 ## Source and lexical contract
 
 Source is UTF-8 and can begin with a byte-order mark. Both LF and CRLF are accepted. TradeLang hashes the original bytes. Section keywords, builtins, and identifiers are lowercase. Indicator names are uppercase. Strategy names are JSON double-quoted strings that decode to 1–120 printable characters.
@@ -20,9 +22,11 @@ Sections and directives follow the order in [Write a strategy](writing-strategie
 | --- | --- |
 | V1-LEX01 | The compiler accepts UTF-8 with an optional initial BOM and preserves exact source bytes. LF and CRLF are valid. |
 | V1-LEX02 | The only version directives are `tradelang 1` and `dsl 1`. At most one may appear, before `strategy`. |
-| V1-LEX03 | Section order is strategy, market, timeframe, lets, entry, exit, optional risk, and backtest. Entry and exit each have one condition and one order. |
+| V1-LEX03 | Section order is strategy, optional market, optional timeframe, lets, entry, exit, optional risk, and backtest. Entry and exit each have one condition and one order. |
 | V1-LEX04 | Keywords, builtins, and binding names are lowercase. Function names are uppercase. `tradelang` is available as a binding name, and `dsl` is reserved. |
 | V1-LEX05 | Numbers use the digit-led decimal and exponent grammar below. Market, currency, and timeframe tokens follow the packaged grammar. |
+
+The primary dataset supplies the effective market and candle duration. If present, `market` must match its symbol and `timeframe` must match its candle duration in seconds. The strategy's capital currency must match the dataset's quote currency. In the typed strategy, `symbol` and `timeframe_seconds` are null for omitted declarations, including after dataset-aware validation.
 
 ## Expression grammar and precedence
 

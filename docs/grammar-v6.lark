@@ -1,0 +1,22 @@
+// Overlay on grammars 1–5. Quantity-changing orders for one long position.
+%override version: _TRADELANG_VERSION_PREFIX _K_SIX
+%override start: version header market? timeframe? feed_decl? param_decl* let_decl* entry exit scale? risk? backtest
+%override exit: _K_EXIT ":" (_K_WHEN expr sell_action | exit_rule+)
+%override exit_rule: _K_RULE NAME _K_WHEN expr sell_action -> market_exit
+                   | _K_RULE NAME _K_AFTER expr _K_BARS sell_action -> timed_exit
+sell_action: _K_SELL _K_ALL -> sell_all
+           | _K_SELL expr _K_OF _K_POSITION -> sell_fraction
+           | _K_SELL expr _K_UNITS -> sell_units
+scale: _K_SCALE ":" _K_WHEN expr _K_ADD _K_USING scale_sizing
+scale_sizing: expr _K_OF _K_CASH -> cash_fraction
+            | expr CURRENCY -> fixed_money
+%override risk: _K_RISK ":" stop? trail? target? quantity_step? max_positions?
+quantity_step: _K_QUANTITY _K_STEP NUMBER _K_UNITS
+_K_SIX.2: /\b6\b/
+_K_POSITION.2: /\bposition\b/
+_K_UNITS.2: /\bunits\b/
+_K_SCALE.2: /\bscale\b/
+_K_ADD.2: /\badd\b/
+_K_CASH.2: /\bcash\b/
+_K_QUANTITY.2: /\bquantity\b/
+_K_STEP.2: /\bstep\b/

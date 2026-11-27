@@ -20,6 +20,7 @@ from tradelang.compiler import compile_source
 from tradelang.data import load_dataset, prepare_window
 from tradelang.engine import execute_prepared
 from tradelang.evaluator import Evaluator
+from tradelang.report import publish
 
 ROOT = Path(__file__).resolve().parents[1]
 START = datetime(2022, 1, 1, tzinfo=UTC)
@@ -61,6 +62,7 @@ WORKLOADS = (
     "wide",
     "profile-sparse",
     "profile-dense",
+    "event-heavy",
 )
 
 
@@ -97,8 +99,9 @@ def strategy_source(rows, minutes, expressions):
     )
 
 
-def benchmark(workload, rows, repeats, period):
+def benchmark(workload, rows, repeats, period, *, publish_bundle=False):
     paired = workload.startswith("profile-")
+    event_heavy = workload == "event-heavy"
     minutes = 2 if paired else 1
     if rows * minutes % 1440 or rows * minutes > 1_000_000:
         raise ValueError(
@@ -112,8 +115,16 @@ def benchmark(workload, rows, repeats, period):
         "wide": [f"WMA({period})", f"CCI({period})", f"ALMA(close, {period}, 0.32, 6)"],
         "profile-sparse": PROFILE,
         "profile-dense": PROFILE,
+        "event-heavy": [],
     }[workload]
     source = strategy_source(rows, minutes, expressions)
+    if event_heavy:
+        condition = " and ".join(
+            ("close > 1 price", "high >= close", "low <= close", "volume > 0 volume")
+        )
+        source = source.replace("close > 1000 price", condition).replace(
+            "close >= 112 price", "close > 100.5 price"
+        )
     metadata = json.loads((ROOT / "docs/fixtures/metadata.json").read_text())
     times = defaultdict(list)
 
@@ -127,7 +138,7 @@ def benchmark(workload, rows, repeats, period):
     with tempfile.TemporaryDirectory() as directory:
         primary_file = Path(directory) / "primary.parquet"
         child_file = Path(directory) / "child.parquet"
-        candles(primary_file, rows, minutes, 17)
+        candles(primary_file, rows, minutes, 3 if event_heavy else 17)
         if paired:
             candles(
                 child_file, rows * minutes, 1, 127 if workload == "profile-dense" else 4
@@ -170,8 +181,22 @@ def benchmark(workload, rows, repeats, period):
                 lambda: execute_prepared(strategy, primary, prepared),
                 iteration,
             )
-            assert result["summary"]["final_equity"] == 1000
+            events = len(result["events"])
+            trades = len(result["trades"])
+            assert (
+                trades > 0 if event_heavy else result["summary"]["final_equity"] == 1000
+            )
             del result
+            estimate = getattr(prepared, "workload", None)
+            artifact_bytes = None
+            if publish_bundle:
+                output = Path(directory) / f"bundle-{iteration}"
+                measure(
+                    "publish",
+                    lambda: publish(strategy, primary, output, profile=child),
+                    iteration,
+                )
+                artifact_bytes = sum(path.stat().st_size for path in output.iterdir())
             primary = child = prepared = None
     summaries = {
         name: {
@@ -190,6 +215,12 @@ def benchmark(workload, rows, repeats, period):
         profile_work_units=profile_work,
         period=period,
         calls=calls,
+        events=events,
+        trades=trades,
+        workload_estimate=estimate,
+        rows_per_second=rows / summaries["execute"]["median_seconds"],
+        publication_included=publish_bundle,
+        artifact_bytes=artifact_bytes,
         repeats=repeats,
         peak_mib=rss,
         stages=summaries,
@@ -205,7 +236,20 @@ if __name__ == "__main__":
     parser.add_argument("--rows", type=int, required=True)
     parser.add_argument("--period", type=int, default=20)
     parser.add_argument("--repeats", type=int, default=5)
+    parser.add_argument(
+        "--publish", action="store_true", help="Measure full bundle publication"
+    )
     args = parser.parse_args()
     if not 0 < args.rows or not 0 < args.repeats or not 1 <= args.period <= 10_000:
         parser.error("Use positive rows and repeats and a period from 1 through 10,000")
-    print(json.dumps(benchmark(args.workload, args.rows, args.repeats, args.period)))
+    print(
+        json.dumps(
+            benchmark(
+                args.workload,
+                args.rows,
+                args.repeats,
+                args.period,
+                publish_bundle=args.publish,
+            )
+        )
+    )

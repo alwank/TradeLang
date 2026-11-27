@@ -29,20 +29,51 @@ class ProfileWindow:
     highest: np.ndarray
     eligible: np.ndarray
     work_units: int
+    coverage: np.ndarray
+
+    def unavailable_reason(self, index, period):
+        start = index - period + 1
+        if start < 0:
+            return "structural_warmup"
+        if not self.coverage[start : index + 1].all():
+            return "profile_incomplete_coverage"
+        bins = self.bins[self.offsets[start] : self.offsets[index + 1]]
+        if not len(bins):
+            return "profile_empty_distribution"
+        if not self.eligible[index]:
+            return "profile_invalid_bin_range"
+        return "invalid_arithmetic"
 
 
 def prepare_profiles(
-    primary_times, width_us, child_times, child_width_us, prices, volumes, keys
+    primary_times,
+    width_us,
+    child_times,
+    child_width_us,
+    prices,
+    volumes,
+    keys,
+    *,
+    primary_closes=None,
+    child_closes=None,
 ):
     """Map completed child intervals and bound the work for each unique profile."""
     initial, count_rows = primary_times[0], len(primary_times)
-    first, end = child_times.searchsorted([initial, primary_times[-1] + width_us])
+    last_close = (
+        primary_times[-1] + width_us if primary_closes is None else primary_closes[-1]
+    )
+    first, end = child_times.searchsorted([initial, last_close])
     times = child_times[first:end]
     groups = primary_times.searchsorted(times, side="right") - 1
-    mapped = times + child_width_us <= primary_times[groups] + width_us
-    coverage = (
-        np.bincount(groups[mapped], minlength=count_rows) == width_us // child_width_us
-    )
+    if primary_closes is None:
+        mapped = times + child_width_us <= primary_times[groups] + width_us
+        expected = width_us // child_width_us
+    else:
+        mapped = child_closes[first:end] <= primary_closes[groups]
+        expected = (
+            primary_closes - primary_times + child_width_us - 1
+        ) // child_width_us
+    coverage = np.bincount(groups[mapped], minlength=count_rows) == expected
     positive = mapped & (volumes[first:end] > 0)
     owners = groups[positive]
     prices = prices[first:end][positive]
@@ -74,10 +105,11 @@ def prepare_profiles(
         for array in (bins, lowest, highest, eligible):
             array.flags.writeable = False
         prepared[key] = ProfileWindow(
-            offsets, weights, bins, lowest, highest, eligible, work_units
+            offsets, weights, bins, lowest, highest, eligible, work_units, coverage
         )
     offsets.flags.writeable = False
     weights.flags.writeable = False
+    coverage.flags.writeable = False
     return prepared
 
 

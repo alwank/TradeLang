@@ -7,6 +7,7 @@ import re
 import struct
 from array import array
 from dataclasses import dataclass
+from dataclasses import field as dataclass_field
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Literal
@@ -14,11 +15,21 @@ from typing import Literal
 import numpy as np
 import pyarrow as pa
 import pyarrow.parquet as pq
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    ValidationError,
+    model_serializer,
+    model_validator,
+)
 
 from .compiler import seconds
+from .feeds import FeedAlignment, prepare_feeds
 from .functions.profile import ProfileKey, ProfileWindow, prepare_profiles, profile_key
 from .model import Problem
+from .session_clock import SessionGrid, SessionRows, SessionSchedule, StockSplit
+from .workload import Workload, admit_workload, estimate_workload
 
 COLUMNS = ("timestamp", "open", "high", "low", "close", "volume")
 EPOCH = datetime(1970, 1, 1, tzinfo=UTC)
@@ -36,6 +47,15 @@ def micros(dt):
 
 def digest(raw):
     return hashlib.sha256(raw).hexdigest()
+
+
+def unique_json_members(pairs: list[tuple[str, object]]) -> dict[str, object]:
+    obj: dict[str, object] = {}
+    for name, value in pairs:
+        if name in obj:
+            raise ValueError(f"Duplicate JSON member {name!r}")
+        obj[name] = value
+    return obj
 
 
 def canonical(obj):
@@ -74,15 +94,45 @@ def hash_json(obj):
 
 class Metadata(BaseModel):
     model_config = ConfigDict(extra="forbid", strict=True, frozen=True)
-    schema_version: Literal[1] = 1
+    schema_version: Literal[1, 2] = 1
     symbol: str = Field(pattern=r"^[A-Z0-9][A-Z0-9_.-]{0,31}$")
     quote_currency: str = Field(pattern=r"^[A-Z][A-Z0-9]{1,11}$")
     timeframe: str = Field(pattern=r"^[1-9][0-9]{0,5}[mhd]$")
-    calendar: Literal["24x7"]
+    calendar: Literal["24x7", "session"]
     timestamp_convention: Literal["bar_open"]
     volume_unit: Literal["base_quantity"]
-    price_basis: Literal["raw_spot"]
+    price_basis: Literal["raw_spot", "raw_equity", "split_reference"]
     gap_policy: Literal["allow", "reject"] = "reject"
+    session_schedule: SessionSchedule | None = None
+    splits: list[StockSplit] | None = Field(default=None, max_length=10_000)
+
+    @model_validator(mode="after")
+    def calendar_contract(self):
+        if self.calendar == "24x7":
+            if (
+                self.schema_version != 1
+                or self.price_basis != "raw_spot"
+                or self.session_schedule is not None
+                or self.splits is not None
+            ):
+                raise ValueError("Continuous candles use schema 1 and raw spot prices")
+        elif (
+            self.schema_version != 2
+            or self.session_schedule is None
+            or self.price_basis == "raw_spot"
+        ):
+            raise ValueError(
+                "Session candles require schema 2, a session schedule, and an equity price basis"
+            )
+        if (self.price_basis == "split_reference") != (self.splits is not None):
+            raise ValueError(
+                "Supply an explicit split list only for the split_reference price basis"
+            )
+        return self
+
+    @model_serializer(mode="wrap")
+    def serialize(self, handler):
+        return {key: value for key, value in handler(self).items() if value is not None}
 
 
 @dataclass(frozen=True)
@@ -94,9 +144,39 @@ class Dataset:
     source_hash: str
     missing: int
     path: Path
+    grid: SessionGrid | None = None
+    session_rows: SessionRows | None = None
+    split_factors: np.ndarray | None = None
+    raw_values: np.ndarray | None = None
+
+    @property
+    def timeframe_seconds(self) -> int:
+        return seconds(self.meta.timeframe)
 
     def column(self, name):
         return self.values[:, COLUMNS.index(name) - 1]
+
+    def close_at(self, row):
+        if self.session_rows is not None:
+            return self.session_rows.close[row]
+        return self.times[row] + self.timeframe_seconds * 1_000_000
+
+    def missing_between(self, first: int, last: int) -> int:
+        """Count missing grid opens between two observed row indices."""
+        if self.session_rows is not None:
+            return int(
+                self.session_rows.ordinal[last] - self.session_rows.ordinal[first]
+            ) - (last - first)
+        elapsed = int(self.times[last]) - int(self.times[first])
+        return elapsed // (self.timeframe_seconds * 1000000) - (last - first)
+
+    def largest_gap_seconds(self) -> int:
+        if not self.missing:
+            return 0
+        elapsed = np.diff(self.times)
+        if self.session_rows is not None:
+            elapsed = elapsed[np.diff(self.session_rows.ordinal) > 1]
+        return int(elapsed.max() // 1_000_000)
 
 
 @dataclass(frozen=True)
@@ -105,6 +185,9 @@ class PreparedWindow:
     first_signal: int
     last: int
     profiles: dict[ProfileKey, ProfileWindow]
+    timeframe_seconds: int
+    workload: Workload
+    feeds: dict[str, FeedAlignment] = dataclass_field(default_factory=dict)
 
 
 def timestamp(text):
@@ -196,6 +279,14 @@ def load_dataset(path, metadata, *, as_of_utc: datetime | None = None):
         times, values = reader(path)
         if not len(times):
             raise ValueError("Empty dataset")
+        grid = (
+            SessionGrid(meta.session_schedule, delta, timestamp)
+            if meta.session_schedule
+            else None
+        )
+        session_rows, bad_clock = (
+            grid.map_rows(times) if grid else (None, times % delta != 0)
+        )
         o, h, low, c, v = values.T
         bad = (
             (~np.isfinite(values).all(axis=1))
@@ -203,7 +294,7 @@ def load_dataset(path, metadata, *, as_of_utc: datetime | None = None):
             | (low > np.minimum(o, c))
             | (h < np.maximum(o, c))
             | (v < 0)
-            | (times % delta != 0)
+            | bad_clock
         )
         if bad.any():
             raise Problem(
@@ -211,30 +302,58 @@ def load_dataset(path, metadata, *, as_of_utc: datetime | None = None):
                 "Invalid OHLCV or timestamp alignment",
                 row=int(np.argmax(bad)) + 1,
             )
-        diff = np.diff(times)
-        bad = (diff <= 0) if meta.gap_policy == "allow" else (diff != delta)
+        diff = (
+            np.diff(session_rows.ordinal)
+            if session_rows is not None
+            else np.diff(times) // delta
+        )
+        bad = (diff <= 0) if meta.gap_policy == "allow" else (diff != 1)
         if bad.any():
             raise Problem(
                 "E401_DATA",
                 "Unsorted, duplicate or missing candle",
                 row=int(np.argmax(bad)) + 2,
             )
-        if int(times[-1]) + delta > micros(as_of_utc or datetime.now(UTC)):
+        last_close = (
+            session_rows.close[-1]
+            if session_rows is not None
+            else int(times[-1]) + delta
+        )
+        if last_close > micros(as_of_utc or datetime.now(UTC)):
             raise ValueError("Incomplete candle")
+        values[values == 0] = 0
+        raw_values = None
+        split_factors = None
+        if meta.splits is not None:
+            assert grid is not None and session_rows is not None
+            split_factors = grid.factors(meta.splits, session_rows)
+            raw_values = values
+            with np.errstate(all="ignore"):
+                values = values.copy()
+                values[:, :4] *= split_factors[:, None]
+                values[:, 4] /= split_factors
+            if not (
+                np.isfinite(values).all()
+                and np.all(values[:, :4] > 0)
+                and np.all((values[:, 4] > 0) | (raw_values[:, 4] == 0))
+            ):
+                raise ValueError("Split normalization exceeds the numeric range")
+            raw_values.flags.writeable = False
     except (ValueError, ValidationError, UnicodeError, csv.Error, OverflowError) as exc:
         if isinstance(exc, Problem):
             raise
         raise Problem("E401_DATA", str(exc)) from exc
-    values[values == 0] = 0
     sem = meta.model_dump(exclude={"gap_policy", "schema_version"})
     sem["timeframe"] = delta // 1000000
     header = canonical(sem).encode()
     hasher = hashlib.sha256(
-        b"tradelang.dataset.v1\n" + struct.pack("<I", len(header)) + header
+        f"tradelang.dataset.v{meta.schema_version}\n".encode()
+        + struct.pack("<I", len(header))
+        + header
     )
     packed = np.empty((len(times), 6), dtype="<f8")
     packed[:, 0].view("<i8")[:] = times
-    packed[:, 1:] = values
+    packed[:, 1:] = values if raw_values is None else raw_values
     hasher.update(memoryview(packed))
     times.flags.writeable = False
     values.flags.writeable = False
@@ -253,45 +372,121 @@ def load_dataset(path, metadata, *, as_of_utc: datetime | None = None):
         values,
         hasher.hexdigest(),
         raw,
-        int(np.sum(diff // delta - 1)),
+        int(np.sum(diff - 1)),
         path,
+        grid=grid,
+        session_rows=session_rows,
+        split_factors=split_factors,
+        raw_values=raw_values,
     )
 
 
-def validate_indicator_data(s):
-    if (s.seconds >= 86400 or 86400 % s.seconds) and next(s.calls("VWAP"), None):
+def validate_indicator_data(s, timeframe_seconds=None):
+    duration = s.seconds if timeframe_seconds is None else timeframe_seconds
+    session_based = s.config.calendar == "session"
+    if (
+        duration is not None
+        and (duration >= 86400 or (not session_based and 86400 % duration))
+        and any(call.type.clock is None for call in s.calls("VWAP"))
+    ):
         raise Problem(
-            "E402_WINDOW", "VWAP requires an intraday timeframe that divides a UTC day"
+            "E402_WINDOW",
+            "VWAP requires intraday session candles"
+            if session_based
+            else "VWAP requires an intraday timeframe that divides a UTC day",
         )
 
 
 def window(s, d):
-    if (s.symbol, s.seconds, s.config.currency) != (
-        d.meta.symbol,
-        seconds(d.meta.timeframe),
-        d.meta.quote_currency,
+    duration = d.timeframe_seconds
+    for field, expected, actual in (
+        ("market", s.symbol, d.meta.symbol),
+        ("timeframe", s.seconds, duration),
+        ("quote currency", s.config.currency, d.meta.quote_currency),
+        ("calendar", s.config.calendar, d.meta.calendar),
     ):
-        raise Problem("E402_WINDOW", "Strategy and dataset metadata differ")
-    validate_indicator_data(s)
-    delta = s.seconds * 1000000
-    a = micros(datetime.fromisoformat(s.config.from_date).replace(tzinfo=UTC))
-    b = micros(
-        datetime.fromisoformat(s.config.to_date).replace(tzinfo=UTC) + timedelta(days=1)
-    )
-    start = -(-a // delta) * delta
-    last = b // delta * delta - delta
+        if expected is not None and expected != actual:
+            if field == "timeframe":
+                expected, actual = timeframe_label(expected), d.meta.timeframe
+            raise Problem(
+                "E402_WINDOW",
+                f"Strategy requires {field} {expected}, dataset has {actual}",
+            )
+    validate_indicator_data(s, duration)
+    delta = duration * 1000000
+    if d.grid is not None:
+        try:
+            bounds = d.grid.window(s.config.from_date, s.config.to_date)
+        except ValueError as exc:
+            raise Problem("E402_WINDOW", str(exc)) from exc
+    else:
+        a = micros(datetime.fromisoformat(s.config.from_date).replace(tzinfo=UTC))
+        b = micros(
+            datetime.fromisoformat(s.config.to_date).replace(tzinfo=UTC)
+            + timedelta(days=1)
+        )
+        start = -(-a // delta) * delta
+        last = b // delta * delta - delta
+        bounds = (start, last) if start <= last else None
+    if bounds is None:
+        raise Problem(
+            "E402_WINDOW",
+            "The requested dates contain no complete candles at this timeframe",
+            suggestion="Use a wider date range or select a shorter timeframe",
+            details={
+                "from_date": s.config.from_date,
+                "to_date": s.config.to_date,
+                "timeframe_seconds": duration,
+            },
+        )
+    start, last = bounds
     i, k = map(int, d.times.searchsorted([start, last]))
     if k >= len(d.times) or i > k or d.times[i] != start or d.times[k] != last:
-        raise Problem("E402_WINDOW", "Missing complete edge coverage")
+        first_required, last_required = instant(start), instant(last)
+        first_observed, last_observed = instant(d.times[0]), instant(d.times[-1])
+        raise Problem(
+            "E402_WINDOW",
+            f"The window requires complete candles opening at {first_required} and "
+            f"{last_required}. Dataset opens span {first_observed} through {last_observed}.",
+            suggestion="Include both endpoint candles or choose dates covered by the dataset",
+            details={
+                "required_first_open": first_required,
+                "required_last_open": last_required,
+                "observed_first_open": first_observed,
+                "observed_last_open": last_observed,
+            },
+        )
     j = max(i, s.warmup)
     if j >= k:
+        eligible_close = instant(d.close_at(j)) if j == k else None
+        history_needed = max(0, s.warmup - k + 1)
+        suggestion = (
+            "Extend the date window to include an eligible close and a later open"
+        )
+        if i < k and history_needed:
+            unit = "candle" if history_needed == 1 else "candles"
+            suggestion += (
+                f", or supply {history_needed} more observed {unit} before the window"
+            )
         raise Problem(
-            "E_NO_EXECUTION_WINDOW", "Insufficient completed bars after warmup"
+            "E_NO_EXECUTION_WINDOW",
+            "The first eligible close has no later in-window open"
+            if eligible_close
+            else "Insufficient completed candles for structural warmup in this window",
+            suggestion=suggestion,
+            details={
+                "warmup_index": s.warmup,
+                "observed_pre_window_rows": i,
+                "observed_window_rows": k - i + 1,
+                "first_eligible_close": eligible_close,
+                "next_grid_open": eligible_close if d.grid is None else None,
+                "last_observed_window_open": instant(d.times[k]),
+            },
         )
     return i, j, k
 
 
-def prepare_window(strategy, primary, profile=None):
+def prepare_window(strategy, primary, profile=None, *, profile_end=None, feeds=None):
     keys = dict.fromkeys(
         profile_key([argument.value for argument in call.args])
         for call in strategy.calls("VPROFILE")
@@ -303,6 +498,7 @@ def prepare_window(strategy, primary, profile=None):
     if profile is not None and not keys:
         raise Problem("E402_WINDOW", "A profile dataset requires a VPROFILE call")
     first, signal, last = window(strategy, primary)
+    duration = primary.timeframe_seconds
     profiles = {}
     if profile is not None:
         compatibility_fields = (
@@ -312,11 +508,16 @@ def prepare_window(strategy, primary, profile=None):
             "calendar",
             "volume_unit",
             "timestamp_convention",
+            "session_schedule",
+            "splits",
         )
-        profile_seconds = seconds(profile.meta.timeframe)
+        profile_seconds = profile.timeframe_seconds
         if (
-            profile_seconds >= strategy.seconds
-            or strategy.seconds % profile_seconds
+            profile_seconds >= duration
+            or (
+                duration % profile_seconds
+                and not (primary.grid is not None and duration == 86400)
+            )
             or any(
                 getattr(primary.meta, field) != getattr(profile.meta, field)
                 for field in compatibility_fields
@@ -326,13 +527,30 @@ def prepare_window(strategy, primary, profile=None):
                 "E402_WINDOW",
                 "Profile candles must match the primary market and divide its timeframe",
             )
+        end = last if profile_end is None else min(last, profile_end)
         profiles = prepare_profiles(
-            primary.times[: last + 1],
-            strategy.seconds * 1_000_000,
+            primary.times[: end + 1],
+            duration * 1_000_000,
             profile.times,
             profile_seconds * 1_000_000,
             profile.column("close"),
             profile.column("volume"),
             keys,
+            primary_closes=primary.session_rows.close[: end + 1]
+            if primary.session_rows is not None
+            else None,
+            child_closes=profile.session_rows.close
+            if profile.session_rows is not None
+            else None,
         )
-    return PreparedWindow(first, signal, last, profiles)
+    alignments = prepare_feeds(
+        strategy,
+        primary,
+        feeds,
+        last if profile_end is None else min(last, profile_end),
+    )
+    workload = estimate_workload(
+        strategy, primary, profile, first, last, profiles, alignments
+    )
+    admit_workload(workload)
+    return PreparedWindow(first, signal, last, profiles, duration, workload, alignments)

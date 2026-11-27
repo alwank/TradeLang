@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "assets": {
+    "alpha": {
+      "strategy": "alpha.trade",
+      "data": "alpha.csv",
+      "metadata": "alpha-metadata.json"
+    },
+    "beta": {
+      "strategy": "beta.trade",
+      "data": "beta.csv",
+      "metadata": "beta-metadata.json"
+    }
+  }
+}

@@ -26,6 +26,9 @@ class EquityCurve(Sequence):
         self.dataset = dataset
         self.first = first
         self.dt = interval
+        self.closes = (
+            dataset.session_rows.close if dataset.session_rows is not None else None
+        )
         self.data = np.empty((last - first + 2, len(FIELDS)))
         self.exposure = np.empty(last - first + 2, dtype=bool)
         self.size = 0
@@ -52,7 +55,9 @@ class EquityCurve(Sequence):
         if not 0 <= index < self.size:
             raise IndexError(index)
         bar = self.first + max(0, index - 1)
-        ts = self.dataset.times[bar] + (self.dt if index else 0)
+        ts = self.dataset.times[bar]
+        if index:
+            ts = self.closes[bar] if self.closes is not None else ts + self.dt
         return dict(
             index=index,
             timestamp=instant(ts),

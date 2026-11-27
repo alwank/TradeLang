@@ -1,0 +1,20 @@
+// Overlay on grammars 1–7. One borrowed-asset short with explicit margin terms.
+%override version: _TRADELANG_VERSION_PREFIX _K_EIGHT
+%override entry: _K_ENTRY ":" _K_WHEN expr (_K_BUY entry_sizing | short_entry)
+short_entry: _K_SHORT _K_USING sizing
+%override sell_action: _K_SELL _K_ALL -> sell_all
+                    | _K_SELL expr _K_OF _K_POSITION -> sell_fraction
+                    | _K_SELL expr _K_UNITS -> sell_units
+                    | _K_COVER _K_ALL -> cover_all
+                    | _K_COVER expr _K_OF _K_POSITION -> cover_fraction
+                    | _K_COVER expr _K_UNITS -> cover_units
+%override backtest: _K_BACKTEST ":" window capital fee slippage execution calendar short_margin?
+short_margin: _K_INITIAL _K_MARGIN NUMBER "%" _K_MAINTENANCE _K_MARGIN NUMBER "%" _K_BORROW NUMBER _K_BPS _K_PER _K_DAY
+_K_EIGHT.2: /\b8\b/
+_K_SHORT.2: /\bshort\b/
+_K_COVER.2: /\bcover\b/
+_K_INITIAL.2: /\binitial\b/
+_K_MARGIN.2: /\bmargin\b/
+_K_MAINTENANCE.2: /\bmaintenance\b/
+_K_BORROW.2: /\bborrow\b/
+_K_DAY.2: /\bday\b/

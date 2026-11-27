@@ -19,16 +19,21 @@ The backtest buys at **110 USDT**, sells at **120 USDT**, and ends with **1,090.
 
 Follow the [first backtest guide](https://tradelang.readthedocs.io/en/latest/quickstart/) to validate the rules, see how the orders fill, and find the next exercise.
 
+## Browser workspace
+
+Import candles, edit and validate strategy revisions, and inspect or compare backtests in the local web app. [Start the browser workspace](docs/browser.md)
+
 ## Capabilities
 
 - **Express and check rules.** Use built-in indicators such as RSI, EMA, and ATR, plus crossovers, named conditions, and prior-candle lookbacks. The compiler checks units for prices, ratios, and other values. [Writing strategies](docs/writing-strategies.md)
 - **Set position size, costs, and protection.** Size entries as a percentage of equity or a fixed cash budget. Model per-side fees and slippage, and set stop-loss and take-profit triggers. [Execution semantics](docs/execution-semantics.md)
-- **Run on your own candles.** Backtest one long spot position at a time on 24/7 UTC candles supplied as CSV or Parquet. [Candle data](docs/candle-data.md)
+- **Run on your own candles.** Supply CSV or Parquet candles on a continuous UTC grid or a recorded exchange schedule. Backtest one position at a time, including borrowed-asset shorts with explicit margin and borrow terms. [Candle data](docs/candle-data.md) · [Short strategies](docs/language-v8.md)
+- **Share cash across markets.** Bind independently timed strategies to one portfolio and run them from the CLI. [Portfolio strategies](docs/language-v9.md)
 - **Inspect and replay results.** Read the equity curve in `equity.csv` or `equity.parquet`, the buy-and-hold benchmark in `summary.json`, and the order trace in `events.jsonl`. The run bundle preserves the strategy, input data, metadata, and runtime details for replay. [Results and artifacts](docs/results.md)
 
 ## Compare tools
 
-- **TradeLang** fits when you want to write, check, and trace a supported spot strategy locally. The strategy-writing lesson changes one line to isolate the effect of position sizing. The CLI saves the inputs and results for both runs.
+- **TradeLang** fits when you want to write, check, and trace a candle-based strategy locally. The strategy-writing lesson changes one line to isolate the effect of position sizing. The CLI saves the inputs and results for both runs.
 - **Backtesting.py** fits when you want to write custom Python strategy logic. Its `Strategy` class uses `init()` to prepare indicators and `next()` to make decisions bar by bar. [Backtesting.py user guide](https://kernc.github.io/backtesting.py/doc/examples/Quick%20Start%20User%20Guide.html)
 - **VectorBT** fits when you want to work with signal arrays in Python and sweep many parameter combinations across assets. [VectorBT usage guide](https://vectorbt.dev/getting-started/usage/)
 

@@ -1,0 +1,22 @@
+tradelang 2
+strategy "MACD reversal"
+market TESTUSDT
+timeframe 1d
+param fast: count = 2 range [1 count, 5 count]
+param slow: count = 3
+param signal_period: count = 2
+let macd = MACD(fast, slow, signal_period)
+let uptrend = macd.line > macd.signal
+entry:
+  when uptrend and not uptrend[1]
+  buy using 10% of equity
+exit:
+  when not uptrend and uptrend[1]
+  sell all
+backtest:
+  from 2024-01-01 to 2024-01-09
+  capital 1000 USDT
+  fee 0 bps per side
+  slippage 0 bps per side
+  execute at next bar open
+  calendar 24x7

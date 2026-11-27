@@ -19,6 +19,7 @@ from tradelang.api import create_app
 from tradelang.application import inspect_source
 from tradelang.compiler import compile_source
 from tradelang.data import digest, hash_json, load_dataset, prepare_window
+from tradelang.engine import execute
 from tradelang.evaluator import Evaluator
 from tradelang.functions import profile
 from tradelang.functions.contracts import KernelContext
@@ -254,8 +255,33 @@ def test_inspector_cli_and_http_transport(paired, tmp_path):
         assert response.json()["error"]["code"] == "E_DATASET_NOT_FOUND"
 
 
+def test_inferred_clock_drives_vwap_and_volume_profile(paired, tmp_path):
+    strategy, primary, child = paired
+    source = strategy.source.decode().replace("close > point", "VWAP() > point")
+    pinned = compile_source(source)
+    inferred = compile_source(source.replace("market TESTUSDT\ntimeframe 8h\n", ""))
+    assert inferred.seconds is None and inferred.symbol is None
+
+    result = execute(inferred, primary, profile=child)
+    reference = execute(pinned, primary, profile=child)
+    assert result["summary"] == reference["summary"]
+    assert result["trades"] == reference["trades"]
+    assert list(result["equity"]) == list(reference["equity"])
+    assert result["summary"]["timeframe"] == "8h"
+
+    with pytest.raises(Problem, match="divide its timeframe"):
+        execute(inferred, primary, profile=primary)
+    daily = candle_file(tmp_path / "daily.csv", [0], [102], [9], timeframe="1d")
+    with pytest.raises(Problem, match="VWAP requires an intraday timeframe"):
+        execute(inferred, daily, profile=child)
+
+
 def test_published_profile_replays_and_tracks_child_changes(paired, tmp_path):
     strategy, primary, child = paired
+    estimate = prepare_window(strategy, primary, child).workload
+    assert estimate["profile_bytes"] > 0
+    assert estimate["profile_work_units"] > 0
+    assert estimate["input_bytes"] == 48 * (len(primary.times) + len(child.times))
     target = tmp_path / "bundle"
     run = publish(strategy, primary, target, profile=child)
     manifest = json.loads((target / "manifest.json").read_text())

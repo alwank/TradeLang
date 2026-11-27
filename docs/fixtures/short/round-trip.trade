@@ -1,0 +1,22 @@
+tradelang 8
+strategy "Borrowed-asset short"
+market TEST
+timeframe 1d
+entry:
+  when close == 100 price
+  short using 255 USD
+exit:
+  when close == 95 price
+  cover all
+risk:
+  stop loss 20%
+backtest:
+  from 2024-01-01 to 2024-01-03
+  capital 1000 USD
+  fee 100 bps per side
+  slippage 0 bps per side
+  execute at next bar open
+  calendar 24x7
+  initial margin 50%
+  maintenance margin 25%
+  borrow 100 bps per day

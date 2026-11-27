@@ -26,6 +26,29 @@ def cli(*args):
     return proc.returncode, json.loads(proc.stdout)
 
 
+@pytest.mark.parametrize("command", ["validate", "explain"])
+def test_text_cli_prints_successful_warnings_and_error_suggestions(tmp_path, command):
+    original = (FIX / "core.trade").read_text()
+    source = tmp_path / "warnings.trade"
+    source.write_text(original.replace("entry:", "let spare = SMA(2)\nentry:"))
+    text = subprocess.run(
+        ["tradelang", command, str(source)], capture_output=True, text=True
+    )
+    assert text.returncode == 0
+    assert "W_UNUSED_LET at " in text.stderr
+    assert "W_UNUSED_LET" not in text.stdout
+    code, wire = cli(command, source)
+    assert code == 0 and wire["diagnostics"][0]["code"] == "W_UNUSED_LET"
+
+    source.write_text(original.replace("when true", "when ema(2) > close"))
+    text = subprocess.run(
+        ["tradelang", command, str(source)], capture_output=True, text=True
+    )
+    assert text.returncode == 2
+    assert not text.stdout
+    assert "Use EMA(...)" in text.stderr
+
+
 def parquet(csv_path, path):
     with csv_path.open() as f:
         rows = list(csv.DictReader(f))
@@ -34,6 +57,49 @@ def parquet(csv_path, path):
         for k in ["open", "high", "low", "close", "volume"]:
             row[k] = float(row[k])
     pq.write_table(pa.Table.from_pylist(rows), path)
+
+
+def test_inferred_dataset_artifacts_and_identity(tmp_path):
+    explicit = (FIX / "core.trade").read_text()
+    inferred = tmp_path / "inferred.trade"
+    inferred.write_text(explicit.replace("market TESTUSDT\ntimeframe 1d\n", ""))
+    alternative = tmp_path / "alternative.json"
+    alternative.write_text(json.dumps({**META, "symbol": "OTHERUSDT"}))
+
+    results = []
+    for name, source, metadata, symbol in (
+        ("pinned", FIX / "core.trade", FIX / "metadata.json", "TESTUSDT"),
+        ("inferred", inferred, FIX / "metadata.json", "TESTUSDT"),
+        ("alternative", inferred, alternative, "OTHERUSDT"),
+    ):
+        out = tmp_path / name
+        code, response = cli(
+            "backtest",
+            source,
+            "--data",
+            FIX / "core.csv",
+            "--metadata",
+            metadata,
+            "--out",
+            out,
+        )
+        assert code == 0, response
+        assert (out / "source.trade").read_bytes() == source.read_bytes()
+        spec = json.loads((out / "strategy-spec.json").read_text())
+        assert spec["symbol"] == (symbol if name == "pinned" else None)
+        assert spec["timeframe_seconds"] == (86400 if name == "pinned" else None)
+        assert response["result"]["summary"]["symbol"] == symbol
+        assert response["result"]["summary"]["timeframe"] == "1d"
+        dataset = json.loads((out / "dataset-summary.json").read_text())
+        assert dataset["last_close_at"] == "2024-01-04T00:00:00Z"
+        results.append(json.loads((out / "manifest.json").read_text()))
+
+    pinned, first, second = results
+    assert pinned["result_digest"] == first["result_digest"]
+    assert pinned["spec_hash"] != first["spec_hash"]
+    assert first["source_hash"] == second["source_hash"]
+    assert first["spec_hash"] == second["spec_hash"]
+    assert first["run_fingerprint"] != second["run_fingerprint"]
 
 
 def test_cli_roundtrip(tmp_path):
@@ -108,10 +174,20 @@ def test_backtest_version_directives_preserve_results_and_source(tmp_path):
 
 
 def test_schemas():
-    schema = json.loads(Path("docs/schemas/strategy.schema.json").read_text())
+    schemas = {
+        1: json.loads(Path("docs/schemas/strategy.schema.json").read_text()),
+        2: json.loads(Path("docs/schemas/strategy-v2.schema.json").read_text()),
+        3: json.loads(Path("docs/schemas/strategy-v3.schema.json").read_text()),
+        4: json.loads(Path("docs/schemas/strategy-v4.schema.json").read_text()),
+        5: json.loads(Path("docs/schemas/strategy-v5.schema.json").read_text()),
+        6: json.loads(Path("docs/schemas/strategy-v6.schema.json").read_text()),
+        7: json.loads(Path("docs/schemas/strategy-v7.schema.json").read_text()),
+        8: json.loads(Path("docs/schemas/strategy-v8.schema.json").read_text()),
+        9: json.loads(Path("docs/schemas/strategy-v9.schema.json").read_text()),
+    }
     for path in Path("docs").rglob("*.trade"):
         s = compile_source(path.read_bytes())
-        jsonschema.validate(s.public(), schema)
+        jsonschema.validate(s.public(), schemas[s.version])
         decorated = compile_source("# comment\r\n" + s.source.decode())
         assert identity(s)["spec_hash"] == identity(decorated)["spec_hash"]
         assert identity(s)["source_hash"] != identity(decorated)["source_hash"]
@@ -461,8 +537,15 @@ def test_version_directives_preserve_typed_strategy_and_binding_spans():
     assert len(source_hashes) == 3
 
 
-@pytest.mark.parametrize("keyword", ["tradelang", "dsl"])
-@pytest.mark.parametrize("version", ["", "2", "01", "1.0"])
+@pytest.mark.parametrize(
+    "keyword,version",
+    [
+        (word, version)
+        for word in ("tradelang", "dsl")
+        for version in ("", "9", "01", "1.0")
+    ]
+    + [("dsl", str(version)) for version in range(2, 9)],
+)
 def test_invalid_version_directive(keyword, version):
     source = (FIX / "core.trade").read_text()
     with pytest.raises(Problem) as exc:

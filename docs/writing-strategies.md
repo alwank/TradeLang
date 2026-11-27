@@ -4,7 +4,7 @@ In this lesson, you’ll write the strategy from the [first backtest](quickstart
 
 ## Build the strategy
 
-1. **Identify the market.** Start with the optional `tradelang 1` directive and give the strategy a name. `market TESTUSDT` and `timeframe 1d` match the example dataset.
+1. **Name the strategy.** Start with the optional `tradelang 1` directive and give the strategy a name. The example uses `market TESTUSDT` and `timeframe 1d` to require a match with its dataset.
 2. **Set entry and exit rules.** In `entry:`, `when true` permits a buy whenever the strategy is flat and its exit rule is false. `buy using 100% of equity` commits the available equity. In `exit:`, `when close >= 112 price` queues a sale of the whole position when the completed close reaches 112 USDT.
 3. **Set the backtest assumptions.** Choose the dates covered by the three candles and start with 1,000 USDT. Set fees and slippage to zero so you can check the result by hand. The last two lines select the next-open execution rule and the 24/7 calendar.
 
@@ -70,7 +70,8 @@ Next, [try RSI on six candles](example-strategies.md#inspect-six-candles-by-hand
 | --- | --- |
 | `tradelang 1` | Optional version directive. Version 1 is the default. Existing strategies can still use `dsl 1`. |
 | `strategy "…"` | Required display name in double quotes. |
-| `market` and `timeframe` | Required symbol and fixed duration such as `15m`, `1h`, or `1d`. |
+| `market` | Optional symbol constraint. Omit it to use the selected dataset's symbol. |
+| `timeframe` | Optional candle duration constraint, such as `15m`, `1h`, or `1d`. Omit it to use the selected dataset's duration. |
 | `let` | Optional immutable declarations. A declaration can reference earlier declarations. |
 | `entry:` | Required Boolean `when` condition followed by `buy using`. |
 | `exit:` | Required Boolean `when` condition followed by `sell all`. |
@@ -107,6 +108,12 @@ See the [units and arithmetic rules](language-spec.md#types-units-and-ast) for d
 - `stop loss 3%` sets a stop 3% below the actual entry fill. `stop loss 2 * ATR(8)` uses a price distance sampled from the signal candle. `take profit 8%` sets a trigger 8% above the actual fill. Each level stays fixed for the life of the position.
 
 The `equity` expression can also appear inside sizing arithmetic. For example, `buy using (0.25 * equity) USDT` computes a fixed-money budget at fill time. Pure market inputs come from the completed signal bar. The [execution rules](execution-semantics.md#frozen-protection) explain protection and rejected entries.
+
+With DSL 4, use `buy risking 1% of equity` and a `stop loss` to size the entry by its modeled loss at a stop touch. Add `max allocation 25% of equity` to cap the fee-inclusive debit. [Stop-based sizing](language-v4.md#size-a-long-by-stop-loss)
+
+With DSL 5, list named market and time exits in the order they should be tested. Add a trailing distance to raise the initial stop from completed closes. [Ordered exits and trailing stops](language-v5.md)
+
+With DSL 6, use `sell 25% of position` or `sell 3 units` in an exit and an optional `scale` rule to add to the same long. [Position sizing and worked ledger](language-v6.md)
 
 ## Check readiness before running
 

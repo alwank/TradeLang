@@ -13,6 +13,19 @@ uv run --locked --extra api mypy src
 
 Use the [three-candle quickstart](docs/quickstart.md) to inspect signal order, fills, and final equity by hand. Put local experiments and run bundles under `runs/`.
 
+## Run browser integration tests
+
+From the repository root, install the web dependencies, build the production app, and run Playwright with the locked Python environment on the command path.
+
+```sh
+npm ci --prefix apps/web
+npm --prefix apps/web run build
+npm --prefix apps/web exec -- playwright install --only-shell chromium
+uv run --locked --extra api npm --prefix apps/web test
+```
+
+The Python and browser integration harnesses start their own loopback endpoints and temporary libraries. They verify the API instance before submitting fixtures.
+
 ## Change the language or simulator
 
 - When editing the runtime grammar or typed strategy schema, update the matching reference file in `docs/`. The tests check both copies.

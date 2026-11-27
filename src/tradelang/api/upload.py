@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from python_multipart.multipart import MultipartCallbacks
 
 MAX_FILE = 100 * 1024**2
-MAX_METADATA = 16 * 1024
+MAX_METADATA = 2 * 1024**2
 MAX_FRAMING = 16 * 1024
 TOTAL_SECONDS = 120
 INACTIVITY_SECONDS = 30

@@ -47,10 +47,19 @@ nav:
   - Learn:
       - Backtesting basics: backtesting-basics.md
       - First backtest: quickstart.md
+      - Browser workspace: browser.md
       - Write a strategy: writing-strategies.md
       - Example strategies: example-strategies.md
   - Reference:
       - TradeLang strategy language v1: language-spec.md
+      - TradeLang strategy language v2: language-v2.md
+      - TradeLang strategy language v3: language-v3.md
+      - TradeLang strategy language v4: language-v4.md
+      - TradeLang strategy language v5: language-v5.md
+      - TradeLang strategy language v6: language-v6.md
+      - TradeLang strategy language v7: language-v7.md
+      - TradeLang strategy language v8: language-v8.md
+      - TradeLang portfolio language v9: language-v9.md
       - Indicators: indicators.md
       - Execution semantics: execution-semantics.md
       - Candle data: candle-data.md

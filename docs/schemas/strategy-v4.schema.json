@@ -1,0 +1,1380 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tradelang.local/schemas/strategy-v4.json",
+  "title": "TradeLang typed canonical StrategySpec v4",
+  "description": "The typed DSL 4 strategy with named feeds and stop-based sizing.",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": 4
+    },
+    "dsl_version": {
+      "const": 4
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120
+    },
+    "symbol": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[A-Z0-9][A-Z0-9_.-]{0,31}$"
+    },
+    "timeframe_seconds": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 60,
+      "maximum": 604800,
+      "multipleOf": 60
+    },
+    "bindings": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/LetBinding"
+      },
+      "maxItems": 128
+    },
+    "entry": {
+      "type": "object",
+      "properties": {
+        "condition": {
+          "$ref": "#/$defs/Expr"
+        },
+        "sizing": {
+          "$ref": "#/$defs/Sizing"
+        },
+        "span": {
+          "$ref": "#/$defs/Span"
+        }
+      },
+      "required": [
+        "condition",
+        "sizing",
+        "span"
+      ],
+      "additionalProperties": false
+    },
+    "exit": {
+      "type": "object",
+      "properties": {
+        "condition": {
+          "$ref": "#/$defs/Expr"
+        },
+        "action": {
+          "const": "sell_all"
+        },
+        "span": {
+          "$ref": "#/$defs/Span"
+        }
+      },
+      "required": [
+        "condition",
+        "action",
+        "span"
+      ],
+      "additionalProperties": false
+    },
+    "risk": {
+      "$ref": "#/$defs/Risk"
+    },
+    "backtest": {
+      "$ref": "#/$defs/Backtest"
+    },
+    "span": {
+      "$ref": "#/$defs/Span"
+    },
+    "parameters": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Parameter"
+      },
+      "maxItems": 128
+    },
+    "requires_profile": {
+      "type": "boolean"
+    },
+    "feeds": {
+      "type": "array",
+      "maxItems": 1,
+      "items": {
+        "$ref": "#/$defs/Feed"
+      }
+    },
+    "required_feeds": {
+      "type": "array",
+      "maxItems": 1,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z_][a-z0-9_]{0,63}$"
+      }
+    }
+  },
+  "required": [
+    "schema_version",
+    "dsl_version",
+    "name",
+    "symbol",
+    "timeframe_seconds",
+    "bindings",
+    "entry",
+    "exit",
+    "risk",
+    "backtest",
+    "span",
+    "parameters",
+    "requires_profile",
+    "feeds",
+    "required_feeds"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "Span": {
+      "type": "object",
+      "properties": {
+        "start_line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "start_column": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "end_line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "end_column": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "start_byte": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "end_byte": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "start_line",
+        "start_column",
+        "end_line",
+        "end_column",
+        "start_byte",
+        "end_byte"
+      ],
+      "additionalProperties": false
+    },
+    "Dimension": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "powers"
+            },
+            "quote": {
+              "type": "integer",
+              "minimum": -8,
+              "maximum": 8
+            },
+            "base": {
+              "type": "integer",
+              "minimum": -8,
+              "maximum": 8
+            }
+          },
+          "required": [
+            "kind",
+            "quote",
+            "base"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "count"
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "NumericType": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "numeric"
+        },
+        "shape": {
+          "enum": [
+            "scalar",
+            "series"
+          ]
+        },
+        "dimension": {
+          "$ref": "#/$defs/Dimension"
+        },
+        "scale": {
+          "enum": [
+            "points",
+            "fraction",
+            "percent"
+          ]
+        },
+        "clock": {
+          "type": "string",
+          "pattern": "^[a-z_][a-z0-9_]{0,63}$"
+        }
+      },
+      "required": [
+        "kind",
+        "shape",
+        "dimension"
+      ],
+      "additionalProperties": false
+    },
+    "BooleanType": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "boolean"
+        },
+        "shape": {
+          "enum": [
+            "scalar",
+            "series"
+          ]
+        },
+        "clock": {
+          "type": "string",
+          "pattern": "^[a-z_][a-z0-9_]{0,63}$"
+        }
+      },
+      "required": [
+        "kind",
+        "shape"
+      ],
+      "additionalProperties": false
+    },
+    "RecordType": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "record"
+        },
+        "shape": {
+          "const": "series"
+        },
+        "fields": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {
+            "$ref": "#/$defs/NumericType"
+          }
+        },
+        "field_readiness": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100000
+          }
+        },
+        "clock": {
+          "type": "string",
+          "pattern": "^[a-z_][a-z0-9_]{0,63}$"
+        }
+      },
+      "required": [
+        "kind",
+        "shape",
+        "fields"
+      ],
+      "additionalProperties": false
+    },
+    "ValueType": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/NumericType"
+        },
+        {
+          "$ref": "#/$defs/BooleanType"
+        },
+        {
+          "$ref": "#/$defs/RecordType"
+        }
+      ]
+    },
+    "Literal": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "Literal"
+        },
+        "node_id": {
+          "type": "string"
+        },
+        "span": {
+          "$ref": "#/$defs/Span"
+        },
+        "inferred_type": {
+          "$ref": "#/$defs/ValueType"
+        },
+        "value": {
+          "type": [
+            "number",
+            "boolean"
+          ]
+        },
+        "dimension": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/Dimension"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "kind",
+        "node_id",
+        "span",
+        "inferred_type",
+        "value",
+        "dimension"
+      ],
+      "additionalProperties": false
+    },
+    "Reference": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "Reference"
+        },
+        "node_id": {
+          "type": "string"
+        },
+        "span": {
+          "$ref": "#/$defs/Span"
+        },
+        "inferred_type": {
+          "$ref": "#/$defs/ValueType"
+        },
+        "name": {
+          "type": "string"
+        },
+        "binding_kind": {
+          "enum": [
+            "builtin",
+            "let",
+            "account",
+            "parameter"
+          ]
+        }
+      },
+      "required": [
+        "kind",
+        "node_id",
+        "span",
+        "inferred_type",
+        "name",
+        "binding_kind"
+      ],
+      "additionalProperties": false
+    },
+    "Unary": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "Unary"
+        },
+        "node_id": {
+          "type": "string"
+        },
+        "span": {
+          "$ref": "#/$defs/Span"
+        },
+        "inferred_type": {
+          "$ref": "#/$defs/ValueType"
+        },
+        "operator": {
+          "enum": [
+            "+",
+            "-"
+          ]
+        },
+        "operand": {
+          "$ref": "#/$defs/Expr"
+        }
+      },
+      "required": [
+        "kind",
+        "node_id",
+        "span",
+        "inferred_type",
+        "operator",
+        "operand"
+      ],
+      "additionalProperties": false
+    },
+    "Binary": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "Binary"
+        },
+        "node_id": {
+          "type": "string"
+        },
+        "span": {
+          "$ref": "#/$defs/Span"
+        },
+        "inferred_type": {
+          "$ref": "#/$defs/ValueType"
+        },
+        "operator": {
+          "enum": [
+            "+",
+            "-",
+            "*",
+            "/",
+            "**"
+          ]
+        },
+        "left": {
+          "$ref": "#/$defs/Expr"
+        },
+        "right": {
+          "$ref": "#/$defs/Expr"
+        }
+      },
+      "required": [
+        "kind",
+        "node_id",
+        "span",
+        "inferred_type",
+        "operator",
+        "left",
+        "right"
+      ],
+      "additionalProperties": false
+    },
+    "Call": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "Call"
+        },
+        "node_id": {
+          "type": "string"
+        },
+        "span": {
+          "$ref": "#/$defs/Span"
+        },
+        "inferred_type": {
+          "$ref": "#/$defs/ValueType"
+        },
+        "function": {
+          "enum": [
+            "SMA",
+            "EMA",
+            "RSI",
+            "MACD",
+            "ATR",
+            "BBANDS",
+            "HIGHEST",
+            "LOWEST",
+            "ROC",
+            "STDDEV",
+            "WMA",
+            "RMA",
+            "VWMA",
+            "CMF",
+            "OBV",
+            "VWAP",
+            "DONCHIAN",
+            "KELTNER",
+            "SUPERTREND",
+            "DMI",
+            "STOCH",
+            "STOCHRSI",
+            "MFI",
+            "CCI",
+            "WILLR",
+            "SAR",
+            "HMA",
+            "ICHIMOKU",
+            "AROON",
+            "MOM",
+            "TRANGE",
+            "NATR",
+            "BBPCTB",
+            "BBWIDTH",
+            "ADL",
+            "RVOL",
+            "DEMA",
+            "TEMA",
+            "ALMA",
+            "KAMA",
+            "AO",
+            "CHOP",
+            "ULTOSC",
+            "TSI",
+            "LSMA",
+            "CHANDELIER",
+            "ZIGZAG",
+            "VPROFILE"
+          ]
+        },
+        "arguments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Expr"
+          }
+        }
+      },
+      "required": [
+        "kind",
+        "node_id",
+        "span",
+        "inferred_type",
+        "function",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    "Field": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "Field"
+        },
+        "node_id": {
+          "type": "string"
+        },
+        "span": {
+          "$ref": "#/$defs/Span"
+        },
+        "inferred_type": {
+          "$ref": "#/$defs/ValueType"
+        },
+        "base": {
+          "$ref": "#/$defs/Expr"
+        },
+        "field": {
+          "enum": [
+            "line",
+            "signal",
+            "histogram",
+            "upper",
+            "middle",
+            "lower",
+            "direction",
+            "plus_di",
+            "minus_di",
+            "adx",
+            "k",
+            "d",
+            "conversion",
+            "base",
+            "span_a",
+            "span_b",
+            "up",
+            "down",
+            "oscillator",
+            "long_exit",
+            "short_exit",
+            "pivot",
+            "last_high",
+            "last_low",
+            "poc",
+            "vah",
+            "val"
+          ]
+        }
+      },
+      "required": [
+        "kind",
+        "node_id",
+        "span",
+        "inferred_type",
+        "base",
+        "field"
+      ],
+      "additionalProperties": false
+    },
+    "Lookback": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "Lookback"
+        },
+        "node_id": {
+          "type": "string"
+        },
+        "span": {
+          "$ref": "#/$defs/Span"
+        },
+        "inferred_type": {
+          "$ref": "#/$defs/ValueType"
+        },
+        "base": {
+          "$ref": "#/$defs/Expr"
+        },
+        "bars": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100000
+        }
+      },
+      "required": [
+        "kind",
+        "node_id",
+        "span",
+        "inferred_type",
+        "base",
+        "bars"
+      ],
+      "additionalProperties": false
+    },
+    "Compare": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "Compare"
+        },
+        "node_id": {
+          "type": "string"
+        },
+        "span": {
+          "$ref": "#/$defs/Span"
+        },
+        "inferred_type": {
+          "$ref": "#/$defs/ValueType"
+        },
+        "operator": {
+          "enum": [
+            "<",
+            "<=",
+            ">",
+            ">=",
+            "==",
+            "!="
+          ]
+        },
+        "left": {
+          "$ref": "#/$defs/Expr"
+        },
+        "right": {
+          "$ref": "#/$defs/Expr"
+        }
+      },
+      "required": [
+        "kind",
+        "node_id",
+        "span",
+        "inferred_type",
+        "operator",
+        "left",
+        "right"
+      ],
+      "additionalProperties": false
+    },
+    "Cross": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "Cross"
+        },
+        "node_id": {
+          "type": "string"
+        },
+        "span": {
+          "$ref": "#/$defs/Span"
+        },
+        "inferred_type": {
+          "$ref": "#/$defs/ValueType"
+        },
+        "direction": {
+          "enum": [
+            "above",
+            "below"
+          ]
+        },
+        "left": {
+          "$ref": "#/$defs/Expr"
+        },
+        "right": {
+          "$ref": "#/$defs/Expr"
+        }
+      },
+      "required": [
+        "kind",
+        "node_id",
+        "span",
+        "inferred_type",
+        "direction",
+        "left",
+        "right"
+      ],
+      "additionalProperties": false
+    },
+    "Boolean": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "Boolean"
+        },
+        "node_id": {
+          "type": "string"
+        },
+        "span": {
+          "$ref": "#/$defs/Span"
+        },
+        "inferred_type": {
+          "$ref": "#/$defs/ValueType"
+        },
+        "operator": {
+          "enum": [
+            "not",
+            "and",
+            "or"
+          ]
+        },
+        "operands": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Expr"
+          },
+          "minItems": 1,
+          "maxItems": 2
+        }
+      },
+      "required": [
+        "kind",
+        "node_id",
+        "span",
+        "inferred_type",
+        "operator",
+        "operands"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "operator": {
+                "const": "not"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "operands": {
+                "minItems": 1,
+                "maxItems": 1
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "operands": {
+                "minItems": 2,
+                "maxItems": 2
+              }
+            }
+          }
+        }
+      ]
+    },
+    "Expr": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/Literal"
+        },
+        {
+          "$ref": "#/$defs/Reference"
+        },
+        {
+          "$ref": "#/$defs/Unary"
+        },
+        {
+          "$ref": "#/$defs/Binary"
+        },
+        {
+          "$ref": "#/$defs/Call"
+        },
+        {
+          "$ref": "#/$defs/Field"
+        },
+        {
+          "$ref": "#/$defs/Lookback"
+        },
+        {
+          "$ref": "#/$defs/Compare"
+        },
+        {
+          "$ref": "#/$defs/Cross"
+        },
+        {
+          "$ref": "#/$defs/Boolean"
+        },
+        {
+          "$ref": "#/$defs/Choice"
+        },
+        {
+          "$ref": "#/$defs/OnFeed"
+        },
+        {
+          "$ref": "#/$defs/Align"
+        }
+      ]
+    },
+    "LetBinding": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "expression": {
+          "$ref": "#/$defs/Expr"
+        },
+        "span": {
+          "$ref": "#/$defs/Span"
+        }
+      },
+      "required": [
+        "name",
+        "expression",
+        "span"
+      ],
+      "additionalProperties": false
+    },
+    "Sizing": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "equity_fraction"
+            },
+            "expression": {
+              "$ref": "#/$defs/Expr"
+            },
+            "span": {
+              "$ref": "#/$defs/Span"
+            }
+          },
+          "required": [
+            "kind",
+            "expression",
+            "span"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "fixed_money"
+            },
+            "expression": {
+              "$ref": "#/$defs/Expr"
+            },
+            "currency": {
+              "type": "string"
+            },
+            "span": {
+              "$ref": "#/$defs/Span"
+            }
+          },
+          "required": [
+            "kind",
+            "expression",
+            "currency",
+            "span"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "stop_risk"
+            },
+            "expression": {
+              "$ref": "#/$defs/Expr"
+            },
+            "allocation_cap": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Expr"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "span": {
+              "$ref": "#/$defs/Span"
+            }
+          },
+          "required": [
+            "kind",
+            "expression",
+            "allocation_cap",
+            "span"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "RiskRule": {
+      "type": "object",
+      "properties": {
+        "expression": {
+          "$ref": "#/$defs/Expr"
+        },
+        "mode": {
+          "enum": [
+            "ratio",
+            "price"
+          ]
+        },
+        "span": {
+          "$ref": "#/$defs/Span"
+        }
+      },
+      "required": [
+        "expression",
+        "mode",
+        "span"
+      ],
+      "additionalProperties": false
+    },
+    "Risk": {
+      "type": "object",
+      "properties": {
+        "stop": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/RiskRule"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "target": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/RiskRule"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "max_open_positions": {
+          "const": 1
+        }
+      },
+      "required": [
+        "stop",
+        "target",
+        "max_open_positions"
+      ],
+      "additionalProperties": false
+    },
+    "Backtest": {
+      "type": "object",
+      "properties": {
+        "from_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "to_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "capital": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "currency": {
+          "type": "string"
+        },
+        "fee_rate": {
+          "type": "number",
+          "minimum": 0,
+          "exclusiveMaximum": 1
+        },
+        "slippage_rate": {
+          "type": "number",
+          "minimum": 0,
+          "exclusiveMaximum": 1
+        },
+        "execution": {
+          "const": "next_bar_open"
+        },
+        "calendar": {
+          "const": "24x7"
+        },
+        "span": {
+          "$ref": "#/$defs/Span"
+        }
+      },
+      "required": [
+        "from_date",
+        "to_date",
+        "capital",
+        "currency",
+        "fee_rate",
+        "slippage_rate",
+        "execution",
+        "calendar",
+        "span"
+      ],
+      "additionalProperties": false
+    },
+    "Choice": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "Choice"
+        },
+        "node_id": {
+          "type": "string"
+        },
+        "span": {
+          "$ref": "#/$defs/Span"
+        },
+        "inferred_type": {
+          "$ref": "#/$defs/ValueType"
+        },
+        "function": {
+          "enum": [
+            "available",
+            "coalesce",
+            "choose"
+          ]
+        },
+        "arguments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Expr"
+          },
+          "minItems": 1,
+          "maxItems": 3
+        }
+      },
+      "required": [
+        "kind",
+        "node_id",
+        "span",
+        "inferred_type",
+        "function",
+        "arguments"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "function": {
+                "const": "available"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "arguments": {
+                "minItems": 1,
+                "maxItems": 1
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "function": {
+                "const": "coalesce"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "arguments": {
+                "minItems": 2,
+                "maxItems": 2
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "function": {
+                "const": "choose"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "arguments": {
+                "minItems": 3,
+                "maxItems": 3
+              }
+            }
+          }
+        }
+      ]
+    },
+    "Parameter": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z_][a-z0-9_]*$"
+        },
+        "kind": {
+          "enum": [
+            "count",
+            "ratio",
+            "price",
+            "bool"
+          ]
+        },
+        "default": {
+          "type": [
+            "number",
+            "boolean"
+          ]
+        },
+        "value": {
+          "type": [
+            "number",
+            "boolean"
+          ]
+        },
+        "minimum": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "maximum": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "span": {
+          "$ref": "#/$defs/Span"
+        }
+      },
+      "required": [
+        "name",
+        "kind",
+        "default",
+        "value",
+        "minimum",
+        "maximum",
+        "span"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "bool"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "value": {
+                "type": "boolean"
+              },
+              "default": {
+                "type": "boolean"
+              },
+              "minimum": {
+                "type": "null"
+              },
+              "maximum": {
+                "type": "null"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "value": {
+                "type": "number"
+              },
+              "default": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "count"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "value": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "default": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "minimum": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "maximum": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 0,
+                "maximum": 9007199254740991
+              }
+            }
+          }
+        }
+      ]
+    },
+    "Feed": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z_][a-z0-9_]{0,63}$"
+        },
+        "role": {
+          "const": "higher_timeframe"
+        },
+        "timeframe_seconds": {
+          "type": "integer",
+          "minimum": 60,
+          "maximum": 604800,
+          "multipleOf": 60
+        },
+        "max_age_seconds": {
+          "type": "integer",
+          "minimum": 60,
+          "maximum": 604800,
+          "multipleOf": 60
+        },
+        "span": {
+          "$ref": "#/$defs/Span"
+        }
+      },
+      "required": [
+        "name",
+        "role",
+        "timeframe_seconds",
+        "max_age_seconds",
+        "span"
+      ],
+      "additionalProperties": false
+    },
+    "OnFeed": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "OnFeed"
+        },
+        "node_id": {
+          "type": "string"
+        },
+        "span": {
+          "$ref": "#/$defs/Span"
+        },
+        "inferred_type": {
+          "$ref": "#/$defs/ValueType"
+        },
+        "feed": {
+          "type": "string",
+          "pattern": "^[a-z_][a-z0-9_]{0,63}$"
+        },
+        "expression": {
+          "$ref": "#/$defs/Expr"
+        }
+      },
+      "required": [
+        "kind",
+        "node_id",
+        "span",
+        "inferred_type",
+        "feed",
+        "expression"
+      ],
+      "additionalProperties": false
+    },
+    "Align": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "Align"
+        },
+        "node_id": {
+          "type": "string"
+        },
+        "span": {
+          "$ref": "#/$defs/Span"
+        },
+        "inferred_type": {
+          "$ref": "#/$defs/ValueType"
+        },
+        "feed": {
+          "type": "string",
+          "pattern": "^[a-z_][a-z0-9_]{0,63}$"
+        },
+        "expression": {
+          "$ref": "#/$defs/Expr"
+        }
+      },
+      "required": [
+        "kind",
+        "node_id",
+        "span",
+        "inferred_type",
+        "feed",
+        "expression"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

@@ -75,6 +75,11 @@ def catalog_snapshot(output):
         assert prefix == values[name]["values"][: end + 1], (name, end)
 
     validated = inspect_source(source, "validate", dataset)
+    explained = inspect_source(source, "explain", dataset)
+    # Workload is additive inspection metadata. The pinned snapshot verifies
+    # the original compiler, numerical vectors, and ledger contracts.
+    validated.pop("workload", None)
+    explained.pop("workload", None)
     public = validated["spec"]
     projected = projection(
         {key: value for key, value in public.items() if key != "name"}
@@ -85,7 +90,7 @@ def catalog_snapshot(output):
     ledger["equity"] = list(ledger["equity"])
     return {
         "validate": validated,
-        "explain": inspect_source(source, "explain", dataset),
+        "explain": explained,
         "projected_bytes": canonical(projected),
         "vectors": values,
         "prefix_counters": counters,

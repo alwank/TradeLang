@@ -17,11 +17,11 @@
       "maxLength": 120
     },
     "symbol": {
-      "type": "string",
+      "type": ["string", "null"],
       "pattern": "^[A-Z0-9][A-Z0-9_.-]{0,31}$"
     },
     "timeframe_seconds": {
-      "type": "integer",
+      "type": ["integer", "null"],
       "minimum": 60,
       "maximum": 604800,
       "multipleOf": 60

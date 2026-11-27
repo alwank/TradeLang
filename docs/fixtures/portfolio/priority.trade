@@ -1,0 +1,6 @@
+tradelang 9
+portfolio "Shared cash priority"
+asset alpha
+asset beta
+capital 1000 USD
+max open positions 2

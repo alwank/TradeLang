@@ -221,6 +221,39 @@ def test_utf8_byte_span_and_nullable_diagnostic():
     assert invalid["diagnostics"][0]["code"] == "E101_SYNTAX"
 
 
+def test_function_diagnostics_use_trade_language_and_exact_spans():
+    raw = (
+        b"\xef\xbb\xbf# "
+        + "é🐈".encode()
+        + b"\r\n"
+        + strategy_text(entry="ema(2) > close").replace("\n", "\r\n").encode()
+    )
+    (diagnostic,) = inspect_source(raw, "validate")["diagnostics"]
+    assert diagnostic["code"] == "E101_SYNTAX"
+    assert diagnostic["suggestion"] == "Use EMA(...)"
+    span = diagnostic["span"]
+    assert raw[span["start_byte"] : span["end_byte"]] == b"ema"
+    assert span["start_line"] == span["end_line"]
+    assert span["end_column"] - span["start_column"] == 3
+
+    (diagnostic,) = inspect_source(
+        strategy_text(entry="EMA(1, 2, 3) > close").encode(), "validate"
+    )["diagnostics"]
+    assert diagnostic["code"] == "E203_TYPE"
+    assert "EMA(period) or EMA(source, period)" in diagnostic["message"]
+
+    (diagnostic,) = inspect_source(
+        strategy_text(entry="MACD(1, 2, 1).signa > close").encode(), "validate"
+    )["diagnostics"]
+    assert diagnostic["code"] == "E204_SELECTOR"
+    assert diagnostic["suggestion"] == "Use .signal"
+
+    (diagnostic,) = inspect_source(b'strategy "Example" entry:', "validate")[
+        "diagnostics"
+    ]
+    assert diagnostic["suggestion"] == "Expected 'when'"
+
+
 @pytest.mark.parametrize(
     "path",
     sorted(Path("docs/examples").glob("*.trade")),

@@ -18,7 +18,17 @@ The benchmark spends 100% of starting capital, including the entry fee, at the f
 | `profit_factor` | Sum of positive net trade P&L divided by the magnitude of negative net trade P&L. When there are no losses, the value is null and `profit_factor_status` explains why. |
 | `exposure_fraction` | Fraction of observed in-window bars with a holding at any phase. An opening exit or an entry and exit on the same bar counts as exposure. |
 
-Unavailable metrics use JSON null. Treat a short-window annualized value as a mathematical extrapolation of that window. Use `diagnostics.json` for warnings such as delayed warmup, missing bars, and unavailable metrics.
+Unavailable metrics use JSON null. If a valid ledger produces a statistic outside the supported numeric range, `diagnostics.json` reports the affected metric with reason `numeric_range`. Treat a short-window annualized value as a mathematical extrapolation of that window.
+
+The run's missing-bar warning counts gaps inside the execution window. In `dataset-summary.json`, `missing_bar_count` covers the full primary input. `pre_window_missing_bar_count` covers the history up to the first in-window open. `execution_window_missing_bar_count` covers gaps between the first and last in-window opens.
+
+### Compare a common-start benchmark
+
+Compare can calculate a shared buy-and-hold reference for runs that use the same primary candles, market, calendar, timeframe, execution semantics, gap policy, fees, and slippage. The reference starts at the latest first executable open in the group and ends at the earliest terminal close. It starts at index 100, buys at the selected open with entry costs, and marks the holding through the common end.
+
+Strategy returns over that interval start at index 100 using equity immediately before orders execute at the common open. Cash and quantity come from the last preceding ledger row. Any existing quantity is valued at the common open, then carried into the interval. The comparison reports excess return in percentage points by subtracting the reference return from each strategy's return on those same candles. Full-run metrics use their original windows.
+
+The API derives this view from recorded inputs using policy `common_start_hold_v1`. It retains each run's warmup-aligned benchmark in the saved bundle. A run with incompatible inputs or a disjoint window receives an eligibility reason. Compatible groups remain available.
 
 ## Artifact files
 
@@ -28,8 +38,9 @@ Unavailable metrics use JSON null. Treat a short-window annualized value as a ma
 | `equity.csv`, `equity.parquet` | The same full-resolution strategy and benchmark curves, with `cumulative_return` and Boolean `exposed` fields. |
 | `trades.csv` | One row per closed trade, with reference and fill prices, fees, net P&L, rationale, and exit reason. Nested fields contain JSON. |
 | `events.jsonl` | Ordered signal, order, fill, rejection, expiry, and warning events. Sort by `sequence` when timestamps coincide. For an intrabar event, `time_precision: "bar"` identifies the containing candle. |
+| `decisions.parquet` | Version 1 decision record for each observed candle in the execution window. Records rule outcomes, event byte ranges, and fill-time sizing inputs. |
 | `diagnostics.json` | Run diagnostics, also surfaced in the JSON CLI response. |
-| `source.trade`, `strategy-spec.json` | Exact submitted source bytes and the compiler's typed strategy. |
+| `source.trade`, `strategy-spec.json` | Exact submitted source bytes and the compiler's typed strategy. Omitted market and timeframe declarations appear as `null` in the typed strategy. The run's effective values appear in `summary.json` and `metadata.json`. |
 | `input.csv` or `input.parquet`, `metadata.json`, `dataset-summary.json` | Exact submitted dataset, validated settings, and quality summary. |
 | `environment.json`, `dependency-lock.txt`, `source-package.zip` | Runtime build identity, installed package versions, and executing TradeLang source. Bundles may also contain the release build inputs `uv.lock` and `pyproject.toml`. |
 | `manifest.json` | Schema version 2. Version identifiers, resolved window, policy, fingerprints, and SHA-256 checksums and sizes for the other bundle files. |
@@ -51,6 +62,30 @@ The CLI stages files in a sibling directory and publishes a successful bundle at
 | Trade `entry_rationale`, `exit_rationale`, `protection` | Parse the CSV row first, then JSON-decode populated cells in these columns. A missing value is an empty CSV cell. A protective exit can have an empty `exit_rationale` because it has no exit signal. |
 | Event `sequence`, `observed_at`, `time_precision`, `bar_open_at` | Read events in `sequence` order. `time_precision` identifies a close, an open, or the containing interval for an intrabar event. `bar_open_at` identifies the candle in all three cases. |
 | Event `event_id`, `linked_event_id`, `order_id`, `fill_id`, `trade_id` | `event_id` identifies a row and `linked_event_id` points to a related event when present. Follow the same `order_id` from signal to fill, then match fill events to `trades.csv` by `trade_id`. A protective exit can have a fill ID and trade ID with a null order ID. |
+
+### Review workload
+
+Dataset-aware validation reports the version 1 `workload` record before a run. The manifest saves the same estimate. Evaluated rows include the history preceding execution. Execution rows count the observed candles inside the requested window.
+
+| Field | Meaning |
+| --- | --- |
+| `minimum_resident_bytes` | Lower bound from input arrays, resident profile data, required calculated arrays, and the equity curve. Admission compares this bound with `memory_limit_bytes`, which is 1 GiB. |
+| `retained_series`, `kernel_calls` | Estimates for cached series and indicator evaluations. References to the same binding and equivalent indicator inputs receive credit for cache reuse. |
+| `dominant_expression`, `dominant_component` | Expression contributing the most estimated series and the largest estimated allocation category. |
+| `event_count_ceiling`, `event_memory_allowance_bytes` | A per-bar bound on event count and a planning allowance for events and traces. Actual values depend on signals and orders. |
+| `profile_work_units`, `profile_bytes`, `decision_bytes` | Prepared Volume Profile work and storage, and estimated base storage for candle decisions. |
+
+Transient kernel buffers, process overhead, and actual events can push an admitted run past the budget. The supervised worker still enforces its measured memory and time limits and accepts cancellation.
+
+### Inspect a candle decision
+
+Use the [browser workspace](browser.md#inspect-a-candle) or the [bar inspection route](local-api.md#inspect-a-candle) to inspect one observed candle by its zero-based primary dataset index. A rule's predicate can be true, false, or unavailable. The outcome explains what happened to the rule in the ledger, such as an entry blocked by a true exit or a rule skipped after an intrabar exit.
+
+The manifest identifies decision evidence in `decision_inspection`. Its `decision_counts` totals true, false, and unavailable predicates for evaluated candles and counts skipped warmup and post-exit candles separately. These counts use observed candles as the unit. The decision file participates in the artifact checksum inventory. The logical result digest covers summary, trades, equity, events, and diagnostics as before.
+
+Ordered exits use decision file schema 2, which records completed holding candles for exit rule inspection. The signal, queued order, and fill events identify the rule under `trace.exit_rule`. Trailing events record the sampled close, previous and new triggers, and the effective open when activated. [Ordered exits](language-v5.md)
+
+Quantity-changing runs record `position_ledger` schema 1 in the manifest. Every fill in `events.jsonl` includes remaining quantity and basis, the basis and entry fee released on that leg, and realized gross and net P&L. Filter the events by `trade_id` to obtain one position's ordered fills. A closed-trade CSV row aggregates all fills in a finished cycle. `summary.position_accounting` includes realized P&L from open and closed cycles. [Position accounting](execution-semantics.md#position-accounting-in-semantics-600)
 
 ### Trace the quickstart trade
 
@@ -83,14 +118,37 @@ The run fingerprint hashes the canonical object with `dsl_version`, `semantics_v
 | --- | --- |
 | DSL 1 and typed strategy schema 1 | Accepted source and serialized compiler output |
 | Semantics 1.1.0 | Evaluation, clock, order phases, and accounting |
+| DSL 2 and typed strategy schema 2 | Opt-in source syntax, effective parameters, and record typing |
+| Semantics 2.0.0 | DSL 2 expression evaluation and reachable warmup |
+| DSL 3, typed strategy schema 3, and semantics 3.0.0 | Named secondary feeds, separate evaluation clocks, and completed-close alignment |
+| DSL 4, typed strategy schema 4, and semantics 4.0.0 | Stop-based sizing for one long, with optional allocation limits and entry trace evidence |
+| DSL 5, typed strategy schema 5, and semantics 5.0.0 | First-match exits, completed holding candles, trailing stops, and optional signal-order expiry |
+| DSL 6, typed strategy schema 6, and semantics 6.0.0 | Partial exits, scaling in, quantity steps, and weighted-average position accounting |
+| DSL 7, typed strategy schema 7, and semantics 7.0.0 | Recorded exchange sessions and split-reference pricing |
+| DSL 8, typed strategy schema 8, and semantics 8.0.0 | Borrowed-asset shorts with explicit collateral, financing, and liquidation |
+| DSL 9, typed portfolio schema 9, and semantics 9.0.0 | Independent asset clocks and shared capital in a portfolio |
 | Artifact schema 2 | Published bundle and manifest structure |
 | Artifact schema 3 | Volume Profile runs with a secondary dataset in the manifest |
+| Artifact schema 4 | Runs with a named higher-timeframe feed and captured alignment inputs |
 | Metadata, summary, and inspection envelopes 1 | Independently versioned JSON payloads |
 | Package version and code revision | Executing source and reproducibility evidence |
 
 A code-only migration can preserve the source, normalized spec, dataset, configuration, and result digest while changing the environment hash and run fingerprint. Two runs in the same recorded environment have distinct run IDs.
 
 To reproduce a bundle, use its source, dataset copy, and metadata with the recorded package and dependencies. Write to a fresh directory, then compare the fingerprints and result digests. Generated run bundles contain the original submitted data and strategy, so review both before sharing one.
+
+For [DSL 2](language-v2.md), pass each entry in the manifest's `parameter_overrides` as `--param NAME=VALUE`. The typed strategy records the default and effective value of each parameter. The spec hash uses effective values in canonical name order. An omitted override and an explicit override equal to the default produce the same spec hash and fingerprint for the same data and runtime.
+
+### Replay configured runs
+
+The bundle includes `run-config.json` for a portfolio, or when a single-market run uses a preset, explicit run settings, parameter overrides, a named feed, session data, or a borrowed-asset short. The file points to the saved inputs in the same bundle and contains the applied overrides. Run the bundled source in the recorded environment. [Named feeds](language-v3.md) · [Exchange sessions](language-v7.md) · [Borrowed-asset shorts](language-v8.md) · [Portfolios](language-v9.md)
+
+```sh
+tradelang backtest BUNDLE/source.trade \
+  --run-config BUNDLE/run-config.json --out REPLAY_DIRECTORY
+```
+
+Replace `BUNDLE` with the saved run directory and `REPLAY_DIRECTORY` with a new output path. Compare the run fingerprint and result digest. The manifest records the resolved values in `effective_configuration`. Effective run settings contribute to configuration identity. Preset names, revision labels, and value origins are provenance fields.
 
 ### Replay a Volume Profile run
 
